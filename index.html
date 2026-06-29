@@ -24,11 +24,32 @@
       <div class="astral-grid-bottom"></div>
       <div class="astral-grid-top"></div>
       
-      <!-- Sleek Spaceship SVG -->
-      <svg class="astral-ship" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <path d="M50 10 L80 60 L60 60 L50 80 L40 60 L20 60 Z" fill="#09001b" stroke="#ff007f" stroke-width="2"/>
-        <circle cx="45" cy="55" r="3" fill="#00f0ff" filter="drop-shadow(0 0 4px #00f0ff)"/>
-        <circle cx="55" cy="55" r="3" fill="#00f0ff" filter="drop-shadow(0 0 4px #00f0ff)"/>
+      <!-- Cyberpunk Core SVG -->
+      <svg class="astral-ship" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#00f0ff" stop-opacity="1"/>
+            <stop offset="50%" stop-color="#7000ff" stop-opacity="0.8"/>
+            <stop offset="100%" stop-color="#1a0033" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <circle cx="100" cy="100" r="80" fill="none" stroke="#00f0ff" stroke-width="4" stroke-dasharray="10 20 40 10">
+          <animateTransform attributeName="transform" type="rotate" from="0 100 100" to="360 100 100" dur="20s" repeatCount="indefinite" />
+        </circle>
+        <circle cx="100" cy="100" r="60" fill="none" stroke="#ff007f" stroke-width="6" stroke-dasharray="30 15">
+          <animateTransform attributeName="transform" type="rotate" from="360 100 100" to="0 100 100" dur="15s" repeatCount="indefinite" />
+        </circle>
+        <polygon points="100,30 160,70 160,130 100,170 40,130 40,70" fill="#050014" stroke="#00f0ff" stroke-width="3"/>
+        <polygon points="100,45 145,75 145,125 100,155 55,125 55,75" fill="url(#coreGlow)" opacity="0.8"/>
+        <!-- Thrust beams -->
+        <g transform="rotate(-30 100 100)">
+          <rect x="90" y="-100" width="20" height="150" fill="url(#coreGlow)" opacity="0.8" />
+          <line x1="100" y1="-150" x2="100" y2="50" stroke="#00f0ff" stroke-width="8" opacity="0.8">
+             <animate attributeName="opacity" values="0.4;1;0.4" dur="0.5s" repeatCount="indefinite" />
+          </line>
+          <line x1="80" y1="-120" x2="80" y2="40" stroke="#ff007f" stroke-width="4" opacity="0.6" />
+          <line x1="120" y1="-130" x2="120" y2="60" stroke="#7000ff" stroke-width="5" opacity="0.7" />
+        </g>
       </svg>
     </div>
 
