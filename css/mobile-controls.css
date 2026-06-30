@@ -1,0 +1,125 @@
+/* Mobile Controls Styles */
+
+#mobile-controls-container {
+  display: none; /* Hidden by default on non-touch devices */
+  position: fixed;
+  bottom: 20px;
+  left: 0;
+  width: 100%;
+  height: auto;
+  pointer-events: none; /* Let clicks pass through empty areas */
+  z-index: 9999;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Show only on small screens or touch devices */
+@media (max-width: 768px), (pointer: coarse) {
+  #mobile-controls-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 0 20px;
+  }
+}
+
+.mc-dpad, .mc-action-buttons {
+  pointer-events: auto; /* Enable clicks on the buttons */
+  display: flex;
+  gap: 10px;
+}
+
+/* D-Pad Layout */
+.mc-dpad {
+  position: relative;
+  width: 150px;
+  height: 150px;
+}
+
+.mc-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 24px;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  touch-action: manipulation; /* Prevent zoom/scroll */
+  transition: background 0.1s, transform 0.1s;
+}
+
+.mc-btn:active, .mc-btn.active {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(0.95);
+  border-color: rgba(0, 240, 255, 0.8);
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.6);
+  color: #fff;
+}
+
+/* Specific D-Pad Buttons */
+.mc-dpad-up {
+  position: absolute;
+  top: 0;
+  left: 50px;
+  width: 50px;
+  height: 50px;
+}
+
+.mc-dpad-down {
+  position: absolute;
+  bottom: 0;
+  left: 50px;
+  width: 50px;
+  height: 50px;
+}
+
+.mc-dpad-left {
+  position: absolute;
+  top: 50px;
+  left: 0;
+  width: 50px;
+  height: 50px;
+}
+
+.mc-dpad-right {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  width: 50px;
+  height: 50px;
+}
+
+/* Action Buttons Layout */
+.mc-action-buttons {
+  position: relative;
+  width: 130px;
+  height: 130px;
+}
+
+.mc-action-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  position: absolute;
+}
+
+.mc-action-b {
+  bottom: 10px;
+  left: 0;
+}
+
+.mc-action-a {
+  top: 10px;
+  right: 0;
+  border-color: rgba(255, 50, 100, 0.5);
+}
+
+.mc-action-a:active, .mc-action-a.active {
+  border-color: rgba(255, 50, 100, 0.9);
+  box-shadow: 0 0 15px rgba(255, 50, 100, 0.6);
+}
