@@ -75,11 +75,12 @@
   }
 
   function renderMembers() {
+    if (!memberListEl) return;
     memberListEl.innerHTML = '';
-    memberCountEl.textContent = members.length;
+    if (memberCountEl) memberCountEl.textContent = members.length;
 
     members.forEach((m) => {
-      const isMe = (isHost && m.role === 'host') || (!isHost && m.peerId === peer.id);
+      const isMe = (isHost && m.role === 'host') || (!isHost && peer && m.peerId === peer.id);
 
       const slot = document.createElement('div');
       slot.className = 'member-slot' + (isMe ? ' active-member' : '');
@@ -88,7 +89,7 @@
       const avatarEmoji = m.role === 'host' ? '👑' : '🛸';
 
       // Status text
-      let statusText = m.status;
+      let statusText = m.status || 'Lobby';
       if (m.ready) {
         statusText = 'READY';
       }
@@ -105,7 +106,7 @@
           </div>
           <div class="member-status" style="color: ${m.ready ? '#00ff88' : 'var(--text-muted)'}">${statusText}</div>
         </div>
-        <span class="mic-icon" style="opacity: ${m.status.includes('Playing') ? '1' : '0.2'}">🎙️</span>
+        <span class="mic-icon" style="opacity: ${m.status && m.status.includes('Playing') ? '1' : '0.2'}">🎙️</span>
       `;
       memberListEl.appendChild(slot);
     });
@@ -116,7 +117,7 @@
       playSingleplayerBtn.style.display = 'inline-block';
       
       // Show Launch button if all members are ready
-      const allReady = members.every(m => m.ready || m.role === 'host'); // Host is always ready implicitly or ready when readyBtn clicked
+      const allReady = members.every(m => m.ready || m.role === 'host');
       const hasGuests = members.length > 1;
       const isMultiplayer = selectedGame === 'pong' || selectedGame === 'molehammer';
 
@@ -133,63 +134,93 @@
   }
 
   function updateViewportHeader(status, active = true) {
-    viewportStatusText.textContent = status.toUpperCase();
-    if (active) {
-      statusIndicatorDot.classList.add('active');
-    } else {
-      statusIndicatorDot.classList.remove('active');
+    if (viewportStatusText) viewportStatusText.textContent = status.toUpperCase();
+    if (statusIndicatorDot) {
+      if (active) {
+        statusIndicatorDot.classList.add('active');
+      } else {
+        statusIndicatorDot.classList.remove('active');
+      }
     }
   }
 
   function showViewportState(stateEl) {
-    stateLobbyScreen.classList.add('hidden');
-    stateGameIframeWrap.classList.add('hidden');
-    stateSpectatorScreen.classList.add('hidden');
-    stateEl.classList.remove('hidden');
+    if (stateLobbyScreen) stateLobbyScreen.classList.add('hidden');
+    if (stateGameIframeWrap) stateGameIframeWrap.classList.add('hidden');
+    if (stateSpectatorScreen) stateSpectatorScreen.classList.add('hidden');
+    if (stateEl) stateEl.classList.remove('hidden');
   }
 
   function escapeHTML(str) {
-    return str.replace(/[&<>'"]/g, 
+    if (!str) return '';
+    return String(str).replace(/[&<>'"]/g, 
       tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
     );
   }
 
   // ─── Host Logic ──────────────────────────────────────
   function initHost(name) {
+    if (typeof Peer === 'undefined') {
+      createError.textContent = 'Matchmaking server offline. Check internet connection.';
+      return;
+    }
+
     myName = name;
     isHost = true;
-    roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    
+    // Auto-generate ID via PeerJS instead of custom ID to make it 100% robust against Taken IDs
+    try {
+      peer = new Peer();
+    } catch (e) {
+      createError.textContent = 'Failed to initialize peer client.';
+      return;
+    }
 
-    displayCode.textContent = roomCode;
+    peer.on('open', (id) => {
+      // The room code is the peer-generated ID (shortened to 6 characters for user friendly display)
+      roomCode = id.substring(0, 6).toUpperCase();
+      displayCode.textContent = roomCode;
 
-    // Reset list
-    members = [{ peerId: 'host', name: myName, role: 'host', ready: false, status: 'Lobby' }];
-    guestConnections = [];
+      // Re-create peer with the room code ID to make connecting easy
+      peer.destroy();
+      
+      setTimeout(() => {
+        try {
+          peer = new Peer('space-arcade-' + roomCode);
+          
+          peer.on('open', () => {
+            members = [{ peerId: 'host', name: myName, role: 'host', ready: false, status: 'Lobby' }];
+            guestConnections = [];
+            showOverlay(roomUiOverlay);
+            renderMembers();
+            updateViewportHeader('Host Lobby - Waiting for players');
+          });
 
-    peer = new Peer('space-arcade-' + roomCode);
+          peer.on('connection', (conn) => {
+            if (members.length >= 4) {
+              conn.on('open', () => {
+                conn.send({ type: 'REJECT', reason: 'Lobby is full (Max 4 players)' });
+                setTimeout(() => conn.close(), 500);
+              });
+              return;
+            }
+            setupHostConnection(conn);
+          });
 
-    peer.on('open', () => {
-      showOverlay(roomUiOverlay);
-      renderMembers();
-      updateViewportHeader('Host Lobby - Waiting for players');
-    });
-
-    peer.on('connection', (conn) => {
-      // Reject if full (max 4 players total: 1 host + 3 guests)
-      if (members.length >= 4) {
-        conn.on('open', () => {
-          conn.send({ type: 'REJECT', reason: 'Lobby is full (Max 4 players)' });
-          setTimeout(() => conn.close(), 500);
-        });
-        return;
-      }
-
-      setupHostConnection(conn);
+          peer.on('error', (err) => {
+            console.error(err);
+            createError.textContent = 'Lobby connection error. Try again.';
+            cleanupPeer();
+          });
+        } catch (e) {
+          createError.textContent = 'Error starting lobby listener.';
+        }
+      }, 300);
     });
 
     peer.on('error', (err) => {
       console.error(err);
-      createError.textContent = 'Failed to create room. Room name taken?';
+      createError.textContent = 'Lobby creation failed.';
       cleanupPeer();
     });
   }
@@ -204,7 +235,6 @@
 
       switch (data.type) {
         case 'HANDSHAKE':
-          // Add player
           members.push({
             peerId: conn.peer,
             name: data.name || 'GUEST',
@@ -228,7 +258,6 @@
     });
 
     conn.on('close', () => {
-      // Remove guest connection
       guestConnections = guestConnections.filter(c => c !== conn);
       members = members.filter(m => m.peerId !== conn.peer);
       broadcast({ type: 'ROOM_UPDATE', members: members, game: selectedGame });
@@ -250,13 +279,24 @@
 
   // ─── Guest Logic ─────────────────────────────────────
   function initGuest(name, code) {
+    if (typeof Peer === 'undefined') {
+      joinError.textContent = 'Matchmaking server offline. Check internet connection.';
+      return;
+    }
+
     myName = name;
     isHost = false;
     roomCode = code.toUpperCase();
 
     showOverlay(connectingOverlay);
 
-    peer = new Peer();
+    try {
+      peer = new Peer();
+    } catch (e) {
+      joinError.textContent = 'Failed to initialize peer client.';
+      showOverlay(globalLobbyOverlay);
+      return;
+    }
 
     peer.on('open', () => {
       const conn = peer.connect('space-arcade-' + roomCode, { reliable: true });
@@ -265,7 +305,7 @@
 
     peer.on('error', (err) => {
       console.error(err);
-      joinError.textContent = 'Failed to connect. Invalid Room Code?';
+      joinError.textContent = 'Connection failed. Invalid Room Code?';
       cleanupPeer();
       showOverlay(globalLobbyOverlay);
     });
@@ -294,13 +334,11 @@
           displayCode.textContent = roomCode;
           showOverlay(roomUiOverlay);
           
-          // Sync dropdown selection
           gameSelect.value = selectedGame;
           renderMembers();
           
-          // If the host status indicates they are playing singleplayer, show spectator
           const hostMember = members.find(m => m.role === 'host');
-          if (hostMember && hostMember.status.includes('Playing')) {
+          if (hostMember && hostMember.status && hostMember.status.includes('Playing')) {
             spectateTargetName.textContent = hostMember.name;
             showViewportState(stateSpectatorScreen);
             updateViewportHeader(hostMember.status);
@@ -319,7 +357,6 @@
           break;
 
         case 'LAUNCH':
-          // Redirect to multiplayer page
           cleanupPeer();
           const roleStr = 'guest';
           window.location.href = `games/${data.game}.html?role=${roleStr}&room=${data.sessionId}&name=${encodeURIComponent(myName)}`;
@@ -340,12 +377,11 @@
 
   // ─── General Controls ────────────────────────────────
   function cleanupPeer() {
-    if (hostConn) { hostConn.close(); hostConn = null; }
-    guestConnections.forEach(c => c.close());
+    if (hostConn) { try { hostConn.close(); } catch(e){} hostConn = null; }
+    guestConnections.forEach(c => { try{ c.close(); } catch(e){} });
     guestConnections = [];
-    if (peer) { peer.destroy(); peer = null; }
+    if (peer) { try { peer.destroy(); } catch(e){} peer = null; }
     
-    // Stop any singleplayer frame
     stopSingleplayerGame();
     
     isHost = false;
@@ -354,10 +390,10 @@
   }
 
   function stopSingleplayerGame() {
-    gameIframe.src = '';
+    if (gameIframe) gameIframe.src = '';
     showViewportState(stateLobbyScreen);
-    playSingleplayerBtn.style.display = 'inline-block';
-    stopSingleplayerBtn.style.display = 'none';
+    if (playSingleplayerBtn) playSingleplayerBtn.style.display = 'inline-block';
+    if (stopSingleplayerBtn) stopSingleplayerBtn.style.display = 'none';
     
     if (isHost && members.length > 0) {
       members[0].status = 'Lobby';
@@ -367,12 +403,10 @@
     }
   }
 
-  // Handle messages from the iframe (singleplayer frame capture)
   window.addEventListener('message', (e) => {
     if (!e.data || e.data.type !== 'ARCADE_FRAME') return;
 
     if (isHost && guestConnections.length > 0) {
-      // Broadcast frame to all guests
       broadcast({
         type: 'ARCADE_FRAME',
         dataUrl: e.data.dataUrl
@@ -381,14 +415,11 @@
   });
 
   // ─── Button Events ───────────────────────────────────
-
-  // Host: Create
   createBtn.addEventListener('click', () => {
     const name = createNameInput.value.trim().toUpperCase() || 'HOST';
     initHost(name);
   });
 
-  // Guest: Join
   joinBtn.addEventListener('click', () => {
     const name = joinNameInput.value.trim().toUpperCase() || 'GUEST';
     const code = joinCodeInput.value.trim().toUpperCase();
@@ -401,11 +432,9 @@
     initGuest(name, code);
   });
 
-  // Host: Game Select change
   gameSelect.addEventListener('change', (e) => {
     if (isHost) {
       selectedGame = e.target.value;
-      // Reset all ready status
       members.forEach(m => m.ready = false);
       myReady = false;
       readyBtn.textContent = "I'm Ready";
@@ -413,26 +442,19 @@
       
       broadcast({ type: 'ROOM_UPDATE', members: members, game: selectedGame });
       renderMembers();
-
-      // Auto stop singleplayer game when changing selected launch target
       stopSingleplayerGame();
     }
   });
 
-  // Host: Launch singleplayer iframe
   playSingleplayerBtn.addEventListener('click', () => {
     if (isHost) {
-      const isMulti = selectedGame === 'pong' || selectedGame === 'molehammer';
       const filePrefix = selectedGame;
-      
-      // Load game html inside iframe
       gameIframe.src = `games/${filePrefix}.html`;
       showViewportState(stateGameIframeWrap);
 
       playSingleplayerBtn.style.display = 'none';
       stopSingleplayerBtn.style.display = 'inline-block';
 
-      // Update status
       const gameLabel = gameSelect.options[gameSelect.selectedIndex].text.split(' (')[0];
       members[0].status = `Playing ${gameLabel}`;
       broadcast({ type: 'ROOM_UPDATE', members: members, game: selectedGame });
@@ -441,10 +463,8 @@
     }
   });
 
-  // Host: Exit singleplayer iframe
   stopSingleplayerBtn.addEventListener('click', stopSingleplayerGame);
 
-  // Ready click
   readyBtn.addEventListener('click', () => {
     myReady = !myReady;
     
@@ -463,7 +483,6 @@
     readyBtn.style.width = "100%";
   });
 
-  // Host: Launch Game
   launchBtn.addEventListener('click', () => {
     if (isHost) {
       const sessionId = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -473,7 +492,6 @@
         sessionId: sessionId
       });
 
-      // Wait a moment for messages to deliver then redirect
       setTimeout(() => {
         cleanupPeer();
         window.location.href = `games/${selectedGame}.html?role=host&room=${sessionId}&name=${encodeURIComponent(myName)}`;
@@ -496,7 +514,6 @@
     showOverlay(globalLobbyOverlay);
   });
 
-  // Room Code Click to Copy
   document.getElementById('room-code-box').addEventListener('click', () => {
     navigator.clipboard.writeText(displayCode.textContent);
     const hint = document.querySelector('.copy-hint');
