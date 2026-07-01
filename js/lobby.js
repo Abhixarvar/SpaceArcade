@@ -168,7 +168,6 @@
     myName = name;
     isHost = true;
     
-    // Auto-generate ID via PeerJS instead of custom ID to make it 100% robust against Taken IDs
     try {
       peer = new Peer();
     } catch (e) {
@@ -177,11 +176,9 @@
     }
 
     peer.on('open', (id) => {
-      // The room code is the peer-generated ID (shortened to 6 characters for user friendly display)
       roomCode = id.substring(0, 6).toUpperCase();
       displayCode.textContent = roomCode;
 
-      // Re-create peer with the room code ID to make connecting easy
       peer.destroy();
       
       setTimeout(() => {
@@ -340,13 +337,17 @@
           const hostMember = members.find(m => m.role === 'host');
           if (hostMember && hostMember.status && hostMember.status.includes('Playing')) {
             spectateTargetName.textContent = hostMember.name;
-            showViewportState(stateSpectatorScreen);
-            updateViewportHeader(hostMember.status);
+            // Only show spectator view if we aren't currently playing in our own iframe window
+            if (stateGameIframeWrap.classList.contains('hidden')) {
+              showViewportState(stateSpectatorScreen);
+              updateViewportHeader(hostMember.status);
+            }
           } else {
             showViewportState(stateLobbyScreen);
             updateViewportHeader('Lobby Lounge', false);
             spectatorImg.style.display = 'none';
             spectatorPlaceholder.style.display = 'block';
+            gameIframe.src = ''; // reset guest iframe back to lobby
           }
           break;
 
@@ -357,9 +358,10 @@
           break;
 
         case 'LAUNCH':
-          cleanupPeer();
-          const roleStr = 'guest';
-          window.location.href = `games/${data.game}.html?role=${roleStr}&room=${data.sessionId}&name=${encodeURIComponent(myName)}`;
+          // Instead of redirecting Guest, load the multiplayer game inside their iframe window
+          gameIframe.src = `games/${data.game}.html?role=guest&room=${data.sessionId}&name=${encodeURIComponent(myName)}`;
+          showViewportState(stateGameIframeWrap);
+          updateViewportHeader(`Playing ${data.game}`);
           break;
       }
     });
@@ -407,10 +409,14 @@
     if (!e.data || e.data.type !== 'ARCADE_FRAME') return;
 
     if (isHost && guestConnections.length > 0) {
-      broadcast({
-        type: 'ARCADE_FRAME',
-        dataUrl: e.data.dataUrl
-      });
+      // Forward spectator frames to guests ONLY if host is playing a singleplayer game (not during multiplayer layout)
+      const hostMember = members[0];
+      if (hostMember && hostMember.status && !hostMember.status.includes('Pong') && !hostMember.status.includes('Mole')) {
+        broadcast({
+          type: 'ARCADE_FRAME',
+          dataUrl: e.data.dataUrl
+        });
+      }
     }
   });
 
@@ -492,10 +498,18 @@
         sessionId: sessionId
       });
 
-      setTimeout(() => {
-        cleanupPeer();
-        window.location.href = `games/${selectedGame}.html?role=host&room=${sessionId}&name=${encodeURIComponent(myName)}`;
-      }, 300);
+      // Instead of redirecting Host, load the multiplayer game inside the Host's iframe window
+      gameIframe.src = `games/${selectedGame}.html?role=host&room=${sessionId}&name=${encodeURIComponent(myName)}`;
+      showViewportState(stateGameIframeWrap);
+      
+      playSingleplayerBtn.style.display = 'none';
+      stopSingleplayerBtn.style.display = 'inline-block';
+
+      const gameLabel = gameSelect.options[gameSelect.selectedIndex].text.split(' (')[0];
+      members[0].status = `Playing ${gameLabel}`;
+      broadcast({ type: 'ROOM_UPDATE', members: members, game: selectedGame });
+      renderMembers();
+      updateViewportHeader(`Playing ${gameLabel}`);
     }
   });
 
