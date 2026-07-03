@@ -119,7 +119,7 @@
       
       const allReady = members.every(m => m.ready || m.role === 'host');
       const hasGuests = members.length > 1;
-      const isMultiplayer = selectedGame === 'pong' || selectedGame === 'molehammer' || selectedGame === 'snakebattle';
+      const isMultiplayer = selectedGame === 'pong' || selectedGame === 'molehammer' || selectedGame === 'snakebattle' || selectedGame === 'spacerangers';
 
       if (allReady && hasGuests && isMultiplayer && !isPlayingInIframe) {
         launchBtn.classList.remove('hidden');
@@ -433,7 +433,7 @@
 
     if (isHost && guestConnections.length > 0) {
       const hostMember = members[0];
-      if (hostMember && hostMember.status && !hostMember.status.includes('Pong') && !hostMember.status.includes('Mole') && !hostMember.status.includes('Snake')) {
+      if (hostMember && hostMember.status && !hostMember.status.includes('Pong') && !hostMember.status.includes('Mole') && !hostMember.status.includes('Snake') && !hostMember.status.includes('Space Rangers')) {
         broadcast({
           type: 'ARCADE_FRAME',
           dataUrl: e.data.dataUrl
