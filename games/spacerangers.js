@@ -223,18 +223,28 @@
   }
 
   function setupConnection() {
+    conn.on('open', () => {
+      conn.send({ type: 'handshake', name: myName });
+    });
+    if (conn.open) {
+      conn.send({ type: 'handshake', name: myName });
+    }
+
+    let started = false;
+
     conn.on('data', data => {
       if (data.type === 'handshake') {
-        if (isHost) {
-          opponentName = data.name;
-          conn.send({ type: 'handshake', name: myName });
+        opponentName = data.name;
+        if (isHost && !started) {
+          started = true;
           startCountdown();
-        } else {
-          opponentName = data.name;
         }
       }
       else if (data.type === 'start') {
-        if (!isHost) startCountdown();
+        if (!isHost && !started) {
+          started = true;
+          startCountdown();
+        }
       }
       else if (data.type === 'state') {
         if (!isHost) {
@@ -258,9 +268,6 @@
     });
 
     conn.on('close', handleDisconnect);
-    if (isHost) {
-      conn.send({ type: 'handshake', name: myName });
-    }
   }
 
   function handleDisconnect() {
