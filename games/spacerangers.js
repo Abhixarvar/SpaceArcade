@@ -117,6 +117,7 @@
   const keys = {};
   document.addEventListener('keydown', e => { 
     if(e.code === 'Space') e.preventDefault();
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key) && gameRunning) e.preventDefault();
     if ((e.key === 'p' || e.key === 'Escape' || e.key === 'P') && gameRunning) {
       isPaused = !isPaused;
       if (conn && conn.open) conn.send({ type: 'pause', paused: isPaused });
@@ -223,28 +224,32 @@
   }
 
   function setupConnection() {
-    conn.on('open', () => {
-      conn.send({ type: 'handshake', name: myName });
-    });
-    if (conn.open) {
-      conn.send({ type: 'handshake', name: myName });
+    // Send handshake as soon as connection is open
+    function sendHandshake() {
+      if (conn && conn.open) {
+        conn.send({ type: 'handshake', name: myName });
+      }
     }
 
-    let started = false;
+    conn.on('open', sendHandshake);
+    // If already open (host side — PeerJS fires 'connection' with an already-open conn)
+    if (conn.open) sendHandshake();
 
     conn.on('data', data => {
       if (data.type === 'handshake') {
         opponentName = data.name;
-        if (isHost && !started) {
-          started = true;
+        // Host received guest's handshake → send ack + start countdown
+        if (isHost) {
+          conn.send({ type: 'handshake-ack', name: myName });
           startCountdown();
         }
       }
+      else if (data.type === 'handshake-ack') {
+        // Guest receives host's ack → now we know names; start is coming
+        opponentName = data.name;
+      }
       else if (data.type === 'start') {
-        if (!isHost && !started) {
-          started = true;
-          startCountdown();
-        }
+        if (!isHost) startCountdown();
       }
       else if (data.type === 'state') {
         if (!isHost) {
@@ -272,10 +277,15 @@
 
   function handleDisconnect() {
     gameRunning = false;
-    cancelAnimationFrame(animFrameId);
+    isPaused = false;
+    if (animFrameId) cancelAnimationFrame(animFrameId);
     hideAll();
     show(disconnectOverlay);
-    if (peer) peer.destroy();
+    hudEl.style.display = 'none';
+    canvasWrap.style.display = 'none';
+    controlsHint.style.display = 'none';
+    if (peer) { try { peer.destroy(); } catch(e){} peer = null; }
+    conn = null;
   }
 
   // ── Game Flow ────────────────────────────────────────
@@ -319,8 +329,10 @@
     canvasWrap.style.display = 'block';
     controlsHint.style.display = 'block';
     gameRunning = true;
+    isPaused = false;
     myRematchVote = false;
     opponentRematchVote = false;
+    stateFrameCounter = 0;
 
     if (isHost) {
       lastTime = performance.now();
@@ -332,7 +344,7 @@
 
   function endGame() {
     gameRunning = false;
-    cancelAnimationFrame(animFrameId);
+    if (animFrameId) cancelAnimationFrame(animFrameId);
     finalPhase.textContent = state.phase;
     setTimeout(() => {
       hideAll();
@@ -345,6 +357,8 @@
 
   // ── Game Logic (Host) ────────────────────────────────
   let lastTime = 0;
+  let stateFrameCounter = 0;
+  const STATE_SEND_INTERVAL = 3; // send state every N frames (~20fps at 60fps)
   
   function handleGuestInput(guestKeys) {
     // Guest is player 2
@@ -537,9 +551,20 @@
     }
     updateHUD();
     
-    // Broadcast state to guest
-    if (conn && conn.open) {
-      conn.send({ type: 'state', state: state });
+    // Broadcast state to guest (throttled to ~20fps)
+    stateFrameCounter++;
+    if (conn && conn.open && stateFrameCounter >= STATE_SEND_INTERVAL) {
+      stateFrameCounter = 0;
+      // Strip particles from network payload — they're visual-only
+      const netState = {
+        phase: state.phase,
+        boss: state.boss,
+        players: state.players,
+        bullets: state.bullets,
+        screenShake: state.screenShake,
+        gameOver: state.gameOver
+      };
+      conn.send({ type: 'state', state: netState });
     }
 
     if (state.gameOver) {
@@ -586,7 +611,9 @@
 
   // ── Rendering ─────────────────────────────────────────
   function draw() {
-    ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+    // Background fill
+    ctx.fillStyle = BG;
+    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
     ctx.save();
     if (state.screenShake > 0) {
@@ -597,6 +624,10 @@
 
     // Boss
     const boss = state.boss;
+    // Boss glow
+    ctx.save();
+    ctx.shadowColor = '#ff007f';
+    ctx.shadowBlur = 20;
     ctx.fillStyle = '#ff007f';
     ctx.beginPath();
     ctx.arc(boss.x, boss.y, BOSS_SIZE/2, Math.PI, 0, false);
@@ -604,6 +635,7 @@
     ctx.lineTo(boss.x - BOSS_SIZE/2, boss.y + BOSS_SIZE/2);
     ctx.closePath();
     ctx.fill();
+    ctx.restore();
     
     // Boss eye
     ctx.fillStyle = '#fff';
@@ -612,7 +644,6 @@
     ctx.fill();
     ctx.fillStyle = '#000';
     ctx.beginPath();
-    // Eye looks at player roughly
     let eyeOffsetX = Math.sin(Date.now() / 500) * 5;
     ctx.arc(boss.x + eyeOffsetX, boss.y + 10, 5, 0, Math.PI*2);
     ctx.fill();
@@ -622,11 +653,19 @@
     const p2 = state.players.p2;
     
     if (p1.health > 0) {
+      ctx.save();
+      ctx.shadowColor = '#00f0ff';
+      ctx.shadowBlur = 12;
       ctx.drawImage(imgShip1, p1.x - PLAYER_SIZE/2, p1.y - PLAYER_SIZE/2, PLAYER_SIZE, PLAYER_SIZE);
+      ctx.restore();
     }
     
     if (p2.health > 0) {
+      ctx.save();
+      ctx.shadowColor = '#ffea00';
+      ctx.shadowBlur = 12;
       ctx.drawImage(imgShip2, p2.x - PLAYER_SIZE/2, p2.y - PLAYER_SIZE/2, PLAYER_SIZE, PLAYER_SIZE);
+      ctx.restore();
     }
 
     // Bullets
@@ -688,9 +727,7 @@
   });
 
   backLobbyBtn.addEventListener('click', () => {
-    hudEl.style.display = 'none';
-    canvasWrap.style.display = 'none';
-    controlsHint.style.display = 'none';
+    handleDisconnect();
     hideAll();
     show(lobbyOverlay);
   });
