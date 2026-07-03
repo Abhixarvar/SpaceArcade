@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Space Rangers — Real-time multiplayer boss rush in Space Arcade!">
+  <title>Space Rangers — Space Arcade</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/spaceship.svg">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/mobile-controls.css">
+  <style>
+    /* Custom HUD for Space Rangers */
+    .boss-hud {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60%;
+      text-align: center;
+      z-index: 10;
+    }
+    .boss-name {
+      color: var(--pink);
+      font-family: var(--font-funky);
+      font-size: 1.5rem;
+      margin-bottom: 5px;
+      text-shadow: 0 0 10px var(--pink);
+    }
+    .boss-health-bar-bg {
+      width: 100%;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid var(--pink);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .boss-health-bar-fill {
+      height: 100%;
+      width: 100%;
+      background: var(--pink);
+      transition: width 0.1s linear;
+    }
+
+    .players-hud {
+      position: absolute;
+      bottom: 20px;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 40px;
+      z-index: 10;
+      box-sizing: border-box;
+    }
+    .player-hud-box {
+      width: 30%;
+    }
+    .player-hud-box.left {
+      text-align: left;
+    }
+    .player-hud-box.right {
+      text-align: right;
+    }
+    .player-name {
+      color: var(--cyan);
+      font-family: var(--font-funky);
+      font-size: 1.2rem;
+      margin-bottom: 5px;
+      text-shadow: 0 0 10px var(--cyan);
+    }
+    .player-hud-box.right .player-name {
+      color: var(--yellow);
+      text-shadow: 0 0 10px var(--yellow);
+    }
+    .player-health-bg {
+      width: 100%;
+      height: 15px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid var(--cyan);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .player-hud-box.right .player-health-bg {
+      border-color: var(--yellow);
+    }
+    .player-health-fill {
+      height: 100%;
+      width: 100%;
+      background: var(--cyan);
+      transition: width 0.1s linear;
+    }
+    .player-hud-box.right .player-health-fill {
+      background: var(--yellow);
+      float: right;
+    }
+    .phase-display {
+      position: absolute;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #fff;
+      font-family: var(--font);
+      font-size: 1rem;
+      text-shadow: 0 0 5px #fff;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="starfield"></div>
+
+  <a href="../index.html" class="back-btn" id="back-btn">← Arcade</a>
+
+  <div class="page-content game-page">
+    <div class="game-header">
+      <h1>Space Rangers</h1>
+    </div>
+    
+    <!-- In-Game HUD -->
+    <div id="spacerangers-hud" style="display:none; position:relative; width: 800px; height: 0; margin: 0 auto;">
+      <div class="boss-hud">
+        <div class="boss-name" id="hud-boss-name">BOSS: OMEGA</div>
+        <div class="boss-health-bar-bg">
+          <div class="boss-health-bar-fill" id="hud-boss-health"></div>
+        </div>
+      </div>
+      <div class="phase-display" id="hud-phase-display">Phase 1</div>
+      
+      <div class="players-hud">
+        <div class="player-hud-box left">
+          <div class="player-name" id="hud-name-left">Player 1</div>
+          <div class="player-health-bg">
+            <div class="player-health-fill" id="hud-health-left"></div>
+          </div>
+        </div>
+        <div class="player-hud-box right">
+          <div class="player-name" id="hud-name-right">Player 2</div>
+          <div class="player-health-bg">
+            <div class="player-health-fill" id="hud-health-right"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="game-canvas-wrap" id="canvas-wrap" style="display:none; position:relative; width:800px; height:600px; margin: 0 auto;">
+      <canvas id="game-canvas" width="800" height="600" style="background: rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.1); border-radius: 8px;"></canvas>
+    </div>
+    <p class="game-controls-hint" id="controls-hint" style="display:none;">
+      Use <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> or <kbd>Arrows</kbd> to move, <kbd>Space</kbd> to shoot!
+    </p>
+  </div>
+
+  <!-- Lobby Overlay -->
+  <div class="game-overlay" id="lobby-overlay">
+    <div class="pong-lobby">
+      <div class="lobby-title">Space Rangers</div>
+      <div class="lobby-subtitle">Team up to defeat cosmic bosses! ⚡</div>
+      <div class="lobby-stars">✦ ✧ ✦ ✧ ✦ ✧ ✦</div>
+      <div class="lobby-divider">✧ CHOOSE YOUR PATH ✧</div>
+      <div class="lobby-options">
+        <!-- Create Room -->
+        <div class="lobby-option" id="create-option">
+          <span class="option-icon">🚀</span>
+          <h3>Create Room</h3>
+          <p class="option-desc">Host a new game and invite a friend with your unique room code</p>
+          <div class="lobby-input-wrap">
+            <span class="input-icon">👾</span>
+            <input type="text" class="lobby-input" id="create-name" placeholder="Your cosmic name" maxlength="12" autocomplete="off">
+          </div>
+          <button class="btn btn-create btn-lobby" id="create-btn">Create Room ✦</button>
+          <div class="lobby-error" id="create-error"></div>
+        </div>
+        <!-- Join Room -->
+        <div class="lobby-option" id="join-option">
+          <span class="option-icon">🌟</span>
+          <h3>Join Room</h3>
+          <p class="option-desc">Enter a room code shared by your friend to join their game</p>
+          <div class="lobby-input-wrap">
+            <span class="input-icon">👾</span>
+            <input type="text" class="lobby-input" id="join-name" placeholder="Your cosmic name" maxlength="12" autocomplete="off">
+          </div>
+          <div class="lobby-input-wrap">
+            <span class="input-icon">🔑</span>
+            <input type="text" class="lobby-input code-input" id="join-code" placeholder="ROOM CODE" maxlength="6" autocomplete="off">
+          </div>
+          <button class="btn btn-join btn-lobby" id="join-btn">Join Room ✦</button>
+          <div class="lobby-error" id="join-error"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Waiting Overlay -->
+  <div class="game-overlay hidden" id="waiting-overlay">
+    <div class="waiting-room">
+      <div class="overlay-title">Room Created</div>
+      <p class="overlay-score">Share this code with your teammate:</p>
+      <div class="room-code-display" id="room-code-box">
+        <span class="code" id="display-code">------</span>
+        <span class="copy-hint">Click to copy</span>
+      </div>
+      <div class="waiting-spinner"></div>
+      <p class="overlay-score">Waiting for teammate…</p>
+      <div class="overlay-buttons">
+        <button class="btn btn-secondary" id="cancel-wait-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Connecting Overlay -->
+  <div class="game-overlay hidden" id="connecting-overlay">
+    <div class="waiting-room">
+      <div class="overlay-title">Connecting</div>
+      <div class="waiting-spinner"></div>
+      <p class="overlay-score">Joining room…</p>
+      <div class="overlay-buttons">
+        <button class="btn btn-secondary" id="cancel-connect-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Countdown Overlay -->
+  <div class="game-overlay hidden" id="countdown-overlay">
+    <div class="countdown-number" id="countdown-num">3</div>
+  </div>
+
+  <!-- Game Over Overlay -->
+  <div class="game-overlay hidden" id="gameover-overlay">
+    <div class="overlay-title" id="gameover-title">Game Over</div>
+    <p class="overlay-score" id="gameover-text">You reached Phase: <span class="highlight" id="final-phase">1</span></p>
+    <div class="overlay-buttons" id="gameover-buttons">
+      <button class="btn btn-primary" id="rematch-btn">Play Again</button>
+      <a href="../index.html" class="btn btn-secondary">Back to Arcade</a>
+    </div>
+    <div class="rematch-status" id="rematch-status"></div>
+  </div>
+
+  <!-- Disconnect Overlay -->
+  <div class="game-overlay hidden" id="disconnect-overlay">
+    <div class="overlay-title">Disconnected</div>
+    <p class="overlay-score">Your teammate has left the game.</p>
+    <div class="overlay-buttons">
+      <button class="btn btn-primary" id="back-lobby-btn">Back to Lobby</button>
+      <a href="../index.html" class="btn btn-secondary">Back to Arcade</a>
+    </div>
+  </div>
+
+  <!-- Lightsaber Volume UI -->
+  <div id="lightsaber-volume">
+    <div class="hilt-btn"></div>
+    <div class="blade-container">
+      <div class="blade-glow"></div>
+      <input type="range" min="0" max="1" step="0.01" value="0.5" class="volume-slider">
+    </div>
+  </div>
+
+  <!-- Hidden assets -->
+  <div style="display:none;">
+    <img id="img-ship1" src="../assets/spaceship1.png" alt="spaceship1">
+    <img id="img-ship2" src="../assets/spaceship2.png" alt="spaceship2">
+  </div>
+
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script src="../js/stars.js"></script>
+  <script src="../js/cursor.js"></script>
+  <script src="../js/audio.js"></script>
+  <script src="../js/volume.js"></script>
+  <script src="spacerangers.js"></script>
+
+  <script src="../js/mobile-controls.js"></script>
+</body>
+</html>
