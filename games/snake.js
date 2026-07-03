@@ -15,10 +15,12 @@
   const ROWS = canvas.height / GRID;
   const BASE_SPEED = 150; // ms per tick
 
-  let snake, direction, nextDirection, food, score, highScore, speed, gameLoop, running;
+  let snake, direction, nextDirection, food, score, speed, gameLoop, running;
+  let particles = [];
 
   // Load high score
-  highScore = parseInt(localStorage.getItem('spaceWormHighScore') || '0');
+  let highScore = localStorage.getItem('snakesingle_highscore') || 0;
+  let isPaused = false;
   highScoreEl.textContent = highScore;
 
   // Colors
@@ -55,7 +57,13 @@
   }
 
   function update() {
-    direction = nextDirection;
+    if (!running) return;
+    if (isPaused) {
+      draw();
+      return;
+    }
+
+    direction = { ...nextDirection };
     const head = {
       x: snake[0].x + direction.x,
       y: snake[0].y + direction.y,
@@ -79,11 +87,10 @@
     if (head.x === food.x && head.y === food.y) {
       score++;
       scoreEl.textContent = score;
-      SFX.eat();
       if (score > highScore) {
         highScore = score;
         highScoreEl.textContent = highScore;
-        localStorage.setItem('spaceWormHighScore', highScore);
+        localStorage.setItem('snakesingle_highscore', highScore);
       }
       // Speed up every 5 points
       if (score % 5 === 0 && speed > 60) {
@@ -123,6 +130,22 @@
     // Draw food (star)
     const fx = food.x * GRID + GRID / 2;
     const fy = food.y * GRID + GRID / 2;
+
+    // Particles
+    particles.forEach((p, index) => {
+      ctx.globalAlpha = p.life;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+      if (!isPaused) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= 0.05;
+        if (p.life <= 0) particles.splice(index, 1);
+      }
+    });
+    ctx.globalAlpha = 1;
 
     // Food glow
     ctx.save();
@@ -190,6 +213,17 @@
         ctx.restore();
       }
     });
+
+    if (isPaused) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#fff';
+      ctx.font = '30px "Courier New", Courier, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('PAUSED', canvas.width / 2, canvas.height / 2);
+      ctx.restore();
+    }
   }
 
   function drawStar(ctx, cx, cy, spikes, outerR, innerR) {
@@ -211,8 +245,6 @@
   function gameOver() {
     running = false;
     clearInterval(gameLoop);
-    SFX.hit();
-    setTimeout(() => SFX.gameOver(), 200);
     gameoverText.innerHTML = `Score: <span class="highlight">${score}</span>${score >= highScore && score > 0 ? '  ⭐ New Best!' : ''}`;
     gameoverOverlay.classList.remove('hidden');
   }
@@ -222,14 +254,17 @@
     startOverlay.classList.add('hidden');
     gameoverOverlay.classList.add('hidden');
     running = true;
+    isPaused = false;
     draw();
     gameLoop = setInterval(update, speed);
-    document.activeElement && document.activeElement.blur();
   }
 
   // Controls
   document.addEventListener('keydown', (e) => {
-    if (!running) return;
+    if ((e.key === 'p' || e.key === 'Escape' || e.key === 'P') && running) {
+      isPaused = !isPaused;
+    }
+    if (!running || isPaused) return;
     switch (e.key) {
       case 'ArrowUp': case 'w': case 'W':
         if (direction.y !== 1) nextDirection = { x: 0, y: -1 };
@@ -253,6 +288,16 @@
   // Buttons
   startBtn.addEventListener('click', startGame);
   retryBtn.addEventListener('click', startGame);
+
+  const backBtn = document.getElementById('back-btn');
+  if (backBtn) {
+    backBtn.addEventListener('click', (e) => {
+      if (window.parent !== window) {
+        e.preventDefault();
+        window.parent.postMessage({ type: 'LEAVE_GAME' }, '*');
+      }
+    });
+  }
 
   // Initial draw
   init();

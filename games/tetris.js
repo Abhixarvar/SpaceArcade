@@ -425,6 +425,22 @@
   function gameStep(timestamp) {
     if (!running) return;
 
+    if (isPaused) {
+      draw();
+      ctx.save();
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#fff';
+      ctx.font = '30px "Courier New", Courier, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('PAUSED', canvas.width / 2, canvas.height / 2);
+      ctx.restore();
+      
+      lastTime = timestamp;
+      gameLoop = requestAnimationFrame(gameStep);
+      return;
+    }
+
     const dt = timestamp - lastTime;
     lastTime = timestamp;
 
@@ -471,6 +487,7 @@
     dropTimer = 0;
     lockTimer = 0;
     lockMoves = 0;
+    isPaused = false;
     holdPiece = null;
     canHold = true;
     bag = [];
@@ -514,7 +531,10 @@
   const DAS_RATE = 50;   // ms between auto-repeat moves
 
   document.addEventListener('keydown', (e) => {
-    if (!running) return;
+    if ((e.key === 'p' || e.key === 'Escape' || e.key === 'P') && running) {
+      isPaused = !isPaused;
+    }
+    if (!running || isPaused) return;
 
     // Prevent repeated keydown events from triggering
     if (keyState[e.key]) return;
@@ -566,7 +586,7 @@
 
   // DAS (Delayed Auto Shift) — handles held arrow keys
   setInterval(() => {
-    if (!running || dasDirection === 0) return;
+    if (!running || isPaused || dasDirection === 0) return;
     dasTimer += 16;
     if (dasTimer >= DAS_DELAY) {
       if (dasDirection === -1) moveLeft();
@@ -576,7 +596,7 @@
 
   // Soft drop repeat while held
   setInterval(() => {
-    if (!running) return;
+    if (!running || isPaused) return;
     if (keyState['ArrowDown'] || keyState['s'] || keyState['S']) {
       softDrop();
     }
@@ -585,6 +605,16 @@
   // Buttons
   startBtn.addEventListener('click', startGame);
   retryBtn.addEventListener('click', startGame);
+
+  const backBtn = document.getElementById('back-btn');
+  if (backBtn) {
+    backBtn.addEventListener('click', (e) => {
+      if (window.parent !== window) {
+        e.preventDefault();
+        window.parent.postMessage({ type: 'LEAVE_GAME' }, '*');
+      }
+    });
+  }
 
   // Initial draw
   init();

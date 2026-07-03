@@ -88,6 +88,7 @@
   let animFrameId = null;
   let myRematchVote = false;
   let opponentRematchVote = false;
+  let isPaused = false;
 
   // Connection management
   let conn = null; // Guest's connection to the host
@@ -460,6 +461,14 @@
             showGameUI();
             updateHUD();
             if (!animFrameId) gameLoop();
+          }
+          break;
+
+        case 'PAUSE':
+          isPaused = data.paused;
+          // If host receives PAUSE from guest, broadcast it so other guests get it too
+          if (isHost) {
+            broadcast({ type: 'PAUSE', paused: isPaused });
           }
           break;
       }
@@ -954,7 +963,18 @@
     drawHammerEffects(now);
     drawParticles();
     drawScoreIndicators();
-    updateParticles();
+    if (!isPaused) updateParticles();
+
+    if (isPaused) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+      ctx.fillStyle = '#fff';
+      ctx.font = '40px "Outfit", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('PAUSED', CANVAS_W / 2, CANVAS_H / 2);
+      ctx.restore();
+    }
   }
 
   // ── Game Loop ────────────────────────────────────────
@@ -963,7 +983,7 @@
   function gameLoop() {
     const now = performance.now();
 
-    if (gameRunning && state && !state.gameOver) {
+    if (gameRunning && state && !state.gameOver && !isPaused) {
       if (isHost) {
         if (now >= state.nextSpawnTime) {
           spawnMole(now);
@@ -1133,6 +1153,27 @@
   // ── Init ─────────────────────────────────────────────
   if (!checkPartyLaunch()) {
     showOverlay(lobbyOverlay);
+  }
+
+  document.addEventListener('keydown', e => {
+    if ((e.key === 'p' || e.key === 'Escape' || e.key === 'P') && gameRunning) {
+      isPaused = !isPaused;
+      if (isHost) {
+        broadcast({ type: 'PAUSE', paused: isPaused });
+      } else if (conn) {
+        conn.send({ type: 'PAUSE', paused: isPaused });
+      }
+    }
+  });
+
+  const backBtn = document.getElementById('back-btn');
+  if (backBtn) {
+    backBtn.addEventListener('click', (e) => {
+      if (window.parent !== window) {
+        e.preventDefault();
+        window.parent.postMessage({ type: 'LEAVE_GAME' }, '*');
+      }
+    });
   }
 
 })();

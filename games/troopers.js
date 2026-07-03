@@ -192,6 +192,7 @@
   let waveEnemyTotal = 0;
   let betweenWaves = false;
   let betweenWaveTimer = 0;
+  let isPaused = false;
 
   function startWave(num) {
     wave = num;
@@ -210,6 +211,20 @@
     if (!running) return;
     const dt = Math.min(timestamp - lastTime, 33);
     lastTime = timestamp;
+
+    if (isPaused) {
+      draw();
+      ctx.save();
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#fff';
+      ctx.font = '30px "Courier New", Courier, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('PAUSED', W / 2, H / 2);
+      ctx.restore();
+      frameId = requestAnimationFrame(update);
+      return;
+    }
 
     // --- Between waves ---
     if (betweenWaves) {
@@ -691,6 +706,9 @@
 
   // ---- CONTROLS ----
   document.addEventListener('keydown', (e) => {
+    if ((e.key === 'p' || e.key === 'Escape' || e.key === 'P') && running) {
+      isPaused = !isPaused;
+    }
     keys[e.key] = true;
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
       e.preventDefault();
@@ -703,6 +721,16 @@
 
   startBtn.addEventListener('click', startGame);
   retryBtn.addEventListener('click', startGame);
+
+  const backBtn = document.getElementById('back-btn');
+  if (backBtn) {
+    backBtn.addEventListener('click', (e) => {
+      if (window.parent !== window) {
+        e.preventDefault();
+        window.parent.postMessage({ type: 'LEAVE_GAME' }, '*');
+      }
+    });
+  }
 
   // Initial draw
   init();

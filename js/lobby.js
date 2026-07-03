@@ -51,7 +51,7 @@
   let isHost = false;
   let myName = '';
   let roomCode = '';
-  let selectedGame = 'pong';
+  let selectedGame = gameSelect ? gameSelect.value : 'pong';
   let myReady = false;
   let isPlayingInIframe = false; // Track whether this player has a game loaded in their iframe
 
@@ -422,7 +422,14 @@
   }
 
   window.addEventListener('message', (e) => {
-    if (!e.data || e.data.type !== 'ARCADE_FRAME') return;
+    if (!e.data) return;
+
+    if (e.data.type === 'LEAVE_GAME') {
+      stopSingleplayerGame();
+      return;
+    }
+
+    if (e.data.type !== 'ARCADE_FRAME') return;
 
     if (isHost && guestConnections.length > 0) {
       const hostMember = members[0];

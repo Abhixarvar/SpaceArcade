@@ -83,6 +83,7 @@
   let opponentName = '';
   let roomCode = '';
   let gameRunning = false;
+  let isPaused = false;
   let animFrameId = null;
   let myRematchVote = false;
   let opponentRematchVote = false;
@@ -116,6 +117,10 @@
   const keys = {};
   document.addEventListener('keydown', e => { 
     if(e.code === 'Space') e.preventDefault();
+    if ((e.key === 'p' || e.key === 'Escape' || e.key === 'P') && gameRunning) {
+      isPaused = !isPaused;
+      if (conn && conn.open) conn.send({ type: 'pause', paused: isPaused });
+    }
     keys[e.key] = true; 
     keys[e.code] = true; 
   });
@@ -246,6 +251,9 @@
         opponentRematchVote = true;
         rematchStatus.textContent = opponentName + ' wants to play again!';
         checkRematch();
+      }
+      else if (data.type === 'pause') {
+        isPaused = data.paused;
       }
     });
 
@@ -506,8 +514,20 @@
 
   function hostLoop(time) {
     if (!gameRunning) return;
-    updateLogic();
+    if (!isPaused) {
+      updateLogic();
+    }
     draw();
+    if (isPaused) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+      ctx.fillStyle = '#fff';
+      ctx.font = '40px "Courier New", Courier, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('PAUSED', CANVAS_W / 2, CANVAS_H / 2);
+      ctx.restore();
+    }
     updateHUD();
     
     // Broadcast state to guest
@@ -541,6 +561,16 @@
 
     if (state) {
       draw();
+      if (isPaused) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+        ctx.fillStyle = '#fff';
+        ctx.font = '40px "Courier New", Courier, monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('PAUSED', CANVAS_W / 2, CANVAS_H / 2);
+        ctx.restore();
+      }
       updateHUD();
     }
 
@@ -657,5 +687,64 @@
     hideAll();
     show(lobbyOverlay);
   });
+
+  const backBtn = document.getElementById('back-btn');
+  if (backBtn) {
+    backBtn.addEventListener('click', (e) => {
+      if (window.parent !== window) {
+        e.preventDefault();
+        window.parent.postMessage({ type: 'LEAVE_GAME' }, '*');
+      }
+    });
+  }
+
+  // Auto-connect from Global Lobby
+  const urlParams = new URLSearchParams(window.location.search);
+  const roleParam = urlParams.get('role');
+  const roomParam = urlParams.get('room');
+
+  if (roleParam && roomParam) {
+    hideAll();
+    roomCode = roomParam.toUpperCase();
+    
+    if (roleParam === 'host') {
+      isHost = true;
+      myName = urlParams.get('name') || 'P1';
+      show(waitingOverlay);
+      displayCode.textContent = roomCode;
+      peer = new Peer('sr-' + roomCode, { debug: 0 });
+      peer.on('open', () => { displayCode.textContent = roomCode; });
+      peer.on('connection', dataConn => { conn = dataConn; setupConnection(); });
+      peer.on('error', err => {
+        console.error('PeerJS error:', err);
+        hideAll(); show(lobbyOverlay);
+        createError.textContent = 'Connection error from Lobby.';
+      });
+    } else {
+      isHost = false;
+      myName = urlParams.get('name') || 'P2';
+      show(connectingOverlay);
+      peer = new Peer(undefined, { debug: 0 });
+      peer.on('open', () => {
+        conn = peer.connect('sr-' + roomCode, { reliable: true });
+        conn.on('open', () => { setupConnection(); });
+        conn.on('error', () => {
+          hideAll(); show(lobbyOverlay);
+          joinError.textContent = 'Could not connect from Lobby.';
+        });
+      });
+      peer.on('error', err => {
+        console.error('PeerJS error:', err);
+        hideAll(); show(lobbyOverlay);
+        joinError.textContent = 'Room not found from Lobby.';
+      });
+      setTimeout(() => {
+        if (!conn || !conn.open) {
+          hideAll(); show(lobbyOverlay);
+          joinError.textContent = 'Connection timed out from Lobby.';
+        }
+      }, 10000);
+    }
+  }
 
 })();

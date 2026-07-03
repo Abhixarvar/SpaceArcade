@@ -238,7 +238,7 @@
 
       // Click to select
       slot.addEventListener('click', () => {
-        if (!running) return;
+        if (!running || isPaused) return;
         selectedPiece = idx;
         ghostPos = null;
         renderTray();
@@ -248,7 +248,7 @@
       // Drag & drop
       slot.draggable = true;
       slot.addEventListener('dragstart', (e) => {
-        if (!running) return;
+        if (!running || isPaused) return;
         selectedPiece = idx;
         renderTray();
         e.dataTransfer.setData('text/plain', idx.toString());
@@ -493,6 +493,17 @@
       ctx.fill();
       ctx.restore();
     });
+
+    if (isPaused) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#fff';
+        ctx.font = '40px "Courier New", Courier, monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('PAUSED', canvas.width / 2, canvas.height / 2);
+        ctx.restore();
+    }
   }
 
   // ========== GAME LOOP ==========
@@ -500,18 +511,20 @@
   let animFrame;
 
   function gameStep() {
-    // Update clear effects
-    clearEffects.forEach(e => e.frame++);
-    clearEffects = clearEffects.filter(e => e.frame < e.maxFrames);
+    if (!isPaused) {
+        // Update clear effects
+        clearEffects.forEach(e => e.frame++);
+        clearEffects = clearEffects.filter(e => e.frame < e.maxFrames);
 
-    // Update star particles
-    starParticles.forEach(p => {
-      p.x += p.vx;
-      p.y += p.vy;
-      p.vy += 0.05; // gravity
-      p.life++;
-    });
-    starParticles = starParticles.filter(p => p.life < p.maxLife);
+        // Update star particles
+        starParticles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.05; // gravity
+        p.life++;
+        });
+        starParticles = starParticles.filter(p => p.life < p.maxLife);
+    }
 
     draw();
 
@@ -522,10 +535,51 @@
 
   // ========== INTERACTION: MOUSE & TOUCH ==========
 
-  let isDragging = false;
+  // Input Handling
+  document.addEventListener('keydown', (e) => {
+    if ((e.key === 'p' || e.key === 'Escape' || e.key === 'P') && running) {
+      isPaused = !isPaused;
+    }
+    if (!running || isPaused) return;
+
+    switch (e.key) {
+      case '1': selectedPiece = pieces[0] ? 0 : selectedPiece; renderTray(); SFX.step(); e.preventDefault(); break;
+      case '2': selectedPiece = pieces[1] ? 1 : selectedPiece; renderTray(); SFX.step(); e.preventDefault(); break;
+      case '3': selectedPiece = pieces[2] ? 2 : selectedPiece; renderTray(); SFX.step(); e.preventDefault(); break;
+      case 'ArrowLeft': case 'a': case 'A':
+        kbCol = Math.max(0, kbCol - 1);
+        updateGhost(kbRow, kbCol);
+        SFX.step();
+        e.preventDefault();
+        break;
+      case 'ArrowRight': case 'd': case 'D':
+        kbCol = Math.min(COLS - 1, kbCol + 1);
+        updateGhost(kbRow, kbCol);
+        SFX.step();
+        e.preventDefault();
+        break;
+      case 'ArrowUp': case 'w': case 'W':
+        kbRow = Math.max(0, kbRow - 1);
+        updateGhost(kbRow, kbCol);
+        SFX.step();
+        e.preventDefault();
+        break;
+      case 'ArrowDown': case 's': case 'S':
+        kbRow = Math.min(ROWS - 1, kbRow + 1);
+        updateGhost(kbRow, kbCol);
+        SFX.step();
+        e.preventDefault();
+        break;
+      case ' ': case 'Enter':
+        tryPlace();
+        e.preventDefault();
+        break;
+    }
+  });
 
   canvas.addEventListener('dragover', (e) => {
     e.preventDefault();
+    if (isPaused) return;
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
@@ -538,13 +592,14 @@
 
   canvas.addEventListener('drop', (e) => {
     e.preventDefault();
+    if (isPaused) return;
     if (ghostPos && selectedPiece >= 0 && pieces[selectedPiece]) {
       tryPlace();
     }
   });
 
   canvas.addEventListener('mousemove', (e) => {
-    if (selectedPiece < 0 || !running) return;
+    if (selectedPiece < 0 || !running || isPaused) return;
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
@@ -556,7 +611,7 @@
   });
 
   canvas.addEventListener('click', (e) => {
-    if (selectedPiece < 0 || !running) return;
+    if (selectedPiece < 0 || !running || isPaused) return;
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
@@ -571,7 +626,7 @@
   // Touch support for mobile
   canvas.addEventListener('touchmove', (e) => {
     e.preventDefault();
-    if (selectedPiece < 0 || !running) return;
+    if (selectedPiece < 0 || !running || isPaused) return;
     const touch = e.touches[0];
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;

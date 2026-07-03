@@ -82,6 +82,7 @@
   let myRematchVote = false;
   let opponentRematchVote = false;
   let roundBannerTimeout = null;
+  let isPaused = false;
 
   // Authoritative game state (host manages, guest mirrors)
   let state = null;
@@ -141,7 +142,13 @@
 
   // Input tracking
   const keys = {};
-  document.addEventListener('keydown', e => { keys[e.key] = true; });
+  document.addEventListener('keydown', e => { 
+    keys[e.key] = true;
+    if (e.key === 'Escape' && gameRunning) {
+      isPaused = !isPaused;
+      send({ type: 'pause', paused: isPaused });
+    }
+  });
   document.addEventListener('keyup', e => { keys[e.key] = false; });
 
   // ── Helpers ──────────────────────────────────────────
@@ -375,6 +382,19 @@
         void countdownNum.offsetWidth;
         countdownNum.style.animation = '';
         break;
+      
+      case 'pause':
+        isPaused = data.paused;
+        break;
+        
+      case 'leave-game':
+        gameRunning = false;
+        stopTick();
+        if (animFrameId) cancelAnimationFrame(animFrameId);
+        hideAll();
+        show(lobbyOverlay);
+        cleanup();
+        break;
     }
   }
 
@@ -390,6 +410,7 @@
     gameRunning = false;
     stopTick();
     if (animFrameId) cancelAnimationFrame(animFrameId);
+    isPaused = false;
   }
 
   // ── Countdown ────────────────────────────────────────
@@ -404,6 +425,7 @@
     state = initState();
     myRematchVote = false;
     opponentRematchVote = false;
+    isPaused = false;
     updateHUD();
     drawFrame();
 
@@ -451,7 +473,7 @@
   }
 
   function gameTick() {
-    if (!gameRunning || !state) return;
+    if (!gameRunning || !state || isPaused) return;
 
     // ── Gather local input ──
     if (isHost) {
@@ -649,8 +671,21 @@
   function renderLoop() {
     if (!gameRunning && !state) return;
     drawFrame();
+    
+    if (isPaused) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+      ctx.fillStyle = '#fff';
+      ctx.font = '30px "Courier New", Courier, monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('PAUSED', CANVAS_W / 2, CANVAS_H / 2);
+      ctx.restore();
+    }
+    
     // Update particles
-    if (state && state.particles) {
+    if (state && state.particles && !isPaused) {
       state.particles = state.particles.filter(p => {
         p.x += p.vx;
         p.y += p.vy;
@@ -1012,10 +1047,28 @@
 
   // Prevent default on game keys so page doesn't scroll
   window.addEventListener('keydown', e => {
+    if ((e.key === 'p' || e.key === 'Escape' || e.key === 'P') && gameRunning) {
+      isPaused = !isPaused;
+      if (isHost) {
+        send({ type: 'pause', paused: isPaused });
+      } else {
+        send({ type: 'pause', paused: isPaused });
+      }
+    }
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'W', 'a', 'A', 's', 'S', 'd', 'D'].includes(e.key) && gameRunning) {
       e.preventDefault();
     }
   });
+
+  const backBtn = document.getElementById('back-btn');
+  if (backBtn) {
+    backBtn.addEventListener('click', (e) => {
+      if (window.parent !== window) {
+        e.preventDefault();
+        window.parent.postMessage({ type: 'LEAVE_GAME' }, '*');
+      }
+    });
+  }
 
   // ── Auto-connect from Global Lobby (party.html) ─────
   const urlParams = new URLSearchParams(window.location.search);

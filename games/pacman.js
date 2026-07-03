@@ -76,6 +76,7 @@
     mouthAngle = 0;
     moveAccumulator = 0;
     lastTime = 0;
+    isPaused = false;
 
     resetPositions();
   }
@@ -388,16 +389,30 @@
     const dt = timestamp - lastTime;
     lastTime = timestamp;
 
-    tickAccumulator += dt;
+    if (!isPaused) {
+      tickAccumulator += dt;
 
-    while (tickAccumulator >= TICK_RATE) {
-      movePacman();
-      moveGhosts();
-      tickAccumulator -= TICK_RATE;
-      if (!running) return;
+      while (tickAccumulator >= TICK_RATE) {
+        movePacman();
+        moveGhosts();
+        tickAccumulator -= TICK_RATE;
+        if (!running) return;
+      }
     }
 
     draw();
+
+    if (isPaused) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#fff';
+      ctx.font = '30px "Courier New", Courier, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('PAUSED', canvas.width / 2, canvas.height / 2);
+      ctx.restore();
+    }
+
     animFrame = requestAnimationFrame(gameLoopFn);
   }
 
@@ -432,7 +447,10 @@
 
   // Controls
   document.addEventListener('keydown', (e) => {
-    if (!running) return;
+    if ((e.key === 'p' || e.key === 'Escape' || e.key === 'P') && running) {
+      isPaused = !isPaused;
+    }
+    if (!running || isPaused) return;
     switch (e.key) {
       case 'ArrowUp': case 'w': case 'W':
         pacman.nextDx = 0; pacman.nextDy = -1; e.preventDefault(); break;
@@ -447,6 +465,16 @@
 
   startBtn.addEventListener('click', startGame);
   retryBtn.addEventListener('click', startGame);
+
+  const backBtn = document.getElementById('back-btn');
+  if (backBtn) {
+    backBtn.addEventListener('click', (e) => {
+      if (window.parent !== window) {
+        e.preventDefault();
+        window.parent.postMessage({ type: 'LEAVE_GAME' }, '*');
+      }
+    });
+  }
 
   // Initial draw
   init();
