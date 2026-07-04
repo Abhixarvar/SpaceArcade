@@ -654,4 +654,17 @@
     });
   }
 
+  const settingsToggleBtn = document.getElementById('settings-toggle-btn');
+  const settingsPanel = document.getElementById('settings-panel');
+  if (settingsToggleBtn && settingsPanel) {
+    settingsToggleBtn.addEventListener('click', () => {
+      settingsPanel.classList.toggle('open');
+    });
+    document.addEventListener('click', (e) => {
+      if (!settingsToggleBtn.contains(e.target) && !settingsPanel.contains(e.target)) {
+        settingsPanel.classList.remove('open');
+      }
+    });
+  }
+
 })();

@@ -316,21 +316,108 @@
       margin-top: auto;
     }
 
-    /* Chat Section */
-    .lounge-chat {
+    /* Top-left Menu */
+    .top-left-settings {
       position: absolute;
-      bottom: 20px;
-      right: 20px;
-      width: 320px;
-      height: 400px;
-      background: rgba(11, 6, 37, 0.85);
-      backdrop-filter: blur(10px);
+      top: 15px;
+      left: 15px;
+      z-index: 1000;
+    }
+    .settings-toggle-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: #fff;
+      transition: all 0.2s;
+    }
+    .settings-toggle-btn:hover {
+      background: rgba(0, 240, 255, 0.1);
+      border-color: var(--cyan);
+    }
+    .settings-panel {
+      position: absolute;
+      top: 50px;
+      left: 0;
+      background: #0b0625;
       border: 1px solid rgba(0, 240, 255, 0.2);
-      border-radius: 12px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+      border-radius: 8px;
+      padding: 15px;
       display: flex;
       flex-direction: column;
-      z-index: 900;
+      gap: 15px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+      transform-origin: top left;
+      transform: scale(0.9);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.2s;
+    }
+    .settings-panel.open {
+      transform: scale(1);
+      opacity: 1;
+      pointer-events: all;
+    }
+    
+    .settings-panel #lightsaber-volume {
+      position: relative !important;
+      bottom: auto !important;
+      right: auto !important;
+      background: none !important;
+      padding: 0 !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+    
+    .home-link-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #fff;
+      text-decoration: none;
+      font-family: var(--font-funky);
+      font-size: 0.85rem;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 8px 12px;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+    .home-link-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Right Sidebar */
+    .lounge-right-sidebar {
+      width: 280px;
+      background: #0b0625;
+      border-left: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      flex-direction: column;
+      padding: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    /* Chat Section */
+    .lounge-chat {
+      position: relative;
+      width: 100%;
+      flex: 1;
+      min-height: 200px;
+      background: none;
+      backdrop-filter: none;
+      border: none;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 0;
+      box-shadow: none;
+      display: flex;
+      flex-direction: column;
+      z-index: 1;
     }
     .chat-header {
       height: 60px;
@@ -473,15 +560,6 @@
   <!-- Starfield Background -->
   <div id="starfield"></div>
 
-  <!-- Lightsaber Volume UI -->
-  <div id="lightsaber-volume">
-    <div class="hilt-btn"></div>
-    <div class="blade-container">
-      <div class="blade-glow"></div>
-      <input type="range" min="0" max="1" step="0.01" value="0.5" class="volume-slider">
-    </div>
-  </div>
-
   <!-- Multiplayer Global Lobby Overlays -->
   <div class="game-overlay" id="global-lobby-overlay">
     <div class="pong-lobby" style="max-width: 650px;">
@@ -538,9 +616,24 @@
   <!-- Room UI (Discord-Style voice lounge & main view) -->
   <div class="game-overlay hidden" id="room-ui-overlay" style="padding: 0; background: #060216; z-index: 90;">
     <div class="discord-lounge">
+      <!-- Top Left Settings Menu -->
+      <div class="top-left-settings">
+        <button class="settings-toggle-btn" id="settings-toggle-btn">⚙️</button>
+        <div class="settings-panel" id="settings-panel">
+          <a href="index.html" class="home-link-btn">🏠 Home Lobby</a>
+          <div id="lightsaber-volume">
+            <div class="hilt-btn"></div>
+            <div class="blade-container">
+              <div class="blade-glow"></div>
+              <input type="range" min="0" max="1" step="0.01" value="0.5" class="volume-slider">
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Left Sidebar -->
       <aside class="lounge-sidebar">
-        <div class="sidebar-header">
+        <div class="sidebar-header" style="padding-top: 35px;">
           <div class="lounge-code-title">COSMIC LOUNGE</div>
           <div class="room-code-display" id="room-code-box" style="margin: 0.5rem 0; width: 100%; padding: 10px 15px; border-color: rgba(255, 0, 127, 0.3);">
             <span class="code" id="display-code" style="font-size: 1.6rem; letter-spacing: 4px; color: var(--pink);">------</span>
@@ -555,24 +648,27 @@
           </div>
         </div>
 
-        <div class="sidebar-footer">
-          <div class="game-selection">
-            <label for="game-select" style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 6px;">Launch Target</label>
-            <select id="game-select" class="lobby-input" style="width: 100%; padding: 10px 10px 10px 12px; font-size: 0.85rem; border-color: rgba(0, 240, 255, 0.2);">
-              <option value="spacerangers">Space Rangers (Multiplayer)</option>
-              <option value="pong">Cosmic Pong (Multiplayer)</option>
-              <option value="molehammer">Mole Hammer (Multiplayer)</option>
-              <option value="snakebattle">Snake Battle (Multiplayer)</option>
-              <option value="snake">Space Worm (Singleplayer)</option>
-              <option value="pacman">Pac-Man (Singleplayer)</option>
-              <option value="troopers">Space Troopers (Singleplayer)</option>
-              <option value="tetris">Cosmic Blocks (Singleplayer)</option>
-            </select>
+        <!-- Chat Section (Moved from right) -->
+        <div class="lounge-chat" id="lounge-chat-panel">
+          <div class="chat-header" style="background: transparent; padding: 0; border-bottom: none; min-height: 30px; height: auto; margin-bottom: 5px;">
+            <span style="font-size: 0.75rem;">💬 LOUNGE CHAT</span>
           </div>
-          <div class="action-buttons" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 8px;">
-            <button class="btn btn-primary" id="ready-btn" style="padding: 10px 20px; font-size: 0.85rem; width: 100%;">I'm Ready</button>
-            <button class="btn btn-create hidden" id="launch-game-btn" style="padding: 10px 20px; font-size: 0.85rem; width: 100%;">Launch Game ✦</button>
-            <button class="btn btn-secondary" id="leave-room-btn" style="padding: 10px 20px; font-size: 0.85rem; width: 100%;">Leave Room</button>
+          <div class="chat-messages" id="chat-messages" style="padding: 0;">
+            <div class="chat-message" style="align-items: center; background: none; border: none; opacity: 0.5;">
+              <span class="chat-text" style="font-size: 0.75rem;">Welcome to the cosmic chat!</span>
+            </div>
+          </div>
+          <div class="emoji-bar" style="background: transparent; padding: 0.5rem 0;">
+            <button type="button" class="emoji-btn">🚀</button>
+            <button type="button" class="emoji-btn">👾</button>
+            <button type="button" class="emoji-btn">🔥</button>
+            <button type="button" class="emoji-btn">💀</button>
+            <button type="button" class="emoji-btn">✨</button>
+            <button type="button" class="emoji-btn">GG</button>
+          </div>
+          <div class="chat-input-area" id="chat-form" style="background: transparent; padding: 0; border: none;">
+            <input type="text" class="chat-input" id="chat-input" placeholder="Type message..." autocomplete="off">
+            <button type="button" class="btn-send" id="chat-send-btn" style="width: 30px; height: 30px;">➤</button>
           </div>
         </div>
       </aside>
@@ -625,27 +721,27 @@
         </div>
       </main>
 
-      <!-- Right Chat Sidebar -->
-      <aside class="lounge-chat" id="lounge-chat-panel">
-        <div class="chat-header">
-          <span>💬 LOUNGE CHAT</span>
-        </div>
-        <div class="chat-messages" id="chat-messages">
-          <div class="chat-message" style="align-items: center; background: none; border: none; opacity: 0.5;">
-            <span class="chat-text" style="font-size: 0.75rem;">Welcome to the cosmic chat!</span>
+      <!-- Right Sidebar for Controls -->
+      <aside class="lounge-right-sidebar">
+        <div class="sidebar-footer" style="border-top: none; padding-top: 0; margin-top: 0;">
+          <div class="game-selection">
+            <label for="game-select" style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 6px;">Launch Target</label>
+            <select id="game-select" class="lobby-input" style="width: 100%; padding: 10px 10px 10px 12px; font-size: 0.85rem; border-color: rgba(0, 240, 255, 0.2);">
+              <option value="spacerangers">Space Rangers (Multiplayer)</option>
+              <option value="pong">Cosmic Pong (Multiplayer)</option>
+              <option value="molehammer">Mole Hammer (Multiplayer)</option>
+              <option value="snakebattle">Snake Battle (Multiplayer)</option>
+              <option value="snake">Space Worm (Singleplayer)</option>
+              <option value="pacman">Pac-Man (Singleplayer)</option>
+              <option value="troopers">Space Troopers (Singleplayer)</option>
+              <option value="tetris">Cosmic Blocks (Singleplayer)</option>
+            </select>
           </div>
-        </div>
-        <div class="emoji-bar">
-          <button type="button" class="emoji-btn">🚀</button>
-          <button type="button" class="emoji-btn">👾</button>
-          <button type="button" class="emoji-btn">🔥</button>
-          <button type="button" class="emoji-btn">💀</button>
-          <button type="button" class="emoji-btn">✨</button>
-          <button type="button" class="emoji-btn">GG</button>
-        </div>
-        <div class="chat-input-area" id="chat-form">
-          <input type="text" class="chat-input" id="chat-input" placeholder="Type message..." autocomplete="off">
-          <button type="button" class="btn-send" id="chat-send-btn">➤</button>
+          <div class="action-buttons" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 8px;">
+            <button class="btn btn-primary" id="ready-btn" style="padding: 10px 20px; font-size: 0.85rem; width: 100%;">I'm Ready</button>
+            <button class="btn btn-create hidden" id="launch-game-btn" style="padding: 10px 20px; font-size: 0.85rem; width: 100%;">Launch Game ✦</button>
+            <button class="btn btn-secondary" id="leave-room-btn" style="padding: 10px 20px; font-size: 0.85rem; width: 100%;">Leave Room</button>
+          </div>
         </div>
       </aside>
     </div>
