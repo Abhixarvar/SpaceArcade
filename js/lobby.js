@@ -46,6 +46,12 @@
   const spectatorPlaceholder = document.getElementById('spectator-placeholder');
   const spectateTargetName = document.getElementById('spectate-target-name');
 
+  // Chat UI Elements
+  const chatMessages = document.getElementById('chat-messages');
+  const chatForm = document.getElementById('chat-form');
+  const chatInput = document.getElementById('chat-input');
+  const emojiBtns = document.querySelectorAll('.emoji-btn');
+
   // State Variables
   let peer = null;
   let isHost = false;
@@ -158,6 +164,32 @@
     );
   }
 
+  function appendChatMessage(name, text, isMe) {
+    if (!chatMessages) return;
+    const msgEl = document.createElement('div');
+    msgEl.className = 'chat-message' + (isMe ? ' me' : '');
+    msgEl.innerHTML = `
+      <span class="chat-name">${escapeHTML(name)}</span>
+      <span class="chat-text">${escapeHTML(text)}</span>
+    `;
+    chatMessages.appendChild(msgEl);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  function sendChatMessage(text) {
+    if (!text.trim()) return;
+    const msgData = { type: 'CHAT_MSG', name: myName, text: text.trim() };
+    if (isHost) {
+      broadcast(msgData);
+      appendChatMessage(myName, text.trim(), true);
+    } else {
+      if (hostConn && hostConn.open) {
+        hostConn.send(msgData);
+      }
+      appendChatMessage(myName, text.trim(), true);
+    }
+  }
+
   // ─── Host Logic ──────────────────────────────────────
   function initHost(name) {
     if (typeof Peer === 'undefined') {
@@ -250,6 +282,15 @@
             broadcast({ type: 'ROOM_UPDATE', members: members, game: selectedGame });
             renderMembers();
           }
+          break;
+
+        case 'CHAT_MSG':
+          guestConnections.forEach(c => {
+            if (c !== conn && c.open) {
+              c.send({ type: 'CHAT_MSG', name: data.name, text: data.text });
+            }
+          });
+          appendChatMessage(data.name, data.text, false);
           break;
       }
     });
@@ -375,6 +416,10 @@
           gameIframe.src = '';
           showViewportState(stateLobbyScreen);
           updateViewportHeader('Lobby Lounge', false);
+          break;
+
+        case 'CHAT_MSG':
+          appendChatMessage(data.name, data.text, false);
           break;
       }
     });
@@ -567,5 +612,22 @@
       setTimeout(() => hint.textContent = 'Click to copy room code', 2000);
     }
   });
+
+  if (chatForm) {
+    chatForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      sendChatMessage(chatInput.value);
+      chatInput.value = '';
+    });
+  }
+
+  if (emojiBtns) {
+    emojiBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        chatInput.value += btn.textContent;
+        chatInput.focus();
+      });
+    });
+  }
 
 })();
