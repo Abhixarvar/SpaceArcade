@@ -96,7 +96,7 @@
       boss: {
         x: CANVAS_W / 2,
         y: 80,
-        vx: 3,
+        vx: 1.5,
         maxHealth: BASE_BOSS_HEALTH,
         health: BASE_BOSS_HEALTH,
         shootTimer: 0,
@@ -445,13 +445,13 @@
       }
 
       b.shootTimer++;
-      if (b.shootTimer > 100 - Math.min(60, state.phase * 5)) {
+      if (b.shootTimer > 150 - Math.min(80, state.phase * 5)) {
         b.shootTimer = 0;
-        // Fire unpredictably spread but slow bullets
-        let spreadCount = 3 + Math.floor(state.phase / 2);
+        // Fire unpredictably spread but slower bullets
+        let spreadCount = 2 + Math.floor(state.phase / 3);
         for(let i=0; i<spreadCount; i++) {
-           let vx = (Math.random() - 0.5) * 8; // Random horizontal spread
-           let vy = 3 + Math.random() * 3;     // Slower downward speed
+           let vx = (Math.random() - 0.5) * 4; // Reduced horizontal spread
+           let vy = 1.5 + Math.random() * 1.5; // Much slower downward speed
            fireBullet(b.x, b.y + BOSS_SIZE/2, vx, vy, 'boss');
         }
       }
@@ -486,7 +486,7 @@
             state.phase++;
             state.boss.maxHealth = BASE_BOSS_HEALTH + (state.phase * 200);
             state.boss.health = state.boss.maxHealth;
-            state.boss.vx = (Math.random() > 0.5 ? 1 : -1) * (3 + state.phase * 0.5);
+            state.boss.vx = (Math.random() > 0.5 ? 1 : -1) * (1.5 + state.phase * 0.3);
             
             // Revive and heal both players
             state.players.p1.health = MAX_PLAYER_HEALTH;
@@ -792,6 +792,16 @@
     }
     ctx.globalAlpha = 1.0;
 
+    // Spectating text
+    let myPlayer = isHost ? p1 : p2;
+    let otherPlayer = isHost ? p2 : p1;
+    if (myPlayer.health <= 0 && otherPlayer.health > 0) {
+      ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
+      ctx.font = '40px "Courier New", Courier, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('YOU DIED - SPECTATING', CANVAS_W / 2, CANVAS_H / 2);
+    }
+
     ctx.restore();
   }
 
@@ -840,6 +850,17 @@
       if (window.parent !== window) {
         e.preventDefault();
         window.parent.postMessage({ type: 'LEAVE_GAME' }, '*');
+      }
+    });
+  }
+
+  const backArcadeBtn = document.getElementById('back-arcade-btn');
+  if (backArcadeBtn) {
+    backArcadeBtn.addEventListener('click', () => {
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'LEAVE_GAME' }, '*');
+      } else {
+        window.location.href = '../index.html';
       }
     });
   }

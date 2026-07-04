@@ -9,7 +9,45 @@
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/mobile-controls.css">
   <style>
+    /* Responsive Canvas Styling */
+    html, body { 
+      overflow: hidden; 
+      margin: 0; padding: 0;
+      width: 100%; height: 100%;
+    }
+    
+    .game-page {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #canvas-wrap {
+      width: 100% !important;
+      flex: 1;
+      display: flex !important;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    #game-canvas {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
     /* Custom HUD for Space Rangers */
+    #spacerangers-hud {
+      width: 100% !important;
+      height: 100% !important;
+      position: absolute !important;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+    }
+
     .boss-hud {
       position: absolute;
       top: 20px;
@@ -118,7 +156,7 @@
     </div>
     
     <!-- In-Game HUD -->
-    <div id="spacerangers-hud" style="display:none; position:relative; width: 1000px; height: 0; margin: 0 auto;">
+    <div id="spacerangers-hud" style="display:none;">
       <div class="boss-hud">
         <div class="boss-name" id="hud-boss-name">BOSS: OMEGA</div>
         <div class="boss-health-bar-bg">
@@ -143,7 +181,7 @@
       </div>
     </div>
 
-    <div class="game-canvas-wrap" id="canvas-wrap" style="display:none; position:relative; width:1000px; height:750px; margin: 0 auto;">
+    <div class="game-canvas-wrap" id="canvas-wrap" style="display:none;">
       <canvas id="game-canvas" width="1000" height="750" style="background: rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.1); border-radius: 8px;"></canvas>
     </div>
     <p class="game-controls-hint" id="controls-hint" style="display:none;">
@@ -231,7 +269,7 @@
     <p class="overlay-score" id="gameover-text">You reached Phase: <span class="highlight" id="final-phase">1</span></p>
     <div class="overlay-buttons" id="gameover-buttons">
       <button class="btn btn-primary" id="rematch-btn">Play Again</button>
-      <a href="../index.html" class="btn btn-secondary">Back to Arcade</a>
+      <button class="btn btn-secondary" id="back-arcade-btn">Back to Lobby</button>
     </div>
     <div class="rematch-status" id="rematch-status"></div>
   </div>
@@ -242,7 +280,6 @@
     <p class="overlay-score">Your teammate has left the game.</p>
     <div class="overlay-buttons">
       <button class="btn btn-primary" id="back-lobby-btn">Back to Lobby</button>
-      <a href="../index.html" class="btn btn-secondary">Back to Arcade</a>
     </div>
   </div>
 

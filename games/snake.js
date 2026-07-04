@@ -278,6 +278,201 @@
         if (direction.x !== 1) nextDirection = { x: -1, y: 0 };
         e.preventDefault();
         break;
+    // Eat food
+    if (head.x === food.x && head.y === food.y) {
+      score++;
+      scoreEl.textContent = score;
+      if (score > highScore) {
+        highScore = score;
+        highScoreEl.textContent = highScore;
+        localStorage.setItem('snakesingle_highscore', highScore);
+      }
+      // Speed up every 5 points
+      if (score % 5 === 0 && speed > 60) {
+        speed -= 10;
+        clearInterval(gameLoop);
+        gameLoop = setInterval(update, speed);
+      }
+      placeFood();
+    } else {
+      snake.pop();
+    }
+
+    draw();
+  }
+
+  function draw() {
+    // Clear
+    ctx.fillStyle = 'rgba(10, 10, 46, 0.95)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw subtle grid
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
+    ctx.lineWidth = 0.5;
+    for (let x = 0; x <= COLS; x++) {
+      ctx.beginPath();
+      ctx.moveTo(x * GRID, 0);
+      ctx.lineTo(x * GRID, canvas.height);
+      ctx.stroke();
+    }
+    for (let y = 0; y <= ROWS; y++) {
+      ctx.beginPath();
+      ctx.moveTo(0, y * GRID);
+      ctx.lineTo(canvas.width, y * GRID);
+      ctx.stroke();
+    }
+
+    // Draw food (star)
+    const fx = food.x * GRID + GRID / 2;
+    const fy = food.y * GRID + GRID / 2;
+
+    // Particles
+    particles.forEach((p, index) => {
+      ctx.globalAlpha = p.life;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+      if (!isPaused) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= 0.05;
+        if (p.life <= 0) particles.splice(index, 1);
+      }
+    });
+    ctx.globalAlpha = 1;
+
+    // Food glow
+    ctx.save();
+    ctx.shadowColor = foodColor;
+    ctx.shadowBlur = 15;
+    ctx.fillStyle = foodGlow;
+    ctx.beginPath();
+    ctx.arc(fx, fy, GRID * 0.4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // Food star shape
+    ctx.save();
+    ctx.translate(fx, fy);
+    ctx.fillStyle = foodColor;
+    drawStar(ctx, 0, 0, 5, GRID * 0.35, GRID * 0.15);
+    ctx.restore();
+
+    // Draw snake
+    snake.forEach((seg, i) => {
+      const sx = seg.x * GRID;
+      const sy = seg.y * GRID;
+      const pad = 1;
+
+      if (i === 0) {
+        // Head
+        ctx.save();
+        ctx.shadowColor = headColor;
+        ctx.shadowBlur = 12;
+        ctx.fillStyle = headColor;
+        ctx.beginPath();
+        ctx.roundRect(sx + pad, sy + pad, GRID - pad * 2, GRID - pad * 2, 5);
+        ctx.fill();
+        ctx.restore();
+
+        // Eyes
+        const eyeSize = 3;
+        ctx.fillStyle = '#0a0a2e';
+        if (direction.x === 1) {
+          ctx.fillRect(sx + GRID - 7, sy + 5, eyeSize, eyeSize);
+          ctx.fillRect(sx + GRID - 7, sy + GRID - 8, eyeSize, eyeSize);
+        } else if (direction.x === -1) {
+          ctx.fillRect(sx + 4, sy + 5, eyeSize, eyeSize);
+          ctx.fillRect(sx + 4, sy + GRID - 8, eyeSize, eyeSize);
+        } else if (direction.y === -1) {
+          ctx.fillRect(sx + 5, sy + 4, eyeSize, eyeSize);
+          ctx.fillRect(sx + GRID - 8, sy + 4, eyeSize, eyeSize);
+        } else {
+          ctx.fillRect(sx + 5, sy + GRID - 7, eyeSize, eyeSize);
+          ctx.fillRect(sx + GRID - 8, sy + GRID - 7, eyeSize, eyeSize);
+        }
+      } else {
+        // Body — gradient fading
+        const ratio = i / snake.length;
+        const colorIdx = Math.min(Math.floor(ratio * bodyColors.length), bodyColors.length - 1);
+        const alpha = 1 - ratio * 0.5;
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.shadowColor = bodyColors[colorIdx];
+        ctx.shadowBlur = 6;
+        ctx.fillStyle = bodyColors[colorIdx];
+        ctx.beginPath();
+        ctx.roundRect(sx + pad + 1, sy + pad + 1, GRID - (pad + 1) * 2, GRID - (pad + 1) * 2, 4);
+        ctx.fill();
+        ctx.restore();
+      }
+    });
+
+    if (isPaused) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#fff';
+      ctx.font = '30px "Courier New", Courier, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('PAUSED', canvas.width / 2, canvas.height / 2);
+      ctx.restore();
+    }
+  }
+
+  function drawStar(ctx, cx, cy, spikes, outerR, innerR) {
+    let rot = Math.PI / 2 * 3;
+    const step = Math.PI / spikes;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - outerR);
+    for (let i = 0; i < spikes; i++) {
+      ctx.lineTo(cx + Math.cos(rot) * outerR, cy + Math.sin(rot) * outerR);
+      rot += step;
+      ctx.lineTo(cx + Math.cos(rot) * innerR, cy + Math.sin(rot) * innerR);
+      rot += step;
+    }
+    ctx.lineTo(cx, cy - outerR);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function gameOver() {
+    running = false;
+    clearInterval(gameLoop);
+    gameoverText.innerHTML = `Score: <span class="highlight">${score}</span>${score >= highScore && score > 0 ? '  ⭐ New Best!' : ''}`;
+    gameoverOverlay.classList.remove('hidden');
+  }
+
+  function startGame() {
+    init();
+    startOverlay.classList.add('hidden');
+    gameoverOverlay.classList.add('hidden');
+    running = true;
+    isPaused = false;
+    draw();
+    gameLoop = setInterval(update, speed);
+  }
+
+  // Controls
+  document.addEventListener('keydown', (e) => {
+    if ((e.key === 'p' || e.key === 'Escape' || e.key === 'P') && running) {
+      isPaused = !isPaused;
+    }
+    if (!running || isPaused) return;
+    switch (e.key) {
+      case 'ArrowUp': case 'w': case 'W':
+        if (direction.y !== 1) nextDirection = { x: 0, y: -1 };
+        e.preventDefault();
+        break;
+      case 'ArrowDown': case 's': case 'S':
+        if (direction.y !== -1) nextDirection = { x: 0, y: 1 };
+        e.preventDefault();
+        break;
+      case 'ArrowLeft': case 'a': case 'A':
+        if (direction.x !== 1) nextDirection = { x: -1, y: 0 };
+        e.preventDefault();
+        break;
       case 'ArrowRight': case 'd': case 'D':
         if (direction.x !== -1) nextDirection = { x: 1, y: 0 };
         e.preventDefault();
@@ -295,6 +490,17 @@
       if (window.parent !== window) {
         e.preventDefault();
         window.parent.postMessage({ type: 'LEAVE_GAME' }, '*');
+      }
+    });
+  }
+
+  const backArcadeBtn = document.getElementById('back-arcade-btn');
+  if (backArcadeBtn) {
+    backArcadeBtn.addEventListener('click', () => {
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'LEAVE_GAME' }, '*');
+      } else {
+        window.location.href = '../index.html';
       }
     });
   }

@@ -833,6 +833,17 @@
   retryBtn.addEventListener('click', startGame);
   nextBtn.addEventListener('click', nextLevel);
 
+  const backArcadeBtn = document.getElementById('back-arcade-btn');
+  if (backArcadeBtn) {
+    backArcadeBtn.addEventListener('click', () => {
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'LEAVE_GAME' }, '*');
+      } else {
+        window.location.href = '../index.html';
+      }
+    });
+  }
+
   // Initial draw
   initLevel();
   draw();

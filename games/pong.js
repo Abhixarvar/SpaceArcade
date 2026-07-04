@@ -803,15 +803,7 @@
 
   rematchBtn.addEventListener('click', handleRematch);
 
-  backLobbyBtn.addEventListener('click', () => {
-    hideAll();
-    show(lobbyOverlay);
-    hudEl.style.display = 'none';
-    canvasWrap.style.display = 'none';
-    controlsHint.style.display = 'none';
-    cleanup();
-  });
-
+  // existing backLobbyBtn logic moved to bottom
   roomCodeBox.addEventListener('click', copyRoomCode);
 
   // Auto-uppercase room code input
@@ -843,6 +835,31 @@
       }
     });
   }
+
+  const backArcadeBtn = document.getElementById('back-arcade-btn');
+  if (backArcadeBtn) {
+    backArcadeBtn.addEventListener('click', () => {
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'LEAVE_GAME' }, '*');
+      } else {
+        window.location.href = '../index.html';
+      }
+    });
+  }
+
+  // Update existing backLobbyBtn logic to also check for iframe
+  backLobbyBtn.addEventListener('click', () => {
+    if (window.parent !== window) {
+      window.parent.postMessage({ type: 'LEAVE_GAME' }, '*');
+    } else {
+      hideAll();
+      show(lobbyOverlay);
+      hudEl.style.display = 'none';
+      canvasWrap.style.display = 'none';
+      controlsHint.style.display = 'none';
+      cleanup();
+    }
+  });
 
   // Auto-connect from Global Lobby
   const urlParams = new URLSearchParams(window.location.search);
