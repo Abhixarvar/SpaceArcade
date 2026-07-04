@@ -20,6 +20,11 @@
 
   const cancelConnectBtn = document.getElementById('cancel-connect-btn');
 
+  // Leave Confirm Overlay
+  const leaveConfirmOverlay = document.getElementById('leave-confirm-overlay');
+  const confirmLeaveBtn = document.getElementById('confirm-leave-btn');
+  const cancelLeaveBtn = document.getElementById('cancel-leave-btn');
+
   // Sidebar / Room UI
   const displayCode = document.getElementById('display-code');
   const memberListEl = document.getElementById('member-list');
@@ -50,6 +55,7 @@
   const chatMessages = document.getElementById('chat-messages');
   const chatForm = document.getElementById('chat-form');
   const chatInput = document.getElementById('chat-input');
+  const chatSendBtn = document.getElementById('chat-send-btn');
   const emojiBtns = document.querySelectorAll('.emoji-btn');
 
   // State Variables
@@ -590,8 +596,17 @@
   });
 
   leaveRoomBtn.addEventListener('click', () => {
+    leaveConfirmOverlay.classList.remove('hidden');
+  });
+
+  confirmLeaveBtn.addEventListener('click', () => {
+    leaveConfirmOverlay.classList.add('hidden');
     cleanupPeer();
     showOverlay(globalLobbyOverlay);
+  });
+
+  cancelLeaveBtn.addEventListener('click', () => {
+    leaveConfirmOverlay.classList.add('hidden');
   });
 
   backLobbyBtn.addEventListener('click', () => {
@@ -613,11 +628,20 @@
     }
   });
 
-  if (chatForm) {
-    chatForm.addEventListener('submit', (e) => {
-      e.preventDefault();
+  if (chatSendBtn) {
+    chatSendBtn.addEventListener('click', () => {
       sendChatMessage(chatInput.value);
       chatInput.value = '';
+    });
+  }
+
+  if (chatInput) {
+    chatInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        sendChatMessage(chatInput.value);
+        chatInput.value = '';
+      }
     });
   }
 

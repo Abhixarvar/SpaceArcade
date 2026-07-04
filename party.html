@@ -630,10 +630,10 @@
           <button type="button" class="emoji-btn">✨</button>
           <button type="button" class="emoji-btn">GG</button>
         </div>
-        <form class="chat-input-area" id="chat-form">
+        <div class="chat-input-area" id="chat-form">
           <input type="text" class="chat-input" id="chat-input" placeholder="Type message..." autocomplete="off">
-          <button type="submit" class="btn-send">➤</button>
-        </form>
+          <button type="button" class="btn-send" id="chat-send-btn">➤</button>
+        </div>
       </aside>
     </div>
   </div>
@@ -644,6 +644,18 @@
     <p class="overlay-score" id="disconnect-text">The connection was lost.</p>
     <div class="overlay-buttons">
       <button class="btn btn-primary" id="back-lobby-btn">Back to Lounge</button>
+    </div>
+  </div>
+
+  <!-- Leave Confirm Overlay -->
+  <div class="game-overlay hidden" id="leave-confirm-overlay" style="z-index: 100;">
+    <div class="waiting-room">
+      <div class="overlay-title">Leave Lounge?</div>
+      <p class="overlay-score">Are you sure you want to disconnect and leave the party?</p>
+      <div class="overlay-buttons" style="display: flex; gap: 10px; margin-top: 20px;">
+        <button class="btn btn-secondary" id="cancel-leave-btn">Stay</button>
+        <button class="btn btn-primary" id="confirm-leave-btn">Leave</button>
+      </div>
     </div>
   </div>
 
