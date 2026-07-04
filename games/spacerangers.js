@@ -3,8 +3,8 @@
   'use strict';
 
   // ── Constants ────────────────────────────────────────
-  const CANVAS_W = 800;
-  const CANVAS_H = 600;
+  const CANVAS_W = 1000;
+  const CANVAS_H = 750;
   const BG = '#05051a';
 
   // Game specific
@@ -103,11 +103,12 @@
         moveTimer: 0
       },
       players: {
-        p1: { x: CANVAS_W / 3, y: CANVAS_H - 80, health: MAX_PLAYER_HEALTH, cooldown: 0 },
-        p2: { x: (CANVAS_W / 3) * 2, y: CANVAS_H - 80, health: MAX_PLAYER_HEALTH, cooldown: 0 }
+        p1: { x: CANVAS_W / 3, y: CANVAS_H - 80, health: MAX_PLAYER_HEALTH, cooldown: 0, shield: 0 },
+        p2: { x: (CANVAS_W / 3) * 2, y: CANVAS_H - 80, health: MAX_PLAYER_HEALTH, cooldown: 0, shield: 0 }
       },
       bullets: [],
       particles: [],
+      diamonds: [],
       screenShake: 0,
       gameOver: false
     };
@@ -254,8 +255,10 @@
       else if (data.type === 'state') {
         if (!isHost) {
           state = data.state;
-          if (state.gameOver && gameRunning) endGame();
         }
+      }
+      else if (data.type === 'gameover') {
+        if (!isHost && gameRunning) endGame();
       }
       else if (data.type === 'input') {
         if (isHost && state) {
@@ -346,13 +349,14 @@
     gameRunning = false;
     if (animFrameId) cancelAnimationFrame(animFrameId);
     finalPhase.textContent = state.phase;
-    setTimeout(() => {
-      hideAll();
-      show(gameoverOverlay);
-      rematchStatus.textContent = '';
-      rematchBtn.textContent = 'Play Again';
-      rematchBtn.disabled = false;
-    }, 1000);
+    if (isHost && conn && conn.open) {
+      conn.send({ type: 'gameover' });
+    }
+    hideAll();
+    show(gameoverOverlay);
+    rematchStatus.textContent = '';
+    rematchBtn.textContent = 'Play Again';
+    rematchBtn.disabled = false;
   }
 
   // ── Game Logic (Host) ────────────────────────────────
@@ -374,7 +378,7 @@
     p.y = Math.max(CANVAS_H/2, Math.min(CANVAS_H - PLAYER_SIZE/2, p.y));
 
     if (guestKeys['Space'] && p.cooldown <= 0) {
-      fireBullet(p.x, p.y - PLAYER_SIZE/2, -BULLET_SPEED, 'player');
+      fireBullet(p.x, p.y - PLAYER_SIZE/2, 0, -BULLET_SPEED, 'player');
       p.cooldown = BULLET_COOLDOWN;
       if (window.audioManager) window.audioManager.playSound('laser');
     }
@@ -393,14 +397,14 @@
     p.y = Math.max(CANVAS_H/2, Math.min(CANVAS_H - PLAYER_SIZE/2, p.y));
 
     if (keys['Space'] && p.cooldown <= 0) {
-      fireBullet(p.x, p.y - PLAYER_SIZE/2, -BULLET_SPEED, 'player');
+      fireBullet(p.x, p.y - PLAYER_SIZE/2, 0, -BULLET_SPEED, 'player');
       p.cooldown = BULLET_COOLDOWN;
       if (window.audioManager) window.audioManager.playSound('laser');
     }
   }
 
-  function fireBullet(x, y, vy, owner) {
-    state.bullets.push({ x, y, vy, owner, width: 4, height: 16 });
+  function fireBullet(x, y, vx, vy, owner) {
+    state.bullets.push({ x, y, vx, vy, owner, width: 4, height: 16 });
   }
 
   function spawnExplosion(x, y, color, count=10) {
@@ -416,112 +420,170 @@
   }
 
   function updateLogic() {
-    if (state.gameOver) return;
+    if (!state.gameOver) {
+      processHostInput();
 
-    processHostInput();
+      // Cooldowns and Shields
+      if (state.players.p1.cooldown > 0) state.players.p1.cooldown--;
+      if (state.players.p2.cooldown > 0) state.players.p2.cooldown--;
+      if (state.players.p1.shield > 0) state.players.p1.shield--;
+      if (state.players.p2.shield > 0) state.players.p2.shield--;
 
-    // Cooldowns
-    if (state.players.p1.cooldown > 0) state.players.p1.cooldown--;
-    if (state.players.p2.cooldown > 0) state.players.p2.cooldown--;
-
-    // Screenshake decay
-    if (state.screenShake > 0) state.screenShake *= 0.9;
-    if (state.screenShake < 0.5) state.screenShake = 0;
-
-    // Boss AI
-    let b = state.boss;
-    b.x += b.vx;
-    if (b.x < BOSS_SIZE/2 || b.x > CANVAS_W - BOSS_SIZE/2) {
-      b.vx *= -1;
+      // Boss AI
+      let b = state.boss;
       b.x += b.vx;
-    }
-    
-    // erratic boss movement based on phase
-    b.moveTimer++;
-    if (b.moveTimer > 60 - state.phase*2) {
-      b.moveTimer = 0;
-      if (Math.random() > 0.5) b.vx *= -1;
-    }
+      if (b.x < BOSS_SIZE/2 || b.x > CANVAS_W - BOSS_SIZE/2) {
+        b.vx *= -1;
+        b.x += b.vx;
+      }
+      
+      // erratic boss movement based on phase
+      b.moveTimer++;
+      if (b.moveTimer > 60 - state.phase*2) {
+        b.moveTimer = 0;
+        if (Math.random() > 0.5) b.vx *= -1;
+      }
 
-    b.shootTimer++;
-    if (b.shootTimer > 80 - Math.min(50, state.phase * 5)) {
-      b.shootTimer = 0;
-      // Fire
-      fireBullet(b.x - 20, b.y + BOSS_SIZE/2, BULLET_SPEED * 0.7, 'boss');
-      fireBullet(b.x + 20, b.y + BOSS_SIZE/2, BULLET_SPEED * 0.7, 'boss');
-      if (state.phase > 3) {
-        fireBullet(b.x, b.y + BOSS_SIZE/2 + 20, BULLET_SPEED * 0.9, 'boss');
+      b.shootTimer++;
+      if (b.shootTimer > 100 - Math.min(60, state.phase * 5)) {
+        b.shootTimer = 0;
+        // Fire unpredictably spread but slow bullets
+        let spreadCount = 3 + Math.floor(state.phase / 2);
+        for(let i=0; i<spreadCount; i++) {
+           let vx = (Math.random() - 0.5) * 8; // Random horizontal spread
+           let vy = 3 + Math.random() * 3;     // Slower downward speed
+           fireBullet(b.x, b.y + BOSS_SIZE/2, vx, vy, 'boss');
+        }
       }
     }
 
     // Bullets update & collision
     for (let i = state.bullets.length - 1; i >= 0; i--) {
       let b = state.bullets[i];
+      b.x += b.vx;
       b.y += b.vy;
 
       // out of bounds
-      if (b.y < -50 || b.y > CANVAS_H + 50) {
+      if (b.y < -50 || b.y > CANVAS_H + 50 || b.x < -50 || b.x > CANVAS_W + 50) {
         state.bullets.splice(i, 1);
         continue;
       }
 
-      // Hit Boss
-      if (b.owner === 'player' && Math.abs(b.x - state.boss.x) < BOSS_SIZE/2 && Math.abs(b.y - state.boss.y) < BOSS_SIZE/2) {
-        state.bullets.splice(i, 1);
-        state.boss.health -= 10;
-        spawnExplosion(b.x, b.y - 10, '#00f0ff', 5);
-        if (window.audioManager) window.audioManager.playSound('blip');
-        
-        if (state.boss.health <= 0) {
-          // Boss Defeated -> Next Phase
-          if (window.audioManager) window.audioManager.playSound('explosion');
-          state.screenShake = 15;
-          spawnExplosion(state.boss.x, state.boss.y, '#ff007f', 40);
+      if (!state.gameOver) {
+        // Hit Boss
+        if (b.owner === 'player' && Math.abs(b.x - state.boss.x) < BOSS_SIZE/2 && Math.abs(b.y - state.boss.y) < BOSS_SIZE/2) {
+          state.bullets.splice(i, 1);
+          state.boss.health -= 10;
+          spawnExplosion(b.x, b.y - 10, '#00f0ff', 5);
+          if (window.audioManager) window.audioManager.playSound('blip');
           
-          state.phase++;
-          state.boss.maxHealth = BASE_BOSS_HEALTH + (state.phase * 200);
-          state.boss.health = state.boss.maxHealth;
-          state.boss.vx = (Math.random() > 0.5 ? 1 : -1) * (3 + state.phase * 0.5);
-          
-          // Revive and heal both players
-          state.players.p1.health = MAX_PLAYER_HEALTH;
-          state.players.p2.health = MAX_PLAYER_HEALTH;
+          if (state.boss.health <= 0) {
+            // Boss Defeated -> Next Phase
+            if (window.audioManager) window.audioManager.playSound('explosion');
+            state.screenShake = 15;
+            spawnExplosion(state.boss.x, state.boss.y, '#ff007f', 40);
+            
+            state.phase++;
+            state.boss.maxHealth = BASE_BOSS_HEALTH + (state.phase * 200);
+            state.boss.health = state.boss.maxHealth;
+            state.boss.vx = (Math.random() > 0.5 ? 1 : -1) * (3 + state.phase * 0.5);
+            
+            // Revive and heal both players
+            state.players.p1.health = MAX_PLAYER_HEALTH;
+            state.players.p2.health = MAX_PLAYER_HEALTH;
+          }
+          continue;
         }
-        continue;
+
+        // Hit Players
+        if (b.owner === 'boss') {
+          let p1 = state.players.p1;
+          let p2 = state.players.p2;
+
+          if (p1.health > 0 && Math.abs(b.x - p1.x) < PLAYER_SIZE/2 && Math.abs(b.y - p1.y) < PLAYER_SIZE/2) {
+            state.bullets.splice(i, 1);
+            if (p1.shield > 0) {
+              spawnExplosion(p1.x, p1.y, '#00f0ff', 3);
+            } else {
+              p1.health -= 20;
+              spawnExplosion(p1.x, p1.y, '#ffea00', 5);
+              state.screenShake = 5;
+              if (window.audioManager) window.audioManager.playSound('hit');
+              if (p1.health <= 0) spawnExplosion(p1.x, p1.y, '#ff0000', 30);
+            }
+            continue;
+          }
+
+          if (p2.health > 0 && Math.abs(b.x - p2.x) < PLAYER_SIZE/2 && Math.abs(b.y - p2.y) < PLAYER_SIZE/2) {
+            state.bullets.splice(i, 1);
+            if (p2.shield > 0) {
+              spawnExplosion(p2.x, p2.y, '#ffea00', 3);
+            } else {
+              p2.health -= 20;
+              spawnExplosion(p2.x, p2.y, '#ffea00', 5);
+              state.screenShake = 5;
+              if (window.audioManager) window.audioManager.playSound('hit');
+              if (p2.health <= 0) spawnExplosion(p2.x, p2.y, '#ff0000', 30);
+            }
+            continue;
+          }
+        }
+      }
+    }
+
+    if (!state.gameOver) {
+      // Spawn Diamond
+      if (Math.random() < 0.002) {
+        state.diamonds.push({ x: 40 + Math.random() * (CANVAS_W - 80), y: -20, vy: 2, radius: 15 });
       }
 
-      // Hit Players
-      if (b.owner === 'boss') {
+      // Update Diamonds
+      for (let i = state.diamonds.length - 1; i >= 0; i--) {
+        let d = state.diamonds[i];
+        d.y += d.vy;
+        if (d.y > CANVAS_H + 50) {
+          state.diamonds.splice(i, 1);
+          continue;
+        }
+
         let p1 = state.players.p1;
         let p2 = state.players.p2;
+        let hitP1 = (p1.health > 0 && Math.abs(d.x - p1.x) < PLAYER_SIZE/2 + d.radius && Math.abs(d.y - p1.y) < PLAYER_SIZE/2 + d.radius);
+        let hitP2 = (p2.health > 0 && Math.abs(d.x - p2.x) < PLAYER_SIZE/2 + d.radius && Math.abs(d.y - p2.y) < PLAYER_SIZE/2 + d.radius);
 
-        if (p1.health > 0 && Math.abs(b.x - p1.x) < PLAYER_SIZE/2 && Math.abs(b.y - p1.y) < PLAYER_SIZE/2) {
-          p1.health -= 20;
-          state.bullets.splice(i, 1);
-          spawnExplosion(p1.x, p1.y, '#ffea00', 5);
-          state.screenShake = 5;
-          if (window.audioManager) window.audioManager.playSound('hit');
-          if (p1.health <= 0) spawnExplosion(p1.x, p1.y, '#ff0000', 30);
-          continue;
+        if (hitP1 || hitP2) {
+           state.diamonds.splice(i, 1);
+           if (window.audioManager) window.audioManager.playSound('blip');
+           spawnExplosion(d.x, d.y, '#fff', 15);
+           
+           if (p1.health <= 0) {
+             p1.health = MAX_PLAYER_HEALTH; // revive P1
+             spawnExplosion(p1.x, p1.y, '#00f0ff', 20);
+           } else if (p2.health <= 0) {
+             p2.health = MAX_PLAYER_HEALTH; // revive P2
+             spawnExplosion(p2.x, p2.y, '#ffea00', 20);
+           } else {
+             // both alive, shield for 5 seconds
+             p1.shield = 300;
+             p2.shield = 300;
+           }
+           continue;
         }
+      }
 
-        if (p2.health > 0 && Math.abs(b.x - p2.x) < PLAYER_SIZE/2 && Math.abs(b.y - p2.y) < PLAYER_SIZE/2) {
-          p2.health -= 20;
-          state.bullets.splice(i, 1);
-          spawnExplosion(p2.x, p2.y, '#ffea00', 5);
-          state.screenShake = 5;
-          if (window.audioManager) window.audioManager.playSound('hit');
-          if (p2.health <= 0) spawnExplosion(p2.x, p2.y, '#ff0000', 30);
-          continue;
-        }
+      // Check game over
+      if (state.players.p1.health <= 0 && state.players.p2.health <= 0) {
+        state.gameOver = true;
+        state.screenShake = 20;
+        setTimeout(() => {
+          endGame();
+        }, 1500);
       }
     }
 
-    // Check game over
-    if (state.players.p1.health <= 0 && state.players.p2.health <= 0) {
-      state.gameOver = true;
-      state.screenShake = 20;
-    }
+    // Screenshake decay
+    if (state.screenShake > 0) state.screenShake *= 0.9;
+    if (state.screenShake < 0.5) state.screenShake = 0;
 
     // Particles
     for (let i = state.particles.length - 1; i >= 0; i--) {
@@ -555,23 +617,20 @@
     stateFrameCounter++;
     if (conn && conn.open && stateFrameCounter >= STATE_SEND_INTERVAL) {
       stateFrameCounter = 0;
-      // Strip particles from network payload — they're visual-only
       const netState = {
         phase: state.phase,
         boss: state.boss,
         players: state.players,
         bullets: state.bullets,
         screenShake: state.screenShake,
+        particles: state.particles,
+        diamonds: state.diamonds,
         gameOver: state.gameOver
       };
       conn.send({ type: 'state', state: netState });
     }
 
-    if (state.gameOver) {
-      endGame();
-    } else {
-      animFrameId = requestAnimationFrame(hostLoop);
-    }
+    animFrameId = requestAnimationFrame(hostLoop);
   }
 
   // ── Game Logic (Guest) ────────────────────────────────
@@ -666,6 +725,49 @@
       ctx.shadowBlur = 12;
       ctx.drawImage(imgShip2, p2.x - PLAYER_SIZE/2, p2.y - PLAYER_SIZE/2, PLAYER_SIZE, PLAYER_SIZE);
       ctx.restore();
+    }
+
+    // Render Shields
+    if (p1.health > 0 && p1.shield > 0) {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.8)';
+      ctx.lineWidth = 3;
+      ctx.shadowColor = '#00f0ff';
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.arc(p1.x, p1.y, PLAYER_SIZE/2 + 10, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.restore();
+    }
+    
+    if (p2.health > 0 && p2.shield > 0) {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255, 234, 0, 0.8)';
+      ctx.lineWidth = 3;
+      ctx.shadowColor = '#ffea00';
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.arc(p2.x, p2.y, PLAYER_SIZE/2 + 10, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Render Diamonds
+    if (state.diamonds) {
+      for (let d of state.diamonds) {
+        ctx.save();
+        ctx.fillStyle = '#fff';
+        ctx.shadowColor = '#fff';
+        ctx.shadowBlur = 15;
+        ctx.beginPath();
+        ctx.moveTo(d.x, d.y - d.radius);
+        ctx.lineTo(d.x + d.radius, d.y);
+        ctx.lineTo(d.x, d.y + d.radius);
+        ctx.lineTo(d.x - d.radius, d.y);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
     }
 
     // Bullets
