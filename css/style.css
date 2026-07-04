@@ -1385,7 +1385,7 @@ button { cursor: none; }
 /* ===== Lightsaber Volume UI ===== */
 #lightsaber-volume {
   position: fixed;
-  bottom: 24px;
+  bottom: 440px;
   right: 24px;
   display: flex;
   align-items: center;

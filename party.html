@@ -318,12 +318,19 @@
 
     /* Chat Section */
     .lounge-chat {
-      width: 280px;
-      background: #0b0625;
-      border-left: 1px solid rgba(255, 255, 255, 0.05);
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      width: 320px;
+      height: 400px;
+      background: rgba(11, 6, 37, 0.85);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 240, 255, 0.2);
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
       display: flex;
       flex-direction: column;
-      flex-shrink: 0;
+      z-index: 900;
     }
     .chat-header {
       height: 60px;
@@ -451,7 +458,13 @@
       .discord-lounge { flex-direction: column; }
       .lounge-sidebar { width: 100%; height: auto; max-height: 45vh; }
       .lounge-viewport { height: 40vh; }
-      .lounge-chat { width: 100%; height: 35vh; border-left: none; border-top: 1px solid rgba(255, 255, 255, 0.1); }
+      .lounge-chat { 
+        position: relative; 
+        bottom: 0; right: 0; 
+        width: 100%; height: 35vh; 
+        border: none; border-top: 1px solid rgba(255, 255, 255, 0.1); 
+        border-radius: 0;
+      }
     }
   </style>
 </head>
