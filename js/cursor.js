@@ -19,10 +19,7 @@
       .game-header,
       #lobby-overlay,
       #waiting-overlay,
-      #connecting-overlay,
-      #countdown-overlay,
-      #gameover-overlay,
-      #disconnect-overlay {
+      #connecting-overlay {
         display: none !important;
       }
       .page-content {
@@ -41,8 +38,9 @@
         display: none !important;
       }
       canvas {
-        max-height: 95vh !important;
-        max-width: 95vw !important;
+        max-height: 100% !important;
+        max-width: 100% !important;
+        object-fit: contain !important;
       }
     `;
     document.head.appendChild(style);

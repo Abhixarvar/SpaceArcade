@@ -379,6 +379,16 @@
           showOverlay(roomUiOverlay);
           
           gameSelect.value = selectedGame;
+          
+          if (!isHost && peer) {
+            const me = members.find(m => m.peerId === peer.id);
+            if (me) {
+              myReady = me.ready;
+              readyBtn.textContent = myReady ? "Cancel Ready" : "I'm Ready";
+              readyBtn.className = myReady ? "btn btn-secondary" : "btn btn-primary";
+            }
+          }
+
           renderMembers();
           
           // IMPORTANT: If we are already playing in the iframe, do NOT
@@ -648,8 +658,7 @@
   if (emojiBtns) {
     emojiBtns.forEach(btn => {
       btn.addEventListener('click', () => {
-        chatInput.value += btn.textContent;
-        chatInput.focus();
+        sendChatMessage(btn.textContent.trim());
       });
     });
   }
