@@ -826,6 +826,18 @@
 
     gameoverText.innerHTML = `You reached Level <span class="highlight">${level}</span> with <span class="highlight">${totalStars}</span> total ⭐${level > highLevel ? '  🏆 New Best!' : ''}`;
     gameoverOverlay.classList.remove('hidden');
+
+    // Draw game over to canvas for spectators
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#ff4444';
+    ctx.font = 'bold 40px "Courier New", Courier, monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 20);
+    ctx.fillStyle = '#fff';
+    ctx.font = '20px "Courier New", Courier, monospace';
+    ctx.fillText(`Level: ${level}`, canvas.width / 2, canvas.height / 2 + 20);
   }
 
   // ========== BUTTONS ==========

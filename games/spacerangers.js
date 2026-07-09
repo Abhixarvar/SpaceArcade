@@ -357,6 +357,18 @@
     rematchStatus.textContent = '';
     rematchBtn.textContent = 'Play Again';
     rematchBtn.disabled = false;
+
+    // Draw game over to canvas for spectators
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+    ctx.fillStyle = '#ff4444';
+    ctx.font = 'bold 40px "Courier New", Courier, monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('GAME OVER', CANVAS_W / 2, CANVAS_H / 2 - 20);
+    ctx.fillStyle = '#fff';
+    ctx.font = '20px "Courier New", Courier, monospace';
+    ctx.fillText(`Phase: ${state.phase}`, CANVAS_W / 2, CANVAS_H / 2 + 20);
   }
 
   // ── Game Logic (Host) ────────────────────────────────

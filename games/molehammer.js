@@ -646,6 +646,18 @@
     gameoverText.innerHTML = `<span class="highlight" style="color:${RED}">${state.scores.red}</span> — <span class="highlight" style="color:${BLUE}">${state.scores.blue}</span>`;
     rematchStatus.textContent = '';
     showOverlay(gameoverOverlay);
+
+    // Draw game over to canvas for spectators
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 40px "Courier New", Courier, monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('GAME OVER', CANVAS_W / 2, CANVAS_H / 2 - 20);
+    ctx.fillStyle = winner === 'red' ? RED : BLUE;
+    ctx.font = '20px "Courier New", Courier, monospace';
+    ctx.fillText(`${winner.toUpperCase()} WINS!  ${state.scores.red} - ${state.scores.blue}`, CANVAS_W / 2, CANVAS_H / 2 + 20);
   }
 
   // ── Visual Effects ───────────────────────────────────

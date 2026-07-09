@@ -7,6 +7,7 @@
   const connectingOverlay = document.getElementById('connecting-overlay');
   const roomUiOverlay = document.getElementById('room-ui-overlay');
   const disconnectOverlay = document.getElementById('disconnect-overlay');
+  const connectingText = document.getElementById('connecting-text');
 
   // Inputs & Controls
   const createNameInput = document.getElementById('create-name');
@@ -45,6 +46,7 @@
   const stateLobbyScreen = document.getElementById('state-lobby-screen');
   const stateGameIframeWrap = document.getElementById('state-game-iframe-wrap');
   const gameIframe = document.getElementById('game-iframe');
+  const iframeLoadingOverlay = document.getElementById('iframe-loading-overlay');
 
   const stateSpectatorScreen = document.getElementById('state-spectator-screen');
   const spectatorImg = document.getElementById('spectator-img');
@@ -206,10 +208,14 @@
     myName = name;
     isHost = true;
     
+    if (connectingText) connectingText.textContent = 'Creating room...';
+    showOverlay(connectingOverlay);
+    
     try {
       peer = new Peer();
     } catch (e) {
       createError.textContent = 'Failed to initialize peer client.';
+      showOverlay(globalLobbyOverlay);
       return;
     }
 
@@ -332,6 +338,7 @@
     isHost = false;
     roomCode = code.toUpperCase();
 
+    if (connectingText) connectingText.textContent = 'Entering lounge...';
     showOverlay(connectingOverlay);
 
     try {
@@ -421,6 +428,12 @@
         case 'LAUNCH':
           // Load the multiplayer game inside the guest's iframe
           isPlayingInIframe = true;
+          
+          if (iframeLoadingOverlay) iframeLoadingOverlay.style.display = 'flex';
+          gameIframe.onload = () => {
+            if (iframeLoadingOverlay) iframeLoadingOverlay.style.display = 'none';
+          };
+          
           gameIframe.src = `games/${data.game}.html?role=guest&room=${data.sessionId}&name=${encodeURIComponent(myName)}`;
           showViewportState(stateGameIframeWrap);
           updateViewportHeader(`Playing ${data.game}`);
@@ -539,6 +552,12 @@
     if (isHost) {
       isPlayingInIframe = true;
       const filePrefix = selectedGame;
+      
+      if (iframeLoadingOverlay) iframeLoadingOverlay.style.display = 'flex';
+      gameIframe.onload = () => {
+        if (iframeLoadingOverlay) iframeLoadingOverlay.style.display = 'none';
+      };
+      
       gameIframe.src = `games/${filePrefix}.html`;
       showViewportState(stateGameIframeWrap);
 
@@ -586,6 +605,12 @@
 
       // Load for host
       isPlayingInIframe = true;
+      
+      if (iframeLoadingOverlay) iframeLoadingOverlay.style.display = 'flex';
+      gameIframe.onload = () => {
+        if (iframeLoadingOverlay) iframeLoadingOverlay.style.display = 'none';
+      };
+      
       gameIframe.src = `games/${selectedGame}.html?role=host&room=${sessionId}&name=${encodeURIComponent(myName)}`;
       showViewportState(stateGameIframeWrap);
       

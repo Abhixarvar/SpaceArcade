@@ -423,6 +423,18 @@
     gameoverTitle.textContent = 'Game Over';
     gameoverText.innerHTML = `Score: <span class="highlight">${score}</span>`;
     gameoverOverlay.classList.remove('hidden');
+
+    // Draw game over to canvas for spectators
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#ff4444';
+    ctx.font = 'bold 40px "Courier New", Courier, monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 20);
+    ctx.fillStyle = '#fff';
+    ctx.font = '20px "Courier New", Courier, monospace';
+    ctx.fillText(`Score: ${score}`, canvas.width / 2, canvas.height / 2 + 20);
   }
 
   function win() {
@@ -432,6 +444,18 @@
     gameoverTitle.textContent = 'You Win!';
     gameoverText.innerHTML = `Score: <span class="highlight">${score}</span> ⭐ All dots collected!`;
     gameoverOverlay.classList.remove('hidden');
+
+    // Draw win to canvas for spectators
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#00ff88';
+    ctx.font = 'bold 40px "Courier New", Courier, monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('YOU WIN!', canvas.width / 2, canvas.height / 2 - 20);
+    ctx.fillStyle = '#fff';
+    ctx.font = '20px "Courier New", Courier, monospace';
+    ctx.fillText(`Score: ${score}`, canvas.width / 2, canvas.height / 2 + 20);
   }
 
   function startGame() {

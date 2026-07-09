@@ -687,6 +687,18 @@
     SFX.gameOver();
     gameoverText.innerHTML = `Score: <span class="highlight">${score}</span>  ·  Wave ${wave}${score >= highScore && score > 0 ? '  ⭐ New Best!' : ''}`;
     gameoverOverlay.classList.remove('hidden');
+
+    // Draw game over to canvas for spectators
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#ff4444';
+    ctx.font = 'bold 40px "Courier New", Courier, monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('GAME OVER', W / 2, H / 2 - 20);
+    ctx.fillStyle = '#fff';
+    ctx.font = '20px "Courier New", Courier, monospace';
+    ctx.fillText(`Score: ${score}`, W / 2, H / 2 + 20);
   }
 
   // ---- START ----

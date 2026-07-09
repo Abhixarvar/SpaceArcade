@@ -982,6 +982,18 @@
     rematchBtn.textContent = 'Play Again';
     rematchBtn.style.pointerEvents = '';
     rematchBtn.style.opacity = '';
+
+    // Draw game over to canvas for spectators
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = isWinner ? '#00ff88' : '#ff4444';
+    ctx.font = 'bold 40px "Courier New", Courier, monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(isWinner ? 'VICTORY!' : 'GAME OVER', canvas.width / 2, canvas.height / 2 - 20);
+    ctx.fillStyle = '#fff';
+    ctx.font = '20px "Courier New", Courier, monospace';
+    ctx.fillText(`${p1Name} ${state.scores[0]} - ${state.scores[1]} ${p2Name}`, canvas.width / 2, canvas.height / 2 + 20);
   }
 
   // ── Rematch ──────────────────────────────────────────
