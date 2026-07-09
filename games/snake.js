@@ -247,6 +247,19 @@
     clearInterval(gameLoop);
     gameoverText.innerHTML = `Score: <span class="highlight">${score}</span>${score >= highScore && score > 0 ? '  ⭐ New Best!' : ''}`;
     gameoverOverlay.classList.remove('hidden');
+
+    ctx.save();
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#ff4d4d';
+    ctx.font = 'bold 40px "Courier New", Courier, monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 20);
+    ctx.fillStyle = '#fff';
+    ctx.font = '20px "Courier New", Courier, monospace';
+    ctx.fillText(`Score: ${score}`, canvas.width / 2, canvas.height / 2 + 20);
+    ctx.restore();
   }
 
   function startGame() {
@@ -278,6 +291,35 @@
         if (direction.x !== 1) nextDirection = { x: -1, y: 0 };
         e.preventDefault();
         break;
+      case 'ArrowRight': case 'd': case 'D':
+        if (direction.x !== -1) nextDirection = { x: 1, y: 0 };
+        e.preventDefault();
+        break;
+    }
+  });
+
+  function update() {
+    if (!running || isPaused) return;
+
+    direction = nextDirection;
+    const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
+
+    // Wall collision
+    if (head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS) {
+      gameOver();
+      return;
+    }
+
+    // Self collision
+    for (let i = 0; i < snake.length; i++) {
+      if (head.x === snake[i].x && head.y === snake[i].y) {
+        gameOver();
+        return;
+      }
+    }
+
+    snake.unshift(head);
+
     // Eat food
     if (head.x === food.x && head.y === food.y) {
       score++;
@@ -442,18 +484,6 @@
     clearInterval(gameLoop);
     gameoverText.innerHTML = `Score: <span class="highlight">${score}</span>${score >= highScore && score > 0 ? '  ⭐ New Best!' : ''}`;
     gameoverOverlay.classList.remove('hidden');
-
-    // Draw game over to canvas for spectators
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#ff4444';
-    ctx.font = 'bold 40px "Courier New", Courier, monospace';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 20);
-    ctx.fillStyle = '#fff';
-    ctx.font = '20px "Courier New", Courier, monospace';
-    ctx.fillText(`Score: ${score}`, canvas.width / 2, canvas.height / 2 + 20);
   }
 
   function startGame() {

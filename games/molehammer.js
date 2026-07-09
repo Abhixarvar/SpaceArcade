@@ -1199,15 +1199,5 @@
     });
   }
 
-  const backLobbyBtn = document.getElementById('back-lobby-btn');
-  if (backLobbyBtn) {
-    backLobbyBtn.addEventListener('click', () => {
-      if (window.parent !== window) {
-        window.parent.postMessage({ type: 'LEAVE_GAME' }, '*');
-      } else {
-        window.location.href = '../index.html';
-      }
-    });
-  }
 
 })();
