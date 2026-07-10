@@ -503,6 +503,12 @@ button { cursor: none; }
   --card-glow: 0 0 30px rgba(0, 255, 136, 0.2), 0 0 60px rgba(0, 240, 255, 0.1);
 }
 
+.game-card[data-game="blackholeninja"] {
+  --card-accent: #7c3aed;
+  --card-accent-2: #ff007f;
+  --card-glow: 0 0 25px rgba(124, 58, 237, 0.2), 0 0 50px rgba(255, 0, 127, 0.08);
+}
+
 /* --- Featured Game Card --- */
 .game-card.featured {
   grid-column: 1 / -1;

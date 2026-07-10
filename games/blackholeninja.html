@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Blackhole Ninja — Escape a pursuing black hole by jumping through a science lab in Space Arcade!">
+  <title>Blackhole Ninja — Space Arcade</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/spaceship.svg">
+  <link rel="stylesheet" href="../css/style.css?v=5">
+  <link rel="stylesheet" href="../css/mobile-controls.css">
+</head>
+<body class="no-scroll">
+
+  <div id="starfield"></div>
+
+  <div class="page-content game-page compact-page">
+    <header class="arcade-header game-arcade-header">
+      <a href="../index.html" class="arcade-logo-link">
+        <h1 class="arcade-logo small">SPACE ARCADE</h1>
+      </a>
+    </header>
+    <div class="game-hud">
+      <div>Level: <span class="value" id="level">1</span></div>
+      <div>Time: <span class="value" id="timer">60</span></div>
+      <div>Score: <span class="value" id="score">0</span></div>
+    </div>
+    <div class="game-canvas-wrap">
+      <canvas id="game-canvas" width="700" height="400"></canvas>
+    </div>
+    <p class="game-controls-hint">
+      <kbd>Space</kbd> / <kbd>↑</kbd> / <kbd>W</kbd> to Jump · Double tap for Double Jump 🥷
+    </p>
+  </div>
+
+  <!-- Start Overlay -->
+  <div class="game-overlay" id="start-overlay">
+    <div class="overlay-title">Blackhole Ninja</div>
+    <p class="overlay-score">Escape the black hole! Jump through the lab! 🕳️🥷</p>
+    <div class="overlay-buttons">
+      <button class="btn btn-primary" id="start-btn" data-tip="🚀 Click to begin your escape!">Start Mission</button>
+    </div>
+  </div>
+
+  <!-- Game Over Overlay -->
+  <div class="game-overlay hidden" id="gameover-overlay">
+    <div class="overlay-title">Consumed!</div>
+    <p class="overlay-score" id="gameover-text">The black hole got you! Score: <span class="highlight">0</span></p>
+    <div class="overlay-buttons">
+      <button class="btn btn-primary" id="retry-btn" data-tip="💪 Don't give up! Try again!">Try Again</button>
+      <button class="btn btn-secondary" id="back-arcade-btn" data-tip="🏠 Go back and pick another game!">Back to Arcade</button>
+    </div>
+  </div>
+
+  <!-- Level Complete Overlay -->
+  <div class="game-overlay hidden" id="level-overlay">
+    <div class="overlay-title" id="level-title">Level 1 Clear!</div>
+    <p class="overlay-score" id="level-text">Get ready for the next level…</p>
+    <div class="overlay-buttons">
+      <button class="btn btn-primary" id="next-level-btn" data-tip="🚀 On to the next level!">Next Level</button>
+    </div>
+  </div>
+
+  <!-- Victory Overlay -->
+  <div class="game-overlay hidden" id="victory-overlay">
+    <div class="overlay-title">You Escaped!</div>
+    <p class="overlay-score" id="victory-text">Final Score: <span class="highlight">0</span></p>
+    <div class="overlay-buttons">
+      <button class="btn btn-primary" id="play-again-btn" data-tip="🎮 Play through again!">Play Again</button>
+      <button class="btn btn-secondary" id="back-arcade-btn-2" data-tip="🏠 Go back and pick another game!">Back to Arcade</button>
+    </div>
+  </div>
+
+  <!-- Lightsaber Volume UI -->
+  <div id="lightsaber-volume">
+    <div class="hilt-btn"></div>
+    <div class="blade-container">
+      <div class="blade-glow"></div>
+      <input type="range" min="0" max="1" step="0.01" value="0.5" class="volume-slider">
+    </div>
+  </div>
+
+  <script type="module" src="../js/stars.js"></script>
+  <script type="module" src="../js/cursor.js"></script>
+  <script type="module" src="../js/audio.js"></script>
+  <script type="module" src="../js/volume.js"></script>
+  <script type="module" src="../js/tooltips.js"></script>
+  <script type="module" src="blackholeninja.js"></script>
+
+  <script type="module" src="../js/mobile-controls.js"></script>
+</body>
+</html>
