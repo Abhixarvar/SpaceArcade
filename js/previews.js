@@ -728,6 +728,76 @@
     ctx.fillText('⭐ 5 / 8', trayX + 2, offY + 12);
   }
 
+  // ==== BLACKHOLE NINJA PREVIEW ====
+  function drawBlackholeNinja(canvas) {
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    
+    // Background gradient
+    const grad = ctx.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, '#020024');
+    grad.addColorStop(0.5, '#090979');
+    grad.addColorStop(1, '#00d4ff');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+    
+    // Draw some stars
+    ctx.fillStyle = '#ffffff';
+    ctx.globalAlpha = 0.5;
+    ctx.beginPath();
+    ctx.arc(W * 0.2, H * 0.3, 1, 0, Math.PI * 2);
+    ctx.arc(W * 0.8, H * 0.2, 1.5, 0, Math.PI * 2);
+    ctx.arc(W * 0.5, H * 0.6, 1, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1.0;
+
+    // Draw floor
+    ctx.fillStyle = '#1e1e1e';
+    const groundY = H - 30;
+    ctx.fillRect(0, groundY, W, 30);
+    ctx.strokeStyle = '#00f0ff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, groundY);
+    ctx.lineTo(W, groundY);
+    ctx.stroke();
+
+    // Draw Ninja (cyan square with eye)
+    ctx.fillStyle = '#00f0ff';
+    ctx.shadowColor = '#00f0ff';
+    ctx.shadowBlur = 10;
+    ctx.fillRect(W * 0.3, groundY - 20, 20, 20);
+    ctx.fillStyle = '#000';
+    ctx.shadowBlur = 0;
+    ctx.fillRect(W * 0.3 + 12, groundY - 15, 4, 4);
+
+    // Draw Blackhole
+    ctx.save();
+    ctx.translate(20, groundY - 40);
+    ctx.fillStyle = '#000';
+    ctx.shadowColor = '#a855f7';
+    ctx.shadowBlur = 20;
+    ctx.beginPath();
+    ctx.arc(0, 0, 25, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Accretion disk
+    ctx.strokeStyle = '#a855f7';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 35, 10, 0.2, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+    
+    // Draw obstacle (Lab table)
+    ctx.fillStyle = '#444';
+    ctx.fillRect(W * 0.7, groundY - 15, 30, 15);
+    ctx.fillStyle = '#666';
+    ctx.fillRect(W * 0.7, groundY - 15, 30, 3);
+  }
+
+
+
   // ---- Render all previews ----
   function renderAll() {
     const pongCanvas = document.getElementById('preview-pong');
@@ -736,6 +806,7 @@
     const troopersCanvas = document.getElementById('preview-troopers');
     const tetrisCanvas = document.getElementById('preview-tetris');
     const blockblastCanvas = document.getElementById('preview-blockblast');
+    const blackholeninjaCanvas = document.getElementById('preview-blackholeninja');
 
     if (pongCanvas) drawPong(pongCanvas);
     if (snakeCanvas) drawSnake(snakeCanvas);
@@ -743,6 +814,7 @@
     if (troopersCanvas) drawTroopers(troopersCanvas);
     if (tetrisCanvas) drawTetris(tetrisCanvas);
     if (blockblastCanvas) drawBlockBlast(blockblastCanvas);
+    if (blackholeninjaCanvas) drawBlackholeNinja(blackholeninjaCanvas);
   }
 
   // Render on load
