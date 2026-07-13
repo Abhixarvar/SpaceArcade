@@ -24,7 +24,7 @@
   const H = canvas.height;  // 400
 
   // ---- CONSTANTS ----
-  const GROUND_Y = H - 60;
+  const LANES = [H - 90, H - 30]; // Top lane, Bottom lane
   const GRAVITY = 0.35;
   const JUMP_FORCE = -10;
   const MAX_JUMPS = 2;
@@ -78,7 +78,8 @@
   function createNinja() {
     return {
       x: 120,
-      y: GROUND_Y,
+      lane: 1, // Start on bottom lane
+      y: LANES[1] - 42,
       w: 28,
       h: 42,
       vy: 0,
@@ -180,83 +181,57 @@
   function spawnObstacle() {
     const speedMul = LEVEL_SPEEDS[level - 1];
     const type = Math.random();
+    let lane = Math.random() < 0.5 ? 0 : 1;
+    let yBase = LANES[lane];
     let obs;
 
     if (type < 0.3) {
       // Lab table
       const w = 50 + Math.random() * 30;
       const h = 30 + Math.random() * 15;
-      obs = {
-        type: 'table',
-        x: W + 20,
-        y: GROUND_Y - h,
-        w: w,
-        h: h,
-        speed: scrollSpeed,
-      };
+      obs = { type: 'table', x: W + 20, y: yBase - h, w: w, h: h, speed: scrollSpeed, lane: lane };
     } else if (type < 0.55) {
       // Chemical barrel
       const r = 16 + Math.random() * 8;
-      obs = {
-        type: 'barrel',
-        x: W + 20,
-        y: GROUND_Y - r * 2,
-        w: r * 2,
-        h: r * 2,
-        r: r,
-        speed: scrollSpeed,
-      };
+      obs = { type: 'barrel', x: W + 20, y: yBase - r * 2, w: r * 2, h: r * 2, r: r, speed: scrollSpeed, lane: lane };
     } else if (type < 0.75) {
       // Laser beam — horizontal
-      const laserY = GROUND_Y - 40 - Math.random() * 60;
-      obs = {
-        type: 'laser',
-        x: W + 20,
-        y: laserY,
-        w: 60 + Math.random() * 40,
-        h: 6,
-        speed: scrollSpeed,
-        phase: 0,
-      };
+      const laserY = yBase - 40 - Math.random() * 60;
+      obs = { type: 'laser', x: W + 20, y: laserY, w: 60 + Math.random() * 40, h: 6, speed: scrollSpeed, phase: 0, lane: lane };
     } else {
       // Floating test tube cluster
-      const tubeY = GROUND_Y - 50 - Math.random() * 70;
-      obs = {
-        type: 'testtube',
-        x: W + 20,
-        y: tubeY,
-        w: 14,
-        h: 35,
-        speed: scrollSpeed,
-        bobPhase: Math.random() * Math.PI * 2,
-      };
+      const tubeY = yBase - 50 - Math.random() * 70;
+      obs = { type: 'testtube', x: W + 20, y: tubeY, w: 14, h: 35, speed: scrollSpeed, bobPhase: Math.random() * Math.PI * 2, lane: lane };
     }
 
-    // Occasionally spawn double obstacles on higher levels
-    if (level >= 2 && Math.random() < 0.25) {
-      obstacles.push(obs);
-      // Add a second obstacle nearby
-      const obs2 = { ...obs };
-      obs2.x += obs.w + 60 + Math.random() * 40;
-      if (obs2.type === 'testtube') {
-        obs2.y = GROUND_Y - 50 - Math.random() * 70;
-      }
+    const bothLanes = Math.random() < 0.2;
+    obstacles.push(obs);
+
+    if (bothLanes) {
+      let obs2 = { ...obs, lane: lane === 0 ? 1 : 0 };
+      obs2.y = obs.y + (LANES[obs2.lane] - LANES[lane]); // Adjust Y to match the new lane
       obstacles.push(obs2);
-    } else {
-      obstacles.push(obs);
+    } else if (level >= 2 && Math.random() < 0.25) {
+      // Add a second obstacle nearby
+      let obs2 = { ...obs };
+      obs2.x += obs.w + 60 + Math.random() * 40;
+      if (obs2.type === 'testtube') obs2.y = yBase - 50 - Math.random() * 70;
+      obstacles.push(obs2);
     }
   }
 
   // ---- POWERUP SPAWNING ----
   function spawnPowerup() {
+    let lane = Math.random() < 0.5 ? 0 : 1;
     powerups.push({
       x: W + 20,
-      y: GROUND_Y - 60 - Math.random() * 40,
+      y: LANES[lane] - 60 - Math.random() * 40,
       w: 22,
       h: 22,
       speed: scrollSpeed,
       phase: 0,
       collected: false,
+      lane: lane,
     });
   }
 
@@ -265,11 +240,12 @@
     spaceshipActive = true;
     spaceship = {
       x: W + 60,
-      y: GROUND_Y - 80,
+      y: LANES[1] - 80, // Space ship waits at the bottom lane
       w: 80,
       h: 50,
       boarded: false,
       flyPhase: 0,
+      lane: 1,
     };
   }
 
@@ -304,15 +280,23 @@
   }
 
   document.addEventListener('keydown', (e) => {
-    if ((e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') && !jumpPressed) {
+    if (e.code === 'Space' && !jumpPressed) {
       e.preventDefault();
       jumpPressed = true;
       handleJump();
+    } else if ((e.code === 'ArrowUp' || e.code === 'KeyW') && ninja.lane === 1 && ninja.alive && gameState === 'playing') {
+      e.preventDefault();
+      ninja.lane = 0;
+      ninja.y -= (LANES[1] - LANES[0]);
+    } else if ((e.code === 'ArrowDown' || e.code === 'KeyS') && ninja.lane === 0 && ninja.alive && gameState === 'playing') {
+      e.preventDefault();
+      ninja.lane = 1;
+      ninja.y += (LANES[1] - LANES[0]);
     }
   });
 
   document.addEventListener('keyup', (e) => {
-    if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+    if (e.code === 'Space') {
       jumpPressed = false;
     }
   });
@@ -320,10 +304,36 @@
   // Touch support
   canvas.addEventListener('touchstart', (e) => {
     e.preventDefault();
-    handleJump();
+    if (gameState !== 'playing') return;
+    const rect = canvas.getBoundingClientRect();
+    const touchX = e.touches[0].clientX - rect.left;
+    if (touchX > rect.width / 2) {
+      handleJump();
+    } else {
+      if (ninja.lane === 0) {
+        ninja.lane = 1;
+        ninja.y += (LANES[1] - LANES[0]);
+      } else {
+        ninja.lane = 0;
+        ninja.y -= (LANES[1] - LANES[0]);
+      }
+    }
   });
   canvas.addEventListener('mousedown', (e) => {
-    if (gameState === 'playing') handleJump();
+    if (gameState !== 'playing') return;
+    const rect = canvas.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    if (clickX > rect.width / 2) {
+      handleJump();
+    } else {
+      if (ninja.lane === 0) {
+        ninja.lane = 1;
+        ninja.y += (LANES[1] - LANES[0]);
+      } else {
+        ninja.lane = 0;
+        ninja.y -= (LANES[1] - LANES[0]);
+      }
+    }
   });
 
   // ---- COLLISION ----
@@ -393,7 +403,7 @@
   function drawGround() {
     // Ground fill
     ctx.fillStyle = COLORS.ground;
-    ctx.fillRect(0, GROUND_Y, W, H - GROUND_Y);
+    ctx.fillRect(0, LANES[0], W, H - LANES[0]);
 
     // Grid lines on ground
     ctx.strokeStyle = COLORS.groundLine;
@@ -402,26 +412,31 @@
     const offset = scrollOffset % tileW;
     for (let x = -offset; x < W; x += tileW) {
       ctx.beginPath();
-      ctx.moveTo(x, GROUND_Y);
+      ctx.moveTo(x, LANES[0]);
       ctx.lineTo(x, H);
       ctx.stroke();
     }
     // Horizontal lines
-    for (let y = GROUND_Y; y < H; y += 15) {
+    for (let y = LANES[0]; y < H; y += 15) {
       ctx.beginPath();
       ctx.moveTo(0, y);
       ctx.lineTo(W, y);
       ctx.stroke();
     }
 
-    // Ground top edge glow
+    // Lane separators
     ctx.strokeStyle = '#7c3aed';
     ctx.lineWidth = 2;
     ctx.shadowColor = '#7c3aed';
     ctx.shadowBlur = 10;
     ctx.beginPath();
-    ctx.moveTo(0, GROUND_Y);
-    ctx.lineTo(W, GROUND_Y);
+    ctx.moveTo(0, LANES[0]);
+    ctx.lineTo(W, LANES[0]);
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.moveTo(0, LANES[1]);
+    ctx.lineTo(W, LANES[1]);
     ctx.stroke();
     ctx.shadowBlur = 0;
   }
@@ -892,8 +907,8 @@
     if (!ninja.grounded) {
       ninja.vy += GRAVITY;
       ninja.y += ninja.vy;
-      if (ninja.y >= GROUND_Y - ninja.h) {
-        ninja.y = GROUND_Y - ninja.h;
+      if (ninja.y >= LANES[ninja.lane] - ninja.h) {
+        ninja.y = LANES[ninja.lane] - ninja.h;
         ninja.vy = 0;
         ninja.grounded = true;
         ninja.jumpCount = 0;
@@ -953,6 +968,7 @@
     // Collision: ninja vs obstacles
     if (ninja.alive && !ninja.invincible) {
       for (const obs of obstacles) {
+        if (obs.lane !== ninja.lane) continue;
         let hitBox = { x: obs.x, y: obs.y, w: obs.w, h: obs.h };
         // Adjust hitbox for test tubes (bobbing)
         if (obs.type === 'testtube') {
@@ -974,7 +990,7 @@
 
     // Collision: ninja vs powerups
     for (const pu of powerups) {
-      if (pu.collected) continue;
+      if (pu.collected || pu.lane !== ninja.lane) continue;
       const puBox = { x: pu.x, y: pu.y + Math.sin(pu.phase) * 3, w: pu.w, h: pu.h };
       const ninjaBox = { x: ninja.x, y: ninja.y, w: ninja.w, h: ninja.h };
       if (rectsOverlap(ninjaBox, puBox)) {
@@ -997,7 +1013,7 @@
         // Check if ninja reached spaceship
         const sBox = { x: spaceship.x, y: spaceship.y, w: spaceship.w, h: spaceship.h };
         const nBox = { x: ninja.x, y: ninja.y, w: ninja.w, h: ninja.h };
-        if (rectsOverlap(nBox, sBox)) {
+        if (spaceship.lane === ninja.lane && rectsOverlap(nBox, sBox)) {
           spaceship.boarded = true;
           ninja.alive = false; // ninja "enters" ship
           emitParticles(spaceship.x + 40, spaceship.y + 25, 25,
@@ -1124,12 +1140,15 @@
     drawGround();
     drawBlackHole();
 
-    obstacles.forEach(drawObstacle);
-    powerups.forEach(pu => { if (!pu.collected) drawPowerup(pu); });
-
-    if (spaceshipActive) drawSpaceship();
-    drawNinja();
-    drawInvincibleTimer();
+    for (let currentLane = 0; currentLane <= 1; currentLane++) {
+      obstacles.filter(o => o.lane === currentLane).forEach(drawObstacle);
+      powerups.filter(p => !p.collected && p.lane === currentLane).forEach(drawPowerup);
+      if (spaceshipActive && spaceship.lane === currentLane) drawSpaceship();
+      if (ninja.lane === currentLane) {
+        drawNinja();
+        drawInvincibleTimer();
+      }
+    }
     drawParticles();
 
     ctx.restore();
