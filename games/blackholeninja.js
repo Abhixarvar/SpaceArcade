@@ -25,43 +25,42 @@
 
   // ---- CONSTANTS ----
   const GROUND_Y = H - 60;
-  const GRAVITY = 0.55;
-  const JUMP_FORCE = -12;
+  const GRAVITY = 0.35;
+  const JUMP_FORCE = -10;
   const MAX_JUMPS = 2;
-  const LEVEL_DURATION = 60; // seconds
+  const LEVEL_DURATIONS = [25, 45, 55]; // seconds
   const POWERUP_INTERVAL = 15000; // ms between powerup spawns
   const INVINCIBLE_DURATION = 5000; // ms
 
-  const LEVEL_SPEEDS = [1.0, 1.5, 2.0];
+  const LEVEL_SPEEDS = [1.0, 1.3, 1.7]; // Fastest but not too fast
   const LEVEL_NAMES = ['Lab Escape', 'Corridor Run', 'Final Sprint'];
 
-  // ---- COLORS ----
   const COLORS = {
     ninja: '#1a1a2e',
     headband: '#ff007f',
     headbandTail: '#ff007f',
-    ground: '#1a0033',
-    groundLine: '#2a0055',
-    labTable: '#334155',
-    labTableTop: '#64748b',
-    barrel: '#dc2626',
-    barrelStripe: '#fbbf24',
-    laser: '#ff0040',
-    laserGlow: 'rgba(255, 0, 64, 0.3)',
-    testTube: '#22d3ee',
-    testTubeFluid: '#06b6d4',
-    powerup: '#00ff88',
-    powerupGlow: 'rgba(0, 255, 136, 0.4)',
-    invincible: '#ffd700',
-    invincibleGlow: 'rgba(255, 215, 0, 0.4)',
+    ground: '#333333', // greyish lab floor
+    groundLine: '#444444',
+    labTable: '#4a5568',
+    labTableTop: '#718096',
+    barrel: '#ff3366', // more colorful
+    barrelStripe: '#ffcc00', // more colorful
+    laser: '#ff00ff', // more colorful
+    laserGlow: 'rgba(255, 0, 255, 0.3)',
+    testTube: '#00ffcc', // more colorful
+    testTubeFluid: '#00ccff', // more colorful
+    powerup: '#ffff00', // more colorful
+    powerupGlow: 'rgba(255, 255, 0, 0.4)',
+    invincible: '#ff9900',
+    invincibleGlow: 'rgba(255, 153, 0, 0.4)',
     blackhole: '#1a0033',
-    blackholeRing: ['#7c3aed', '#6d28d9', '#4c1d95', '#2e1065'],
+    blackholeRing: ['#ff00ff', '#cc00ff', '#9900ff', '#6600ff'], // more colorful
     particle: ['#ff007f', '#ffd700', '#00f0ff', '#00ff88', '#b44aff', '#ff4444'],
-    bg1: '#0d0026',
-    bg2: '#1a0033',
-    shelf: '#2d1b4e',
-    beaker: '#38bdf8',
-    monitor: '#00ff88',
+    bg1: '#2b2b2b', // greyish background
+    bg2: '#3d3d3d', // greyish background
+    shelf: '#4d4d4d',
+    beaker: '#00ffcc', // more colorful
+    monitor: '#ff00ff', // more colorful
   };
 
   // ---- STATE ----
@@ -102,7 +101,7 @@
     bgElements = generateBgElements();
     score = 0;
     level = 1;
-    timeLeft = LEVEL_DURATION;
+    timeLeft = LEVEL_DURATIONS[0];
     running = false;
     gameState = 'start'; // start, playing, levelclear, victory, gameover
     scrollSpeed = 3 * LEVEL_SPEEDS[0];
@@ -338,7 +337,7 @@
   function drawBackground(dt) {
     // Dark gradient background
     const grad = ctx.createLinearGradient(0, 0, 0, H);
-    grad.addColorStop(0, '#050014');
+    grad.addColorStop(0, '#1a1a1a'); // greyish
     grad.addColorStop(0.6, COLORS.bg1);
     grad.addColorStop(1, COLORS.bg2);
     ctx.fillStyle = grad;
@@ -430,16 +429,16 @@
   function drawBlackHole() {
     const cx = blackholeX;
     const cy = H / 2 + 20;
-    const baseR = 50;
+    const baseR = 65;
 
     // Accretion disk rings
-    for (let i = 3; i >= 0; i--) {
-      const r = baseR + i * 18;
+    for (let i = 4; i >= 0; i--) {
+      const r = baseR + i * 22;
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.strokeStyle = COLORS.blackholeRing[i];
-      ctx.lineWidth = 3 + i;
-      ctx.globalAlpha = 0.3 + Math.sin(blackholePhase + i) * 0.15;
+      ctx.strokeStyle = i % 2 === 0 ? COLORS.blackholeRing[i % 4] : '#ff0040';
+      ctx.lineWidth = 4 + i;
+      ctx.globalAlpha = 0.4 + Math.sin(blackholePhase * 2 + i) * 0.2;
       ctx.stroke();
     }
     ctx.globalAlpha = 1;
@@ -447,43 +446,43 @@
     // Swirling arms
     ctx.save();
     ctx.translate(cx, cy);
-    ctx.rotate(blackholePhase * 0.5);
-    for (let arm = 0; arm < 4; arm++) {
-      ctx.rotate(Math.PI / 2);
+    ctx.rotate(blackholePhase * 0.8);
+    for (let arm = 0; arm < 6; arm++) {
+      ctx.rotate(Math.PI / 3);
       ctx.beginPath();
-      for (let t = 0; t < 60; t++) {
+      for (let t = 0; t < 80; t++) {
         const angle = t * 0.15;
-        const r = 15 + t * 1.2;
+        const r = 20 + t * 1.5;
         const x = Math.cos(angle) * r;
         const y = Math.sin(angle) * r;
         if (t === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       }
-      ctx.strokeStyle = `rgba(124, 58, 237, ${0.15})`;
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = `rgba(255, 0, 64, 0.3)`;
+      ctx.lineWidth = 3;
       ctx.stroke();
     }
     ctx.restore();
 
-    // Core — dark center
+    // Core — dark center with red edge
     const coreGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, baseR);
     coreGrad.addColorStop(0, 'rgba(0, 0, 0, 1)');
-    coreGrad.addColorStop(0.5, 'rgba(10, 0, 30, 0.95)');
-    coreGrad.addColorStop(0.8, 'rgba(30, 0, 60, 0.6)');
-    coreGrad.addColorStop(1, 'rgba(80, 0, 160, 0)');
+    coreGrad.addColorStop(0.6, 'rgba(20, 0, 0, 1)');
+    coreGrad.addColorStop(0.9, 'rgba(255, 0, 0, 0.8)');
+    coreGrad.addColorStop(1, 'rgba(124, 58, 237, 0)');
     ctx.fillStyle = coreGrad;
     ctx.beginPath();
     ctx.arc(cx, cy, baseR, 0, Math.PI * 2);
     ctx.fill();
 
     // Distortion pull lines
-    ctx.strokeStyle = 'rgba(124, 58, 237, 0.08)';
-    ctx.lineWidth = 1;
-    for (let i = 0; i < 8; i++) {
-      const angle = (blackholePhase * 0.3) + (i * Math.PI / 4);
+    ctx.strokeStyle = 'rgba(255, 0, 64, 0.15)';
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 12; i++) {
+      const angle = (blackholePhase * 0.5) + (i * Math.PI / 6);
       ctx.beginPath();
       ctx.moveTo(cx + Math.cos(angle) * baseR, cy + Math.sin(angle) * baseR);
-      ctx.lineTo(cx + Math.cos(angle) * (baseR + 200), cy + Math.sin(angle) * 80);
+      ctx.lineTo(cx + Math.cos(angle) * (baseR + 250), cy + Math.sin(angle) * 120);
       ctx.stroke();
     }
   }
@@ -497,6 +496,12 @@
 
     ctx.save();
 
+    // Default glow to highlight from background
+    if (!ninja.invincible) {
+      ctx.shadowColor = '#00f0ff';
+      ctx.shadowBlur = 12;
+    }
+
     // Invincible glow
     if (ninja.invincible) {
       ctx.shadowColor = COLORS.invincible;
@@ -506,7 +511,7 @@
       ctx.beginPath();
       ctx.arc(nx + ninja.w / 2, ny + ninja.h / 2, 30, 0, Math.PI * 2);
       ctx.fill();
-      ctx.shadowBlur = 0;
+      ctx.shadowBlur = 15;
     }
 
     // Body
@@ -518,6 +523,9 @@
     ctx.beginPath();
     ctx.arc(nx + 14, ny + 10, 10, 0, Math.PI * 2);
     ctx.fill();
+
+    // Remove shadow for facial features
+    ctx.shadowBlur = 0;
 
     // Eyes — white with determination
     ctx.fillStyle = '#fff';
@@ -599,6 +607,38 @@
       ctx.lineTo(nx + 26, ny + 12);
       ctx.stroke();
     }
+
+    // Draw the key in the right hand
+    ctx.fillStyle = '#ffd700'; // Gold key
+    ctx.strokeStyle = '#daa520';
+    ctx.lineWidth = 1.5;
+    let handX, handY;
+    if (ninja.grounded) {
+      const armSwing = Math.sin(phase + Math.PI) * 0.4;
+      handX = nx + 26 + Math.sin(armSwing) * 6;
+      handY = ny + 26;
+    } else {
+      handX = nx + 26;
+      handY = ny + 12;
+    }
+
+    // Key ring
+    ctx.beginPath();
+    ctx.arc(handX + 4, handY, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    
+    // Key shaft and teeth
+    ctx.beginPath();
+    ctx.moveTo(handX + 1, handY);
+    ctx.lineTo(handX - 8, handY);
+    ctx.lineTo(handX - 8, handY + 3);
+    ctx.lineTo(handX - 6, handY + 3);
+    ctx.lineTo(handX - 6, handY);
+    ctx.lineTo(handX - 4, handY + 3);
+    ctx.lineTo(handX - 2, handY + 3);
+    ctx.lineTo(handX - 2, handY);
+    ctx.stroke();
 
     ctx.restore();
   }
@@ -1040,7 +1080,7 @@
     ninja = createNinja();
     obstacles = [];
     powerups = [];
-    timeLeft = LEVEL_DURATION;
+    timeLeft = LEVEL_DURATIONS[lvl - 1];
     lastObstacleSpawn = 0;
     obstacleInterval = 1800 - (lvl - 1) * 200;
     lastPowerupSpawn = 0;
