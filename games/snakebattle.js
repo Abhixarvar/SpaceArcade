@@ -1161,4 +1161,20 @@
   ctx.fillStyle = BG;
   ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
+
+  // ---- SPACEBAR RESTART ----
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') {
+      const goOverlay = document.getElementById('gameover-overlay');
+      const vicOverlay = document.getElementById('victory-overlay');
+      const retryBtn = document.getElementById('retry-btn');
+      const playAgainBtn = document.getElementById('play-again-btn');
+
+      if (goOverlay && !goOverlay.classList.contains('hidden') && retryBtn) {
+        retryBtn.click();
+      } else if (vicOverlay && !vicOverlay.classList.contains('hidden') && playAgainBtn) {
+        playAgainBtn.click();
+      }
+    }
+  });
 })();

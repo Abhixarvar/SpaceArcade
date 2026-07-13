@@ -556,4 +556,20 @@
   if (urlParams.get('room')) {
     setTimeout(startGame, 500);
   }
+
+  // ---- SPACEBAR RESTART ----
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') {
+      const goOverlay = document.getElementById('gameover-overlay');
+      const vicOverlay = document.getElementById('victory-overlay');
+      const retryBtn = document.getElementById('retry-btn');
+      const playAgainBtn = document.getElementById('play-again-btn');
+
+      if (goOverlay && !goOverlay.classList.contains('hidden') && retryBtn) {
+        retryBtn.click();
+      } else if (vicOverlay && !vicOverlay.classList.contains('hidden') && playAgainBtn) {
+        playAgainBtn.click();
+      }
+    }
+  });
 })();
