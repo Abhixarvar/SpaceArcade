@@ -750,7 +750,7 @@
       if (window.parent !== window) {
         window.parent.postMessage({ type: 'LEAVE_GAME' }, '*');
       } else {
-        window.location.href = '../index.html';
+        window.location.href = '../singleplayer.html';
       }
     });
   }
