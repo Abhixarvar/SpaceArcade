@@ -60,6 +60,8 @@
   // Game state
   let board = [];
   let level, stars, totalStars, targetStars, highLevel;
+  let isPaused = false;
+  let kbRow = 0, kbCol = 0;
   let pieces = []; // 3 pieces in tray
   let selectedPiece = -1; // index in pieces[]
   let ghostPos = null; // {row, col} for placement preview
@@ -423,14 +425,17 @@
     ctx.fillStyle = 'rgba(10, 10, 46, 0.95)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Grid
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
-    ctx.lineWidth = 0.5;
-    for (let x = 0; x <= COLS; x++) {
-      ctx.beginPath(); ctx.moveTo(x * CELL, 0); ctx.lineTo(x * CELL, canvas.height); ctx.stroke();
-    }
-    for (let y = 0; y <= ROWS; y++) {
-      ctx.beginPath(); ctx.moveTo(0, y * CELL); ctx.lineTo(canvas.width, y * CELL); ctx.stroke();
+    // Cute grid
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.lineWidth = 1.5;
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        ctx.beginPath();
+        ctx.roundRect(c * CELL + 2, r * CELL + 2, CELL - 4, CELL - 4, 4);
+        ctx.fill();
+        ctx.stroke();
+      }
     }
 
     // Draw board cells
@@ -702,48 +707,6 @@
       ctx.restore();
     }
   }
-
-  // ========== KEYBOARD CONTROLS ==========
-
-  let kbRow = 0, kbCol = 0;
-
-  document.addEventListener('keydown', (e) => {
-    if (!running) return;
-
-    switch (e.key) {
-      case '1': selectedPiece = pieces[0] ? 0 : selectedPiece; renderTray(); SFX.step(); e.preventDefault(); break;
-      case '2': selectedPiece = pieces[1] ? 1 : selectedPiece; renderTray(); SFX.step(); e.preventDefault(); break;
-      case '3': selectedPiece = pieces[2] ? 2 : selectedPiece; renderTray(); SFX.step(); e.preventDefault(); break;
-      case 'ArrowLeft': case 'a': case 'A':
-        kbCol = Math.max(0, kbCol - 1);
-        updateGhost(kbRow, kbCol);
-        SFX.step();
-        e.preventDefault();
-        break;
-      case 'ArrowRight': case 'd': case 'D':
-        kbCol = Math.min(COLS - 1, kbCol + 1);
-        updateGhost(kbRow, kbCol);
-        SFX.step();
-        e.preventDefault();
-        break;
-      case 'ArrowUp': case 'w': case 'W':
-        kbRow = Math.max(0, kbRow - 1);
-        updateGhost(kbRow, kbCol);
-        SFX.step();
-        e.preventDefault();
-        break;
-      case 'ArrowDown': case 's': case 'S':
-        kbRow = Math.min(ROWS - 1, kbRow + 1);
-        updateGhost(kbRow, kbCol);
-        SFX.step();
-        e.preventDefault();
-        break;
-      case ' ': case 'Enter':
-        tryPlace();
-        e.preventDefault();
-        break;
-    }
-  });
 
   // ========== GAME FLOW ==========
 
