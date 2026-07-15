@@ -1495,134 +1495,6 @@ button { cursor: none; }
   }
 }
 
-/* ===== Lightsaber Volume UI ===== */
-#lightsaber-volume {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  display: flex;
-  align-items: center;
-  gap: 0;
-  z-index: 1000;
-  background: rgba(10, 10, 46, 0.6);
-  padding: 8px;
-  border-radius: 30px;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
-  --blade-length: 50%;
-  --blade-color: #00f0ff;
-  --blade-glow: 0 0 10px var(--blade-color), 0 0 20px var(--blade-color);
-}
-
-#lightsaber-volume:hover {
-  background: rgba(10, 10, 46, 0.8);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-.hilt-btn {
-  background: linear-gradient(90deg, #b0b0b0, #ffffff, #8a8a8a, #4a4a4a);
-  border: 1px solid #333;
-  width: 40px;
-  height: 20px;
-  border-radius: 4px 0 0 4px;
-  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><text y='24' font-size='24'>🖐️</text></svg>") 16 16, pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  z-index: 2;
-  box-shadow: inset 0 0 5px rgba(0,0,0,0.5), -2px 0 5px rgba(0,0,0,0.5);
-  transition: filter 0.2s;
-}
-
-.hilt-btn::before {
-  content: '';
-  position: absolute;
-  right: -2px;
-  top: -2px;
-  bottom: -2px;
-  width: 6px;
-  background: #333;
-  border-radius: 2px;
-}
-
-.hilt-btn::after {
-  content: '🔊';
-  font-size: 10px;
-  transform: rotate(-90deg);
-  opacity: 0.7;
-}
-
-#lightsaber-volume.muted .hilt-btn::after {
-  content: '🔈';
-  opacity: 0.4;
-}
-
-.blade-container {
-  position: relative;
-  width: 120px;
-  height: 12px;
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 0 10px 10px 0;
-  display: flex;
-  align-items: center;
-  overflow: visible;
-}
-
-/* The actual glowing blade */
-.blade-glow {
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  height: 8px;
-  width: var(--blade-length);
-  background: #fff;
-  border-radius: 0 4px 4px 0;
-  box-shadow: var(--blade-glow);
-  pointer-events: none;
-  transition: width 0.1s linear, box-shadow 0.2s, background 0.2s;
-  z-index: 1;
-}
-
-#lightsaber-volume.muted .blade-glow {
-  background: transparent;
-  box-shadow: none;
-}
-
-/* Invisible range slider sitting on top */
-.volume-slider {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 100%;
-  background: transparent;
-  outline: none;
-  position: absolute;
-  z-index: 3;
-  margin: 0;
-  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><text y='24' font-size='24'>🤏</text></svg>") 16 16, pointer;
-}
-
-.volume-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 12px;
-  height: 20px;
-  background: transparent;
-  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><text y='24' font-size='24'>🤏</text></svg>") 16 16, pointer;
-}
-
-.volume-slider::-moz-range-thumb {
-  width: 12px;
-  height: 20px;
-  background: transparent;
-  border: none;
-  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><text y='24' font-size='24'>🤏</text></svg>") 16 16, pointer;
-}
-
 /* Score Animation */
 @keyframes scoreBump {
   0% { transform: scale(1); filter: brightness(1); }
@@ -2426,4 +2298,22 @@ body.app-open-arrival .game-page {
 button.ufo-menu-item {
   text-align: left;
   outline: none;
+}
+
+.ufo-volume-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: default;
+}
+
+.ufo-volume-container:hover {
+  transform: none; /* disable hover translation for slider container */
+  box-shadow: none;
+}
+
+#ufo-volume-slider {
+  width: 100px;
+  cursor: pointer;
+  accent-color: var(--accent, #00f3ff);
 }

@@ -12,7 +12,6 @@
     container.id = 'ufo-nav-container';
 
     // Figure out correct path prefix based on current location
-    // Since some files are in /games/ and some are in /, we need to resolve relative paths
     const isGamePage = window.location.pathname.includes('/games/');
     const prefix = isGamePage ? '../' : '';
 
@@ -38,9 +37,10 @@
         <a href="${prefix}party.html" class="ufo-menu-item">
           <span class="icon">🍻</span> Party Lounge
         </a>
-        <button class="ufo-menu-item ufo-mute-btn" id="ufo-mute-btn">
-          <span class="icon" id="ufo-mute-icon">🔊</span> <span id="ufo-mute-text">Mute Sound</span>
-        </button>
+        <div class="ufo-menu-item ufo-volume-container" title="Adjust Volume">
+          <span class="icon" id="ufo-mute-icon" style="cursor: pointer;">🔊</span>
+          <input type="range" id="ufo-volume-slider" min="0" max="1" step="0.01" value="0.5">
+        </div>
       </div>
     `;
 
@@ -48,9 +48,8 @@
 
     const ufoBtn = container.querySelector('.ufo-btn');
     const ufoMenu = container.querySelector('.ufo-menu');
-    const muteBtn = container.querySelector('#ufo-mute-btn');
+    const volumeSlider = container.querySelector('#ufo-volume-slider');
     const muteIcon = container.querySelector('#ufo-mute-icon');
-    const muteText = container.querySelector('#ufo-mute-text');
 
     // 2. Toggle Menu
     ufoBtn.addEventListener('click', (e) => {
@@ -65,48 +64,61 @@
       }
     });
 
-    // 3. Mute Logic
-    let isMuted = false;
+    // Prevent closing menu when interacting with the slider
+    volumeSlider.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
 
-    // Helper to update mute UI
-    const updateMuteUI = (muted) => {
-      isMuted = muted;
-      muteIcon.textContent = isMuted ? '🔇' : '🔊';
-      muteText.textContent = isMuted ? 'Unmute Sound' : 'Mute Sound';
+    // 3. Volume Logic
+    const updateVolumeUI = (vol) => {
+      volumeSlider.value = vol;
+      if (vol == 0) {
+        muteIcon.textContent = '🔇';
+      } else if (vol < 0.5) {
+        muteIcon.textContent = '🔉';
+      } else {
+        muteIcon.textContent = '🔊';
+      }
     };
 
     // Check initial volume state
-    if (window.SFX && window.SFX.getVolume() === 0) {
-      updateMuteUI(true);
+    if (window.SFX) {
+      updateVolumeUI(window.SFX.getVolume());
     }
 
-    muteBtn.addEventListener('click', () => {
-      // If there is a lightsaber volume control on the page, use it to stay in sync!
-      const hiltBtn = document.querySelector('.hilt-btn');
-      if (hiltBtn) {
-        hiltBtn.click();
-        
-        // Wait a tick to read the new volume from SFX
-        setTimeout(() => {
-          if (window.SFX) {
-            updateMuteUI(window.SFX.getVolume() === 0);
-          }
-        }, 10);
+    volumeSlider.addEventListener('input', (e) => {
+      const vol = parseFloat(e.target.value);
+      if (window.SFX) {
+        window.SFX.setVolume(vol);
+      }
+      updateVolumeUI(vol);
+    });
+
+    let lastVol = 0.5;
+    muteIcon.addEventListener('click', (e) => {
+      e.stopPropagation();
+      let currentVol = parseFloat(volumeSlider.value);
+      if (currentVol > 0) {
+        lastVol = currentVol;
+        updateVolumeUI(0);
+        if (window.SFX) window.SFX.setVolume(0);
       } else {
-        // Fallback if no lightsaber (e.g. index.html)
-        if (window.SFX) {
-          if (isMuted) {
-            // Unmute to 50%
-            window.SFX.setVolume(0.5);
-            updateMuteUI(false);
-          } else {
-            // Mute
-            window.SFX.setVolume(0);
-            updateMuteUI(true);
-          }
-        }
+        updateVolumeUI(lastVol || 0.5);
+        if (window.SFX) window.SFX.setVolume(lastVol || 0.5);
       }
     });
+
+    // Start BGM on first interaction
+    const startBGM = () => {
+      if (window.SFX && volumeSlider.value > 0) {
+        window.SFX.startBGM();
+      }
+      document.removeEventListener('click', startBGM);
+      document.removeEventListener('keydown', startBGM);
+    };
+    document.addEventListener('click', startBGM);
+    document.addEventListener('keydown', startBGM);
+
   });
 
 })();
