@@ -2059,44 +2059,207 @@ a, button, select, .btn, .back-btn, .synth-btn, .game-card, .hilt-btn {
   }
 }
 
-/* This sets the default behavior */
-@view-transition {
-  navigation: auto;
-}
-/* make a smooth transition between pages */
-/* Optional: make the animation smoother */
-::view-transition-old(site-transition) {
-  animation:  slide-out 0.5s, fade-out 0.5s; 
-}
-::view-transition-new(site-transition) {
-  animation: slide-in 0.5s, fade-in 0.5s; 
+/* ===== Hyperspace Warp Page Transitions ===== */
+
+/* --- Overlay Container --- */
+.hyperspace-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
 }
 
+/* --- Departure: warp OUT (click a link) --- */
+.hyperspace-overlay.active {
+  visibility: visible;
+  pointer-events: all;
+  animation: warpOverlayIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
 
+@keyframes warpOverlayIn {
+  0%   { opacity: 0; }
+  30%  { opacity: 1; }
+  100% { opacity: 1; }
+}
 
-@keyframes slide-in{
-  from{
-    translate:100vw
+.hyperspace-overlay.active .warp-streak {
+  animation: streakOut 0.6s cubic-bezier(0.3, 0, 0.2, 1) forwards;
+  animation-delay: var(--delay);
+}
+
+.hyperspace-overlay.active .warp-flash {
+  animation: flashOut 0.6s ease-in-out forwards;
+}
+
+/* --- Arrival: warp IN (page just loaded) --- */
+.hyperspace-overlay.arriving {
+  visibility: visible;
+  animation: warpOverlayOut 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes warpOverlayOut {
+  0%   { opacity: 1; }
+  60%  { opacity: 1; }
+  100% { opacity: 0; visibility: hidden; }
+}
+
+.hyperspace-overlay.arriving .warp-streak {
+  animation: streakIn 0.7s cubic-bezier(0.3, 0, 0.2, 1) forwards;
+  animation-delay: var(--delay);
+}
+
+.hyperspace-overlay.arriving .warp-flash {
+  animation: flashIn 0.7s ease-in-out forwards;
+}
+
+/* --- Warp Lines Container --- */
+.warp-lines {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --- Individual Warp Streak --- */
+.warp-streak {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2px;
+  height: 0;
+  transform-origin: top center;
+  transform: translate(-50%, 0) rotate(var(--angle, 0deg));
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    hsla(var(--hue, 190), 100%, 80%, 0.9) 30%,
+    hsla(var(--hue, 190), 100%, 95%, 1) 60%,
+    transparent 100%
+  );
+  border-radius: 1px;
+  box-shadow: 0 0 6px hsla(var(--hue, 190), 100%, 70%, 0.5),
+              0 0 12px hsla(var(--hue, 190), 100%, 60%, 0.3);
+  opacity: 0;
+}
+
+/* --- Streak Animations --- */
+@keyframes streakOut {
+  0%   { height: 0; opacity: 0; }
+  20%  { height: 20px; opacity: 1; }
+  100% { height: var(--length, 50%); opacity: 0.8; width: 3px; }
+}
+
+@keyframes streakIn {
+  0%   { height: var(--length, 50%); opacity: 0.8; width: 3px; }
+  70%  { height: 20px; opacity: 1; }
+  100% { height: 0; opacity: 0; }
+}
+
+/* --- White Flash --- */
+.warp-flash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, 
+    rgba(255, 255, 255, 0.95) 0%, 
+    rgba(200, 240, 255, 0.6) 30%,
+    rgba(0, 240, 255, 0.2) 60%,
+    transparent 100%
+  );
+  opacity: 0;
+  pointer-events: none;
+}
+
+@keyframes flashOut {
+  0%   { opacity: 0; transform: scale(0.3); }
+  60%  { opacity: 0; transform: scale(0.5); }
+  100% { opacity: 1; transform: scale(2.5); }
+}
+
+@keyframes flashIn {
+  0%   { opacity: 1; transform: scale(2.5); }
+  40%  { opacity: 0.6; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.3); }
+}
+
+/* --- Page content entrance animation (works with overlay) --- */
+.page-content,
+.discord-lounge,
+.game-page {
+  animation: pageContentIn 0.5s ease-out 0.15s both;
+}
+
+@keyframes pageContentIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(8px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0);
   }
 }
 
-@keyframes slide-out{
-  to{
-    translate:-100vw
+/* ===== App Open Page Transitions ===== */
+.app-open-overlay {
+  position: fixed;
+  z-index: 100000;
+  top: var(--start-y);
+  left: var(--start-x);
+  width: var(--start-w);
+  height: var(--start-h);
+  border-radius: var(--radius-lg, 20px);
+  background: var(--bg-deep, #050014);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+}
+
+.app-open-overlay.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: all;
+  animation: appOpenExpand 0.45s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
+
+@keyframes appOpenExpand {
+  0% {
+    top: var(--start-y);
+    left: var(--start-x);
+    width: var(--start-w);
+    height: var(--start-h);
+    border-radius: var(--radius-lg, 20px);
+    opacity: 1;
+  }
+  100% {
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    opacity: 1;
   }
 }
 
-@keyframes fade-in{
-  to{
-    opacity:1;
-  }
+body.app-open-arrival .page-content,
+body.app-open-arrival .discord-lounge,
+body.app-open-arrival .game-page {
+  animation: appOpenArrival 0.5s cubic-bezier(0.19, 1, 0.22, 1) both;
 }
 
-@keyframes fade-out{
-  from{
-    opacity:1;
+@keyframes appOpenArrival {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
   }
-  to{
-    opacity:0;
-  } 
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
