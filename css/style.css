@@ -135,17 +135,25 @@ button { cursor: none; }
 }
 
 .compact-page {
-  height: 100vh;
-  min-height: unset;
-  justify-content: center;
-  padding: 10px 20px;
+  height: auto;
+  min-height: 100vh;
+  justify-content: flex-start;
+  padding: 40px 20px;
 }
 
 .home-page {
+  height: auto;
+  min-height: 100vh;
+  justify-content: flex-start;
+  padding: 40px 20px;
+}
+
+.game-page {
   height: 100vh;
   min-height: unset;
-  justify-content: center;
-  padding: 20px;
+  justify-content: center !important;
+  overflow: hidden;
+  padding: 10px 20px;
 }
 
 /* --- Arcade Header (used across all pages) --- */
