@@ -2059,4 +2059,44 @@ a, button, select, .btn, .back-btn, .synth-btn, .game-card, .hilt-btn {
   }
 }
 
+/* This sets the default behavior */
+@view-transition {
+  navigation: auto;
+}
+/* make a smooth transition between pages */
+/* Optional: make the animation smoother */
+::view-transition-old(site-transition) {
+  animation:  slide-out 0.5s, fade-out 0.5s; 
+}
+::view-transition-new(site-transition) {
+  animation: slide-in 0.5s, fade-in 0.5s; 
+}
 
+
+
+@keyframes slide-in{
+  from{
+    translate:100vw
+  }
+}
+
+@keyframes slide-out{
+  to{
+    translate:-100vw
+  }
+}
+
+@keyframes fade-in{
+  to{
+    opacity:1;
+  }
+}
+
+@keyframes fade-out{
+  from{
+    opacity:1;
+  }
+  to{
+    opacity:0;
+  } 
+}
