@@ -42,6 +42,7 @@
   let dropTimer, dropInterval, gameLoop, running;
   let lockDelay, lockTimer, lockMoves;
   let bag = [];
+  let isPaused = false;
 
   // Ghost / effects
   let lineClearEffect = null;
