@@ -2044,6 +2044,11 @@ body.page-arriving .page-transition-element {
   opacity: 1;
 }
 
+#ufo-nav-container.open .ufo-btn {
+  animation: none;
+  transform: rotate(45deg);
+}
+
 /* Hover Animation */
 @keyframes ufoHover {
   0%, 100% { transform: translateY(0) rotate(-2deg); }

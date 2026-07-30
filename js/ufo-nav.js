@@ -14,6 +14,37 @@
     // Figure out correct path prefix based on current location
     const isGamePage = window.location.pathname.includes('/games/');
     const prefix = isGamePage ? '../' : '';
+    
+    // Check if current page is the Home Page (index.html or root)
+    const isHomePage = window.location.pathname.endsWith('index.html') || 
+                       window.location.pathname === '/' || 
+                       window.location.pathname.endsWith('/');
+
+    const menuHTML = isHomePage 
+      ? `
+        <a href="${prefix}party.html" class="ufo-menu-item">
+          <span class="icon">🍻</span> Party Lounge
+        </a>
+        <div class="ufo-menu-item ufo-volume-container" title="Adjust Volume">
+          <span class="icon" id="ufo-mute-icon" style="cursor: pointer;">🔊</span>
+          <input type="range" id="ufo-volume-slider" min="0" max="1" step="0.01" value="0.5">
+        </div>
+      `
+      : `
+        <a href="${prefix}index.html" class="ufo-menu-item">
+          <span class="icon">🏠</span> Home
+        </a>
+        <a href="${prefix}singleplayer.html" class="ufo-menu-item">
+          <span class="icon">🕹️</span> Singleplayer
+        </a>
+        <a href="${prefix}party.html" class="ufo-menu-item">
+          <span class="icon">🍻</span> Party Lounge
+        </a>
+        <div class="ufo-menu-item ufo-volume-container" title="Adjust Volume">
+          <span class="icon" id="ufo-mute-icon" style="cursor: pointer;">🔊</span>
+          <input type="range" id="ufo-volume-slider" min="0" max="1" step="0.01" value="0.5">
+        </div>
+      `;
 
     container.innerHTML = `
       <div class="ufo-btn" title="Navigation Menu">
@@ -28,19 +59,7 @@
       </div>
 
       <div class="ufo-menu">
-        <a href="${prefix}index.html" class="ufo-menu-item">
-          <span class="icon">🏠</span> Home
-        </a>
-        <a href="${prefix}singleplayer.html" class="ufo-menu-item">
-          <span class="icon">🕹️</span> Singleplayer
-        </a>
-        <a href="${prefix}party.html" class="ufo-menu-item">
-          <span class="icon">🍻</span> Party Lounge
-        </a>
-        <div class="ufo-menu-item ufo-volume-container" title="Adjust Volume">
-          <span class="icon" id="ufo-mute-icon" style="cursor: pointer;">🔊</span>
-          <input type="range" id="ufo-volume-slider" min="0" max="1" step="0.01" value="0.5">
-        </div>
+        \${menuHTML}
       </div>
     `;
 
