@@ -1,0 +1,239 @@
+/* Galactic Wordle Styles */
+
+.wordle-board-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+  padding: 10px;
+}
+
+.wordle-grid {
+  display: grid;
+  grid-template-rows: repeat(6, 1fr);
+  grid-gap: 5px;
+  max-width: 350px;
+  width: 100%;
+}
+
+.wordle-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-gap: 5px;
+}
+
+.wordle-tile {
+  width: 100%;
+  aspect-ratio: 1;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  background-color: transparent;
+}
+
+.wordle-tile.filled {
+  border-color: rgba(255, 255, 255, 0.5);
+  animation: popIn 0.1s ease-in-out;
+}
+
+.wordle-tile.green {
+  background-color: #00ff88;
+  border-color: #00ff88;
+  color: #000;
+  text-shadow: none;
+  box-shadow: 0 0 10px #00ff88;
+}
+
+.wordle-tile.yellow {
+  background-color: #ffd700;
+  border-color: #ffd700;
+  color: #000;
+  text-shadow: none;
+  box-shadow: 0 0 10px #ffd700;
+}
+
+.wordle-tile.grey {
+  background-color: #333344;
+  border-color: #333344;
+  color: #aaa;
+}
+
+/* Keyboard Styles */
+.wordle-keyboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto 20px;
+  padding: 0 10px;
+}
+
+.keyboard-row {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.key {
+  font-family: inherit;
+  font-weight: bold;
+  border: 0;
+  padding: 0;
+  margin: 0 3px;
+  height: 50px;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-transform: uppercase;
+  transition: all 0.2s;
+  box-shadow: inset 0 0 5px rgba(255,255,255,0.05);
+}
+
+.key:active {
+  transform: scale(0.95);
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.key.large {
+  flex: 1.5;
+  font-size: 0.8rem;
+}
+
+.key.green {
+  background-color: #00ff88;
+  color: #000;
+  box-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
+}
+
+.key.yellow {
+  background-color: #ffd700;
+  color: #000;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+}
+
+.key.grey {
+  background-color: #333344;
+  color: #aaa;
+}
+
+.wordle-message {
+  background: rgba(255, 255, 255, 0.9);
+  color: #000;
+  padding: 5px 15px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  margin-top: 5px;
+  transition: opacity 0.3s;
+}
+
+.wordle-message.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Animations */
+@keyframes popIn {
+  0% { transform: scale(0.8); opacity: 0; }
+  40% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+@keyframes shake {
+  10%, 90% { transform: translateX(-2px); }
+  20%, 80% { transform: translateX(3px); }
+  30%, 50%, 70% { transform: translateX(-5px); }
+  40%, 60% { transform: translateX(5px); }
+}
+
+.shake {
+  animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+.wordle-rules {
+  margin: 15px 0;
+  text-align: left;
+  display: inline-block;
+  font-size: 0.9rem;
+}
+
+.rule-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.rule-tile {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 30px;
+  height: 30px;
+  margin-right: 10px;
+  font-weight: bold;
+  border-radius: 4px;
+}
+
+.rule-tile.green { background-color: #00ff88; color: #000; }
+.rule-tile.yellow { background-color: #ffd700; color: #000; }
+.rule-tile.grey { background-color: #333344; color: #aaa; }
+
+/* Multiplayer Layout */
+.multiplayer-board-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  padding: 10px;
+}
+
+@media (max-width: 600px) {
+  .multiplayer-board-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+.hud-player-name {
+  font-weight: bold;
+  color: var(--cyan);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+#hud-name-right {
+  color: var(--pink);
+}
+
+.mini-grid {
+  max-width: 180px;
+}
+
+.mini-grid .wordle-tile {
+  border-width: 1px;
+}
+
+/* Reusing some lobby styles if needed (already in style.css but just in case specific overrides are needed) */
+.countdown-num {
+  font-size: 8rem;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 0 20px #00f0ff, 0 0 40px #00f0ff;
+  animation: pulse 0.8s ease-in-out infinite alternate;
+}
+

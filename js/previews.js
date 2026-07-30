@@ -796,6 +796,96 @@
     ctx.fillRect(W * 0.7, groundY - 15, 30, 3);
   }
 
+  // ==== WORDLE PREVIEW ====
+  function drawWordle(canvas) {
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    
+    ctx.fillStyle = BG;
+    ctx.fillRect(0, 0, W, H);
+
+    const rows = 4;
+    const cols = 5;
+    const T = 16;
+    const gap = 4;
+    
+    const boardW = cols * T + (cols - 1) * gap;
+    const boardH = rows * T + (rows - 1) * gap;
+    
+    const offX = Math.floor((W - boardW) / 2);
+    const offY = Math.floor((H - boardH) / 2) - 10;
+
+    // Wordle colors
+    const C_EMPTY = 'rgba(255,255,255,0.1)';
+    const C_GREY = '#333344';
+    const C_YELLOW = '#ffd700';
+    const C_GREEN = '#00ff88';
+
+    // Board state for preview
+    const state = [
+      ['A', 'L', 'I', 'E', 'N'],
+      ['S', 'P', 'A', 'C', 'E'],
+      ['C', 'O', 'M', 'E', 'T'],
+      ['', '', '', '', '']
+    ];
+    
+    const colors = [
+      [C_GREY, C_GREY, C_YELLOW, C_GREY, C_YELLOW],
+      [C_GREEN, C_GREY, C_GREY, C_GREY, C_GREEN],
+      [C_GREEN, C_GREEN, C_GREEN, C_GREEN, C_GREEN],
+      [C_EMPTY, C_EMPTY, C_EMPTY, C_EMPTY, C_EMPTY]
+    ];
+
+    ctx.font = 'bold 10px Outfit, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const x = offX + c * (T + gap);
+        const y = offY + r * (T + gap);
+        
+        ctx.save();
+        ctx.fillStyle = colors[r][c];
+        
+        // Add glow for colored tiles
+        if (ctx.fillStyle === C_GREEN || ctx.fillStyle === C_YELLOW) {
+          ctx.shadowColor = ctx.fillStyle;
+          ctx.shadowBlur = 4;
+        }
+        
+        ctx.beginPath();
+        ctx.roundRect(x, y, T, T, 2);
+        ctx.fill();
+        ctx.restore();
+
+        // Draw letter
+        if (state[r][c]) {
+          ctx.fillStyle = (colors[r][c] === C_GREEN || colors[r][c] === C_YELLOW) ? '#000' : '#fff';
+          ctx.fillText(state[r][c], x + T / 2, y + T / 2 + 1);
+        }
+      }
+    }
+
+    // Mini keyboard
+    const keyY = offY + boardH + 15;
+    const keyW = 8;
+    const keyH = 10;
+    const keyGap = 2;
+    
+    // Just draw a few lines to represent keyboard
+    const kRows = [10, 9, 7];
+    kRows.forEach((numKeys, r) => {
+      const rowW = numKeys * keyW + (numKeys - 1) * keyGap;
+      const kOffX = Math.floor((W - rowW) / 2);
+      
+      for(let k = 0; k < numKeys; k++) {
+        ctx.fillStyle = 'rgba(255,255,255,0.2)';
+        ctx.fillRect(kOffX + k * (keyW + keyGap), keyY + r * (keyH + 2), keyW, keyH);
+      }
+    });
+  }
+
 
 
   // ---- Render all previews ----
@@ -807,6 +897,7 @@
     const tetrisCanvas = document.getElementById('preview-tetris');
     const blockblastCanvas = document.getElementById('preview-blockblast');
     const blackholeninjaCanvas = document.getElementById('preview-blackholeninja');
+    const wordleCanvas = document.getElementById('preview-wordle');
 
     if (pongCanvas) drawPong(pongCanvas);
     if (snakeCanvas) drawSnake(snakeCanvas);
@@ -815,6 +906,7 @@
     if (tetrisCanvas) drawTetris(tetrisCanvas);
     if (blockblastCanvas) drawBlockBlast(blockblastCanvas);
     if (blackholeninjaCanvas) drawBlackholeNinja(blackholeninjaCanvas);
+    if (wordleCanvas) drawWordle(wordleCanvas);
   }
 
   // Render on load
