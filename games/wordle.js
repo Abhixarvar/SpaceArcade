@@ -660,8 +660,24 @@ cancelConnectBtn.addEventListener('click', () => {
 backLobbyBtn.addEventListener('click', () => {
   playSound('blip');
   cleanupPeer();
-  showOverlay(lobbyOverlay);
+  if (window.parent !== window) {
+    window.parent.postMessage({ type: 'LEAVE_GAME' }, '*');
+  } else {
+    showOverlay(lobbyOverlay);
+  }
 });
+
+const backPartyBtn = document.getElementById('back-party-btn');
+if (backPartyBtn) {
+  backPartyBtn.addEventListener('click', (e) => {
+    playSound('blip');
+    cleanupPeer();
+    if (window.parent !== window) {
+      e.preventDefault();
+      window.parent.postMessage({ type: 'LEAVE_GAME' }, '*');
+    }
+  });
+}
 
 document.getElementById('room-code-box').addEventListener('click', () => {
   navigator.clipboard.writeText(roomCode).then(() => {

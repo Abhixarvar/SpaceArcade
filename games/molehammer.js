@@ -1136,7 +1136,11 @@
 
   backLobbyBtn.addEventListener('click', () => {
     cleanupPeer();
-    showOverlay(lobbyOverlay);
+    if (window.parent !== window) {
+      window.parent.postMessage({ type: 'LEAVE_GAME' }, '*');
+    } else {
+      showOverlay(lobbyOverlay);
+    }
   });
 
   roomCodeBox?.addEventListener('click', () => {

@@ -852,8 +852,12 @@
 
   backLobbyBtn.addEventListener('click', () => {
     handleDisconnect();
-    hideAll();
-    show(lobbyOverlay);
+    if (window.parent !== window) {
+      window.parent.postMessage({ type: 'LEAVE_GAME' }, '*');
+    } else {
+      hideAll();
+      show(lobbyOverlay);
+    }
   });
 
   const backBtn = document.getElementById('back-btn');
