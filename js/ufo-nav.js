@@ -65,36 +65,10 @@
 
     document.body.appendChild(container);
 
-    // DIAGNOSTIC: Force inline styles so UFO is always visible regardless of CSS loading
-    container.style.cssText = 'position: fixed !important; top: 20px !important; left: 20px !important; z-index: 9000 !important; display: flex !important; flex-direction: column !important; align-items: flex-start !important;';
-    
-    // DIAGNOSTIC: Style the UFO body so it's visible even without external CSS
-    const ufoBtnInner = container.querySelector('.ufo-btn');
-    if (ufoBtnInner) {
-      ufoBtnInner.style.cssText = 'position: relative; width: 80px; height: 60px; cursor: pointer;';
-    }
-    const ufoBodyInner = container.querySelector('.ufo-body');
-    if (ufoBodyInner) {
-      ufoBodyInner.style.cssText = 'position: absolute; top: 25px; left: 0; width: 80px; height: 20px; background: linear-gradient(to bottom, #bdc3c7, #7f8c8d); border-radius: 40px; display: flex; justify-content: space-evenly; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5);';
-    }
-    const ufoDomeInner = container.querySelector('.ufo-dome');
-    if (ufoDomeInner) {
-      ufoDomeInner.style.cssText = 'position: absolute; top: 5px; left: 20px; width: 40px; height: 25px; background: rgba(0,255,255,0.4); border-radius: 40px 40px 0 0; box-shadow: 0 0 15px rgba(0,255,255,0.5); border: 1px solid rgba(0,255,255,0.8);';
-    }
-
     const ufoBtn = container.querySelector('.ufo-btn');
     const ufoMenu = container.querySelector('.ufo-menu');
     const volumeSlider = container.querySelector('#ufo-volume-slider');
     const muteIcon = container.querySelector('#ufo-mute-icon');
-
-    // Diagnostic logging
-    console.log('[UFO-NAV] Container appended:', !!document.getElementById('ufo-nav-container'));
-    console.log('[UFO-NAV] Container rect:', JSON.stringify(container.getBoundingClientRect()));
-    console.log('[UFO-NAV] computed display:', window.getComputedStyle(container).display);
-    console.log('[UFO-NAV] computed visibility:', window.getComputedStyle(container).visibility);
-    console.log('[UFO-NAV] computed opacity:', window.getComputedStyle(container).opacity);
-    console.log('[UFO-NAV] computed z-index:', window.getComputedStyle(container).zIndex);
-    console.log('[UFO-NAV] isHomePage:', isHomePage, '| pathname:', window.location.pathname);
 
     // 2. Toggle Menu
     ufoBtn.addEventListener('click', (e) => {
