@@ -7,18 +7,18 @@ const WORDS = [
   "PILOT", "FLEET", "CRAFT", "STONE", "APPLE", "BREAD", "CHAIR", "DANCE", "EAGLE", "FLAME",
   "GHOST", "HEART", "IGLOO", "JUICE", "KNIFE", "LEMON", "MAGIC", "NIGHT", "OCEAN", "PIZZA",
   "QUEEN", "RIVER", "SNAKE", "TRAIN", "UNCLE", "VOICE", "WATER", "XENON", "YACHT", "ZEBRA",
-  "BRAVE", "CLEAN", "DRIVE", "EMPTY", "FRESH", "GRAND", "HAPPY", "IDEAL", "JOLLY", "KIND",
+  "BRAVE", "CLEAN", "DRIVE", "EMPTY", "FRESH", "GRAND", "HAPPY", "IDEAL", "JOLLY", "KINKY",
   "LUCKY", "NOBLE", "PROUD", "QUIET", "RIGHT", "SMART", "TOUGH", "VALID", "YOUNG", "ZESTY",
   "BRICK", "CLOCK", "DREAM", "FRAME", "GLASS", "HOUSE", "IMAGE", "LOGIC", "MUSIC", "NOVEL",
   "PAPER", "RADIO", "SUGAR", "TABLE", "VIDEO", "WHEEL", "YOUTH", "ALARM", "BLAME", "CRASH",
   "DOUBT", "FAULT", "GUESS", "HURRY", "ISSUE", "JUDGE", "KNOCK", "LAUGH", "MATCH", "NEEDS",
   "OFFER", "PRICE", "REPLY", "SMILE", "TRUST", "VALUE", "WORRY", "YIELD", "BEAST", "FORCE",
-  "POWER", "FLARE", "GIANT", "MILKY", "PHASE", "QUARK", "TITAN", "WIDER", "ZODIAC", "ACTOR",
+  "POWER", "FLARE", "GIANT", "MILKY", "PHASE", "QUARK", "TITAN", "WIDER", "GLYPH", "ACTOR",
   "ACUTE", "ADAPT", "ADMIT", "ADOPT", "ADULT", "AFTER", "AGAIN", "AGENT", "AGREE", "AHEAD",
   "ALBUM", "ALERT", "ALIKE", "ALIVE", "ALLOW", "ALONE", "ALONG", "ALTER", "AMONG", "ANGER",
   "ANGLE", "ANGRY", "APART", "APPLY", "ARENA", "ARGUE", "ARISE", "ARRAY", "ASIDE", "ASSET",
   "AUDIO", "AUDIT", "AVOID", "AWARD", "AWARE"
-];
+].filter(w => w.length === 5);
 
 // Game State
 let secretWord = "";
@@ -289,7 +289,8 @@ function startCountdown() {
   showOverlay(countdownOverlay);
   
   if (isHost) {
-    secretWord = WORDS[Math.floor(Math.random() * WORDS.length)];
+    const validWords = WORDS.filter(w => w.length === 5);
+    secretWord = validWords[Math.floor(Math.random() * validWords.length)];
     send({ type: 'start-game', word: secretWord });
     hudNameLeft.textContent = myName;
     hudNameRight.textContent = opponentName;
@@ -595,7 +596,8 @@ function handleRematch() {
 }
 
 function startSingleplayerGame() {
-  secretWord = WORDS[Math.floor(Math.random() * WORDS.length)];
+  const validWords = WORDS.filter(w => w.length === 5);
+  secretWord = validWords[Math.floor(Math.random() * validWords.length)];
   currentAttempt = 0;
   currentLetterPosition = 0;
   isGameOver = false;
