@@ -18,7 +18,8 @@ export default defineConfig({
         snakebattle: resolve(__dirname, 'games/snakebattle.html'),
         spacerangers: resolve(__dirname, 'games/spacerangers.html'),
         tetris: resolve(__dirname, 'games/tetris.html'),
-        troopers: resolve(__dirname, 'games/troopers.html')
+        troopers: resolve(__dirname, 'games/troopers.html'),
+        wordle: resolve(__dirname, 'games/wordle.html')
       }
     }
   }
