@@ -1,4 +1,14 @@
-import { playSound } from '../js/audio.js';
+// Audio helper — maps string keys to window.SFX methods (audio.js uses window.SFX, not named exports)
+function playSound(key) {
+  if (!window.SFX) return;
+  switch (key) {
+    case 'start':   window.SFX.powerup();  break;
+    case 'blip':    window.SFX.eat();      break;
+    case 'hurt':    window.SFX.hit();      break;
+    case 'powerup': window.SFX.powerup();  break;
+    default: break;
+  }
+}
 
 // Strict 5-letter Word Dictionary (Over 100 space & general words)
 const WORDS = [
