@@ -90,11 +90,28 @@
         <span class="card-play-btn">Launch Mission</span>
       </a>
 
+      <!-- Block Blast: Extreme Saga -->
+      <a href="games/blockblast-extreme.html" class="game-card thumb-card" data-game="extreme" id="card-extreme" data-tip="🔥 No levels — just go for the ultimate score!">
+        <div class="thumb-wrap">
+          <canvas class="card-preview" id="preview-extreme" width="280" height="150"></canvas>
+          <h2 class="thumb-title">Extreme Saga</h2>
+        </div>
+        <span class="card-play-btn">Launch Mission</span>
+      </a>
+
     </section>
 
   </div>
 
   
+
+  <!-- SFX safety shim — ensures window.SFX exists before modules run -->
+  <script>
+    if (!window.SFX) {
+      const noop = () => {};
+      window.SFX = { shoot:noop, eat:noop, powerup:noop, explode:noop, hit:noop, gameOver:noop, levelUp:noop, ghostEat:noop, step:noop, startBGM:noop, stopBGM:noop, setVolume:noop, getVolume:()=>0.5 };
+    }
+  </script>
 
   <!-- Scripts -->
   <script type="module" src="js/stars.js"></script>
@@ -107,3 +124,4 @@
   <script src="js/ufo-nav.js"></script>
 </body>
 </html>
+

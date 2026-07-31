@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Block Blast: Extreme Saga — Endless high-score block puzzle in Space Arcade!">
+  <title>Block Blast: Extreme Saga — Space Arcade</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/spaceship.svg">
+  <link rel="stylesheet" href="../css/style.css?v=5">
+  <link rel="stylesheet" href="../css/mobile-controls.css">
+  <style>
+    /* ── Extreme Saga specific styles ── */
+    .extreme-hud {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+    .extreme-hud .hud-cell {
+      text-align: center;
+      min-width: 70px;
+    }
+    .extreme-hud .hud-label {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 600;
+    }
+    .extreme-hud .hud-value {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--cyan);
+      font-family: var(--font-funky);
+      letter-spacing: 1px;
+      transition: transform 0.15s, color 0.15s;
+    }
+    .extreme-hud .hud-value.bump {
+      transform: scale(1.5);
+      color: #ffd700;
+    }
+    .hud-cell.combo .hud-value {
+      color: #ff6bcd;
+      animation: comboPulse 0.4s ease;
+    }
+    @keyframes comboPulse {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(1.6); }
+      100% { transform: scale(1); }
+    }
+    .hud-cell.combo-inactive .hud-value {
+      color: var(--text-muted);
+    }
+    /* Tier badge */
+    .tier-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 12px;
+      border-radius: 20px;
+      font-family: var(--font-funky);
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border: 1px solid currentColor;
+      color: var(--cyan);
+      margin-bottom: 4px;
+      animation: tierPulse 2s ease-in-out infinite;
+    }
+    @keyframes tierPulse {
+      0%,100% { box-shadow: 0 0 8px currentColor; }
+      50%      { box-shadow: 0 0 20px currentColor; }
+    }
+    /* Extreme start overlay */
+    .extreme-start-badge {
+      font-family: var(--font-funky);
+      font-size: 0.7rem;
+      letter-spacing: 3px;
+      color: #ff4444;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      text-shadow: 0 0 8px #ff4444;
+      animation: extremeBadgePulse 1s ease-in-out infinite alternate;
+    }
+    @keyframes extremeBadgePulse {
+      from { opacity: 0.7; }
+      to   { opacity: 1; text-shadow: 0 0 20px #ff4444; }
+    }
+    .extreme-rules {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 12px 0;
+    }
+    .extreme-rule-chip {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+    .extreme-rule-chip strong {
+      color: #ffd700;
+    }
+  </style>
+</head>
+<body class="no-scroll">
+
+  <div id="starfield"></div>
+
+  <div class="page-content game-page compact-page">
+    <header class="arcade-header game-arcade-header">
+      <a href="../index.html" class="arcade-logo-link">
+        <h1 class="arcade-logo small">SPACE ARCADE</h1>
+      </a>
+    </header>
+
+    <!-- HUD -->
+    <div class="extreme-hud">
+      <div class="hud-cell">
+        <div class="hud-label">Score</div>
+        <div class="hud-value" id="score">0</div>
+      </div>
+      <div class="hud-cell" id="combo-cell">
+        <div class="hud-label">Combo</div>
+        <div class="hud-value" id="combo">x1</div>
+      </div>
+      <div class="hud-cell">
+        <div class="hud-label">Lines</div>
+        <div class="hud-value" id="lines">0</div>
+      </div>
+      <div class="hud-cell">
+        <div class="hud-label">Tier</div>
+        <div class="tier-badge" id="tier-badge">🔥 Rookie</div>
+      </div>
+      <div class="hud-cell">
+        <div class="hud-label">Best</div>
+        <div class="hud-value" id="high-score">0</div>
+      </div>
+    </div>
+
+    <div class="game-canvas-wrap">
+      <canvas id="game-canvas" width="300" height="300"></canvas>
+    </div>
+    <div id="piece-tray"></div>
+    <p class="game-controls-hint">
+      Drag &amp; drop pieces &nbsp;|&nbsp;
+      <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> Select &nbsp;|&nbsp;
+      <kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd> Move &nbsp;|&nbsp;
+      <kbd>Space</kbd> Place
+    </p>
+  </div>
+
+  <!-- Start Overlay -->
+  <div class="game-overlay" id="start-overlay">
+    <div class="extreme-start-badge">⚡ EXTREME MODE ⚡</div>
+    <div class="overlay-title" style="background: linear-gradient(135deg, #ff4444, #ff6bcd, #ffd700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Extreme Saga</div>
+    <p class="overlay-score">No levels. No limits. Just your score. 💥</p>
+    <div class="extreme-rules">
+      <div class="extreme-rule-chip">🔗 Chain clears = <strong>Combo</strong> multiplier</div>
+      <div class="extreme-rule-chip">📈 Harder pieces over time</div>
+      <div class="extreme-rule-chip">🏆 Beat your high score</div>
+    </div>
+    <div id="best-score-display" style="font-family: var(--font-funky); color: #ffd700; margin-bottom: 16px; font-size: 1rem; letter-spacing: 2px;"></div>
+    <div class="overlay-buttons">
+      <button class="btn btn-primary" id="start-btn" data-tip="🔥 No levels — just push for the highest score!">Begin Extreme</button>
+    </div>
+  </div>
+
+  <!-- Game Over Overlay -->
+  <div class="game-overlay hidden" id="gameover-overlay">
+    <div class="extreme-start-badge">⚡ GAME OVER ⚡</div>
+    <div class="overlay-title">Defeated</div>
+    <p class="overlay-score" id="gameover-text">Score: <span class="highlight">0</span></p>
+    <div class="overlay-buttons">
+      <button class="btn btn-primary" id="retry-btn" data-tip="💪 Beat your record!">Try Again</button>
+      <button class="btn btn-secondary" id="back-arcade-btn" data-tip="🏠 Go back and pick another game!">Back to Arcade</button>
+    </div>
+  </div>
+
+  <script type="module" src="../js/stars.js"></script>
+  <script type="module" src="../js/cursor.js"></script>
+  <script type="module" src="../js/audio.js"></script>
+  <script type="module" src="../js/tooltips.js"></script>
+  <script type="module" src="blockblast-extreme.js"></script>
+
+  <script type="module" src="../js/mobile-controls.js"></script>
+  <script src="../js/transitions.js"></script>
+  <script src="../js/ufo-nav.js"></script>
+</body>
+</html>

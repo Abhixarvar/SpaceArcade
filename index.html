@@ -16,21 +16,56 @@
   <!-- Page Content -->
   <div class="page-content home-page">
 
+    <!-- Floating Decorations -->
+    <div class="landing-floaters" aria-hidden="true">
+      <span class="floater" style="--x:8%;--y:15%;--dur:6s;--delay:0s;--size:2.2rem;">🚀</span>
+      <span class="floater" style="--x:88%;--y:12%;--dur:7s;--delay:1s;--size:1.8rem;">⭐</span>
+      <span class="floater" style="--x:5%;--y:70%;--dur:8s;--delay:0.5s;--size:1.5rem;">🪐</span>
+      <span class="floater" style="--x:92%;--y:60%;--dur:5.5s;--delay:2s;--size:1.6rem;">🌙</span>
+      <span class="floater" style="--x:50%;--y:5%;--dur:9s;--delay:0.2s;--size:1.3rem;">✨</span>
+      <span class="floater" style="--x:20%;--y:85%;--dur:6.5s;--delay:1.5s;--size:1.4rem;">👾</span>
+      <span class="floater" style="--x:75%;--y:88%;--dur:7.5s;--delay:0.8s;--size:1.4rem;">🎮</span>
+      <span class="floater" style="--x:35%;--y:92%;--dur:5s;--delay:3s;--size:1.2rem;">💫</span>
+    </div>
+
     <!-- Header Banner -->
-    <header class="arcade-header">
+    <header class="arcade-header landing-header">
       <h1 class="arcade-logo">
         <span class="hover-letter">S</span><span class="hover-letter">P</span><span class="hover-letter">A</span><span class="hover-letter">C</span><span class="hover-letter">E</span>
         &nbsp;
         <span class="hover-letter">A</span><span class="hover-letter">R</span><span class="hover-letter">C</span><span class="hover-letter">A</span><span class="hover-letter">D</span><span class="hover-letter">E</span>
       </h1>
+      <p class="landing-tagline">
+        <span class="tagline-word">🕹️ Blast off into fun</span>
+        <span class="tagline-dot">·</span>
+        <span class="tagline-word">Play solo, locally or online!</span>
+        <span class="tagline-dot">·</span>
+        <span class="tagline-word">100% Free 🎉</span>
+      </p>
     </header>
 
     <!-- Main Navigation Menu -->
-    <section class="synth-nav">
-      <a href="singleplayer.html" class="synth-btn" data-tip="🎮 Play awesome games all by yourself!"><span class="btn-scanline"></span>SINGLEPLAYER GAMES</a>
-      <a href="party.html" class="synth-btn" data-tip="🎉 Play with friends online in real time!"><span class="btn-scanline"></span>ONLINE PARTY LOUNGE</a>
-      <a href="offline.html" class="synth-btn" data-tip="👫 Share the keyboard and play with a friend next to you!"><span class="btn-scanline"></span>LOCAL MULTIPLAYER</a>
-      <a href="#promo-section" class="synth-btn" data-tip="🌟 Check out other cool stuff we made!"><span class="btn-scanline"></span>MORE FROM US</a>
+    <section class="synth-nav landing-nav">
+      <a href="singleplayer.html" class="synth-btn landing-btn landing-btn--solo" data-tip="🎮 Play awesome games all by yourself!">
+        <span class="landing-btn-icon">🎮</span>
+        <span class="landing-btn-label">SINGLEPLAYER</span>
+        <span class="landing-btn-sub">Play solo adventures</span>
+      </a>
+      <a href="party.html" class="synth-btn landing-btn landing-btn--party" data-tip="🎉 Play with friends online in real time!">
+        <span class="landing-btn-icon">🎉</span>
+        <span class="landing-btn-label">ONLINE PARTY</span>
+        <span class="landing-btn-sub">Real-time multiplayer</span>
+      </a>
+      <a href="offline.html" class="synth-btn landing-btn landing-btn--local" data-tip="👫 Share the keyboard with a friend!">
+        <span class="landing-btn-icon">👫</span>
+        <span class="landing-btn-label">LOCAL PLAY</span>
+        <span class="landing-btn-sub">Share the keyboard!</span>
+      </a>
+      <a href="#promo-section" class="synth-btn landing-btn landing-btn--more" data-tip="🌟 Check out other cool stuff we made!">
+        <span class="landing-btn-icon">🌟</span>
+        <span class="landing-btn-label">MORE FROM US</span>
+        <span class="landing-btn-sub">Our other projects</span>
+      </a>
     </section>
 
     <!-- Ad-style Partner Banner -->

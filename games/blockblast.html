@@ -67,6 +67,8 @@
 
   
 
+  <!-- SFX safety shim -->
+  <script>if(!window.SFX){const n=()=>{};window.SFX={shoot:n,eat:n,powerup:n,explode:n,hit:n,gameOver:n,levelUp:n,ghostEat:n,step:n,startBGM:n,stopBGM:n,setVolume:n,getVolume:()=>0.5};}</script>
   <script type="module" src="../js/stars.js"></script>
   <script type="module" src="../js/cursor.js"></script>
   <script type="module" src="../js/audio.js"></script>

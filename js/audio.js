@@ -1,5 +1,12 @@
 /* ===== Space Arcade — Retro Audio Engine ===== */
 /* Web Audio API synth — no external files needed */
+
+// Safety no-op shim — overwritten by actual engine below
+if (!window.SFX) {
+  const noop = () => {};
+  window.SFX = { shoot:noop, eat:noop, powerup:noop, explode:noop, hit:noop, gameOver:noop, levelUp:noop, ghostEat:noop, step:noop, startBGM:noop, stopBGM:noop, setVolume:noop, getVolume:()=>0.5 };
+}
+
 window.SFX = (function () {
   let ctx = null;
   let masterGain = null;

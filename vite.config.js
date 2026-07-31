@@ -11,6 +11,7 @@ export default defineConfig({
         offline: resolve(__dirname, 'offline.html'),
         blackholeninja: resolve(__dirname, 'games/blackholeninja.html'),
         blockblast: resolve(__dirname, 'games/blockblast.html'),
+        blockblastExtreme: resolve(__dirname, 'games/blockblast-extreme.html'),
         molehammer: resolve(__dirname, 'games/molehammer.html'),
         pacman: resolve(__dirname, 'games/pacman.html'),
         pong: resolve(__dirname, 'games/pong.html'),
