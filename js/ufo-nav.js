@@ -63,6 +63,19 @@
       </div>
     `;
 
+    // Apply critical inline styles to guarantee fixed positioning
+    // (prevents CSS load-order or specificity issues from hiding the UFO)
+    Object.assign(container.style, {
+      position: 'fixed',
+      top: '20px',
+      left: '20px',
+      zIndex: '9999',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'flex-start',
+      pointerEvents: 'auto'
+    });
+
     document.body.appendChild(container);
 
     const ufoBtn = container.querySelector('.ufo-btn');
