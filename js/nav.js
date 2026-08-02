@@ -286,6 +286,13 @@
         desc: 'Real-time multiplayer'
       },
       {
+        href: `${prefix}console.html`,
+        key: 'console.html',
+        icon: '📱',
+        title: 'Console Mode',
+        desc: 'Phone as Controller'
+      },
+      {
         href: `${prefix}offline.html`,
         key: 'offline.html',
         icon: '👫',

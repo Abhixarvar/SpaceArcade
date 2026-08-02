@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Space Arcade Console Mode — Turn your mobile phone into a wireless gamepad controller for your PC!">
+  <title>Console Mode — Space Arcade</title>
+  <link rel="icon" type="image/svg+xml" href="assets/spaceship.svg">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    :root {
+      --console-bg: #070314;
+      --console-card-bg: rgba(18, 10, 42, 0.75);
+      --neon-cyan: #00f0ff;
+      --neon-pink: #ff007f;
+      --neon-yellow: #ffea00;
+      --neon-green: #00ff88;
+    }
+
+    body {
+      background: var(--console-bg);
+      color: #fff;
+      font-family: var(--font-funky, 'Outfit', sans-serif);
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* CRT Scanline Overlay */
+    .crt-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: linear-gradient(
+        rgba(18, 16, 16, 0) 50%, 
+        rgba(0, 0, 0, 0.25) 50%
+      );
+      background-size: 100% 4px;
+      z-index: 9999;
+      pointer-events: none;
+      opacity: 0.4;
+    }
+
+    /* Top Bar */
+    .console-navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      background: rgba(10, 4, 30, 0.85);
+      border-bottom: 2px solid rgba(0, 240, 255, 0.2);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .console-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: var(--neon-cyan);
+      text-shadow: 0 0 12px rgba(0, 240, 255, 0.6);
+    }
+
+    .console-title span {
+      background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .connection-status-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 18px;
+      border-radius: 30px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      background: rgba(255, 0, 127, 0.12);
+      border: 1px solid rgba(255, 0, 127, 0.4);
+      color: var(--neon-pink);
+      box-shadow: 0 0 15px rgba(255, 0, 127, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .connection-status-pill.connected {
+      background: rgba(0, 255, 136, 0.12);
+      border-color: var(--neon-green);
+      color: var(--neon-green);
+      box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--neon-pink);
+      box-shadow: 0 0 8px var(--neon-pink);
+      animation: pulseDot 1.5s infinite alternate;
+    }
+
+    .connection-status-pill.connected .status-dot {
+      background: var(--neon-green);
+      box-shadow: 0 0 8px var(--neon-green);
+    }
+
+    @keyframes pulseDot {
+      from { opacity: 0.4; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1.2); }
+    }
+
+    /* Main Console Hub Layout */
+    .console-hub-container {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 2rem;
+      max-width: 1400px;
+      margin: 2rem auto;
+      padding: 0 2rem;
+    }
+
+    @media (max-width: 900px) {
+      .console-hub-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Controller Setup Panel */
+    .qr-setup-card {
+      background: var(--console-card-bg);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      border-radius: 16px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 240, 255, 0.05);
+      height: fit-content;
+    }
+
+    .qr-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--neon-cyan);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .qr-desc {
+      font-size: 0.85rem;
+      color: #a0aec0;
+      margin-bottom: 1.2rem;
+      line-height: 1.4;
+    }
+
+    .qr-code-box {
+      background: #fff;
+      padding: 14px;
+      border-radius: 12px;
+      box-shadow: 0 0 25px rgba(0, 240, 255, 0.4);
+      margin-bottom: 1rem;
+      min-width: 180px;
+      min-height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qr-code-box canvas, .qr-code-box img {
+      display: block;
+      max-width: 180px;
+      max-height: 180px;
+    }
+
+    .room-code-badge {
+      font-family: monospace;
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: 3px;
+      color: var(--neon-yellow);
+      background: rgba(255, 234, 0, 0.1);
+      border: 1px dashed var(--neon-yellow);
+      padding: 6px 16px;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+
+    .controller-instructions {
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      text-align: left;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 12px;
+      border-radius: 8px;
+      border-left: 3px solid var(--neon-cyan);
+    }
+
+    .controller-instructions ul {
+      margin: 6px 0 0 16px;
+      padding: 0;
+    }
+
+    .controller-instructions li {
+      margin-bottom: 4px;
+    }
+
+    /* Game Selector Grid */
+    .console-games-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .section-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: #fff;
+    }
+
+    .console-games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1.2rem;
+    }
+
+    .console-game-card {
+      background: var(--console-card-bg);
+      border: 2px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 1rem;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .console-game-card:hover, .console-game-card.focused {
+      transform: translateY(-5px) scale(1.02);
+      border-color: var(--neon-cyan);
+      box-shadow: 0 10px 25px rgba(0, 240, 255, 0.3), inset 0 0 15px rgba(0, 240, 255, 0.1);
+      outline: none;
+    }
+
+    .console-game-card.focused::after {
+      content: '🎮 FOCUSED';
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--neon-cyan);
+      color: #000;
+      font-size: 0.65rem;
+      font-weight: 900;
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: 1px;
+    }
+
+    .game-thumb {
+      width: 100%;
+      height: 120px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+    }
+
+    .game-card-info h3 {
+      margin: 0 0 4px 0;
+      font-size: 1.05rem;
+      color: #fff;
+    }
+
+    .game-card-info p {
+      margin: 0;
+      font-size: 0.78rem;
+      color: #94a3b8;
+    }
+
+    .launch-badge {
+      align-self: flex-start;
+      margin-top: auto;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--neon-pink);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Active Game Viewport Overlay */
+    .viewport-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      z-index: 5000;
+      display: flex;
+      flex-direction: column;
+      transition: opacity 0.3s ease;
+    }
+
+    .viewport-overlay.hidden {
+      display: none;
+    }
+
+    .viewport-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 20px;
+      background: rgba(10, 4, 30, 0.95);
+      border-bottom: 1px solid rgba(0, 240, 255, 0.3);
+    }
+
+    .viewport-game-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--neon-cyan);
+    }
+
+    .close-viewport-btn {
+      background: rgba(255, 0, 85, 0.2);
+      border: 1px solid #ff0055;
+      color: #fff;
+      padding: 6px 16px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .close-viewport-btn:hover {
+      background: #ff0055;
+      box-shadow: 0 0 15px rgba(255, 0, 85, 0.6);
+    }
+
+    .console-iframe {
+      width: 100%;
+      height: calc(100vh - 45px);
+      border: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="crt-overlay"></div>
+  <div id="starfield"></div>
+
+  <!-- Top Navigation Bar -->
+  <header class="console-navbar">
+    <div class="console-title">
+      🕹️ <span>SPACE ARCADE CONSOLE</span>
+    </div>
+    <div class="connection-status-pill" id="status-pill">
+      <div class="status-dot"></div>
+      <span id="status-text">WAITING FOR PHONE...</span>
+    </div>
+  </header>
+
+  <!-- Console Hub Grid -->
+  <main class="console-hub-container">
+    
+    <!-- Left: QR Code Pairing Panel -->
+    <section class="qr-setup-card">
+      <div class="qr-title">📱 Phone Controller</div>
+      <p class="qr-desc">Scan with your phone camera to pair your smartphone as a wireless gamepad!</p>
+      
+      <div class="qr-code-box" id="qrcode"></div>
+      
+      <div class="room-code-badge" id="room-code-display">ROOM: ----</div>
+
+      <div class="controller-instructions">
+        <strong>🎮 Quick Controls:</strong>
+        <ul>
+          <li><strong>D-Pad / Stick:</strong> Navigate menu & movement</li>
+          <li><strong>Button A:</strong> Select / Launch / Jump / Fire</li>
+          <li><strong>Button B:</strong> Back / Secondary Action</li>
+          <li><strong>MENU / START:</strong> Toggle Console Hub</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Right: Retro Arcade Games Grid -->
+    <section class="console-games-section">
+      <div class="section-header">
+        <h2 class="section-title">👾 Select Mission</h2>
+      </div>
+
+      <div class="console-games-grid" id="games-grid">
+        
+        <!-- Space Worm (Snake) -->
+        <div class="console-game-card focused" data-game="snake" data-url="games/snake.html">
+          <div class="game-thumb">🐍</div>
+          <div class="game-card-info">
+            <h3>Space Worm</h3>
+            <p>Guide your cosmic snake & collect stars!</p>
+          </div>
+          <span class="launch-badge">Press A to Launch 🚀</span>
+        </div>
+
+        <!-- Pac-Man -->
+        <div class="console-game-card" data-game="pacman" data-url="games/pacman.html">
+          <div class="game-thumb">👻</div>
+          <div class="game-card-info">
+            <h3>Pac-Man</h3>
+            <p>Eat energy dots & dodge ghost invaders!</p>
+          </div>
+          <span class="launch-badge">Press A to Launch 🚀</span>
+        </div>
+
+        <!-- Space Troopers -->
+        <div class="console-game-card" data-game="troopers" data-url="games/troopers.html">
+          <div class="game-thumb">👾</div>
+          <div class="game-card-info">
+            <h3>Space Troopers</h3>
+            <p>Blast space alien invaders from your starship!</p>
+          </div>
+          <span class="launch-badge">Press A to Launch 🚀</span>
+        </div>
+
+        <!-- Cosmic Blocks (Tetris) -->
+        <div class="console-game-card" data-game="tetris" data-url="games/tetris.html">
+          <div class="game-thumb">🧱</div>
+          <div class="game-card-info">
+            <h3>Cosmic Blocks</h3>
+            <p>Rotate & clear block lines in deep space!</p>
+          </div>
+          <span class="launch-badge">Press A to Launch 🚀</span>
+        </div>
+
+        <!-- Block Blast -->
+        <div class="console-game-card" data-game="blockblast" data-url="games/blockblast.html">
+          <div class="game-thumb">💥</div>
+          <div class="game-card-info">
+            <h3>Block Blast</h3>
+            <p>Place geometric blocks to trigger explosive clears!</p>
+          </div>
+          <span class="launch-badge">Press A to Launch 🚀</span>
+        </div>
+
+        <!-- Blackhole Ninja -->
+        <div class="console-game-card" data-game="blackholeninja" data-url="games/blackholeninja.html">
+          <div class="game-thumb">🥷</div>
+          <div class="game-card-info">
+            <h3>Blackhole Ninja</h3>
+            <p>Parkour through a space station to escape a black hole!</p>
+          </div>
+          <span class="launch-badge">Press A to Launch 🚀</span>
+        </div>
+
+        <!-- Galactic Wordle -->
+        <div class="console-game-card" data-game="wordle" data-url="games/wordle.html">
+          <div class="game-thumb">🪐</div>
+          <div class="game-card-info">
+            <h3>Galactic Wordle</h3>
+            <p>Guess the secret 5-letter cosmic word!</p>
+          </div>
+          <span class="launch-badge">Press A to Launch 🚀</span>
+        </div>
+
+        <!-- Extreme Saga -->
+        <div class="console-game-card" data-game="extreme" data-url="games/blockblast-extreme.html">
+          <div class="game-thumb">🔥</div>
+          <div class="game-card-info">
+            <h3>Extreme Saga</h3>
+            <p>Infinite high-score survival mode!</p>
+          </div>
+          <span class="launch-badge">Press A to Launch 🚀</span>
+        </div>
+
+        <!-- Space Rangers -->
+        <div class="console-game-card" data-game="spacerangers" data-url="games/spacerangers.html">
+          <div class="game-thumb">🚀</div>
+          <div class="game-card-info">
+            <h3>Space Rangers</h3>
+            <p>Co-op space fighter jet battles!</p>
+          </div>
+          <span class="launch-badge">Press A to Launch 🚀</span>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- Embedded Game Viewport Overlay -->
+  <div class="viewport-overlay hidden" id="viewport-overlay">
+    <div class="viewport-bar">
+      <div class="viewport-game-title" id="viewport-title">Space Mission</div>
+      <div style="font-size: 0.8rem; color: #a0aec0;">📱 Phone Gamepad Connected</div>
+      <button class="close-viewport-btn" id="exit-game-btn">❌ Exit Game (B / Menu)</button>
+    </div>
+    <iframe class="console-iframe" id="game-iframe"></iframe>
+  </div>
+
+  <!-- Scripts -->
+  <script type="module" src="js/stars.js"></script>
+  <script type="module" src="js/nav.js"></script>
+  <script type="module" src="js/console-engine.js"></script>
+</body>
+</html>

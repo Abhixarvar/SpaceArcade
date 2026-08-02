@@ -9,6 +9,8 @@ export default defineConfig({
         party: resolve(__dirname, 'party.html'),
         singleplayer: resolve(__dirname, 'singleplayer.html'),
         offline: resolve(__dirname, 'offline.html'),
+        console: resolve(__dirname, 'console.html'),
+        controller: resolve(__dirname, 'controller.html'),
         blackholeninja: resolve(__dirname, 'games/blackholeninja.html'),
         blockblast: resolve(__dirname, 'games/blockblast.html'),
         blockblastExtreme: resolve(__dirname, 'games/blockblast-extreme.html'),
