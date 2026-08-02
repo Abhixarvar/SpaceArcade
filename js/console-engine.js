@@ -181,32 +181,22 @@
     }
   }
 
-  // Handle Button A / Action key clicks inside iframe (Restart / Play Again / Start)
+  // Handle Button A / Action key clicks inside iframe (Restart / Play Again when Game Over)
   function handleActionKeyInIframe() {
     try {
       const iframeDoc = gameIframe.contentWindow ? gameIframe.contentWindow.document : null;
       if (!iframeDoc) return false;
 
-      const candidateSelectors = [
-        '#retry-btn',
-        '#restart-btn',
-        '#play-again-btn',
-        '#rematch-btn',
-        '#start-btn',
-        '#begin-btn',
-        '#next-btn',
-        '.btn-primary'
-      ];
-
-      for (const selector of candidateSelectors) {
-        const btn = iframeDoc.querySelector(selector);
-        if (btn) {
-          const parentOverlay = btn.closest('.game-overlay, #start-overlay, #gameover-overlay, #game-overlay, #victory-overlay, #level-overlay');
-          if (!parentOverlay || !parentOverlay.classList.contains('hidden')) {
-            btn.click();
-            if (parentOverlay) parentOverlay.classList.add('hidden');
-            return true;
-          }
+      // Only handle action keys if a Game Over or Victory overlay is currently VISIBLE
+      const activeOverlay = iframeDoc.querySelector('#gameover-overlay:not(.hidden), #victory-overlay:not(.hidden), #level-overlay:not(.hidden)');
+      
+      if (activeOverlay) {
+        const actionBtn = activeOverlay.querySelector('#retry-btn, #restart-btn, #play-again-btn, #rematch-btn, #next-btn, .btn-primary');
+        if (actionBtn) {
+          actionBtn.click();
+          activeOverlay.classList.add('hidden');
+          activeOverlay.style.display = 'none';
+          return true;
         }
       }
     } catch (err) {
