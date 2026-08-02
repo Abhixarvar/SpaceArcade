@@ -263,6 +263,7 @@
   }
 
   function startGame() {
+    if (gameLoop) clearInterval(gameLoop);
     init();
     startOverlay.classList.add('hidden');
     gameoverOverlay.classList.add('hidden');

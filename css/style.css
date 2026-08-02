@@ -2407,4 +2407,15 @@ body.page-arriving .page-transition-element {
 .arcade-nav-item:hover .arcade-nav-item-desc {
   color: rgba(0, 240, 255, 0.8);
 }
+
+/* Ensure UFO Nav is completely hidden on Console Mode & iframe viewports */
+#arcade-nav-container:has(~ #ps5-dashboard),
+#arcade-nav-container:has(~ #pairing-screen),
+body:has(#ps5-dashboard) #arcade-nav-container,
+body:has(#pairing-screen) #arcade-nav-container {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
 
