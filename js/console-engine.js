@@ -44,9 +44,10 @@
       roomCodeDisplay.textContent = 'ROOM: ' + roomCode;
     }
 
-    // Build Controller URL for QR Code
+    // Build Controller URL for QR Code (bulletproof for Vercel cleanUrls & localhost)
     const loc = window.location;
-    const controllerUrl = `${loc.protocol}//${loc.host}${loc.pathname.replace('console.html', '')}controller.html?room=${roomCode}`;
+    const basePath = loc.pathname.substring(0, loc.pathname.lastIndexOf('/') + 1);
+    const controllerUrl = `${loc.origin}${basePath}controller.html?room=${roomCode}`;
 
     // Render QR Code
     if (qrBox && typeof QRCode !== 'undefined') {
