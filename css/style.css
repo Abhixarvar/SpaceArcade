@@ -1433,8 +1433,9 @@ button { cursor: none; }
   border-color: #000;
 }
 
-/* --- Back Button --- */
+/* --- Back Button (Hidden to avoid colliding with top-left UFO Nav) --- */
 .back-btn {
+  display: none !important;
   position: fixed;
   top: 20px;
   left: 20px;
