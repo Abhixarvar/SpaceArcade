@@ -1,7 +1,7 @@
 /**
- * Space Arcade — Console Mode Engine (Desktop Host)
+ * Space Arcade — PlayStation 5 Astral Console Engine (Desktop Host)
  * PeerJS WebRTC Connection Host, QR Code Pairing Generator,
- * Remote Navigation & Game Iframe Dispatcher.
+ * PS5 Dashboard Carousel, Boot Animation Transition & Remote Dispatcher.
  */
 
 (function () {
@@ -13,17 +13,42 @@
   let roomCode = '';
   let focusedIndex = 0;
   let isGameActive = false;
+  let isConsoleUnlocked = false;
 
   // DOM Elements
-  const statusPill = document.getElementById('status-pill');
-  const statusText = document.getElementById('status-text');
+  const pairingScreen = document.getElementById('pairing-screen');
+  const bootOverlay = document.getElementById('boot-overlay');
+  const bootStatusText = document.getElementById('boot-status-text');
+  const ps5Dashboard = document.getElementById('ps5-dashboard');
+
   const roomCodeDisplay = document.getElementById('room-code-display');
   const qrBox = document.getElementById('qrcode');
-  const gameCards = Array.from(document.querySelectorAll('.console-game-card'));
+
+  const heroBackdrop = document.getElementById('hero-backdrop');
+  const heroCategory = document.getElementById('hero-category');
+  const heroTitle = document.getElementById('hero-title');
+  const heroDesc = document.getElementById('hero-desc');
+
+  const psCarousel = document.getElementById('ps-carousel');
+  const psTiles = Array.from(document.querySelectorAll('.ps-tile'));
+
   const viewportOverlay = document.getElementById('viewport-overlay');
   const viewportTitle = document.getElementById('viewport-title');
   const gameIframe = document.getElementById('game-iframe');
   const exitGameBtn = document.getElementById('exit-game-btn');
+  const liveClock = document.getElementById('live-clock');
+
+  // Live Clock Updater
+  function updateLiveClock() {
+    if (!liveClock) return;
+    const now = new Date();
+    let hours = now.getHours();
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    liveClock.textContent = `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
+  }
 
   // Helper: Generate Random Room Code
   function generateRoomCode() {
@@ -54,8 +79,8 @@
       qrBox.innerHTML = '';
       new QRCode(qrBox, {
         text: controllerUrl,
-        width: 180,
-        height: 180,
+        width: 188,
+        height: 188,
         colorDark: '#070314',
         colorLight: '#ffffff',
         correctLevel: QRCode.CorrectLevel.M
@@ -66,33 +91,62 @@
     peer = new Peer(peerId);
 
     peer.on('open', (id) => {
-      console.log('Console host active with Peer ID:', id);
+      console.log('Astral Console host active with Peer ID:', id);
     });
 
     peer.on('connection', (conn) => {
       activeConn = conn;
       console.log('Phone Controller connected!');
 
-      if (statusPill && statusText) {
-        statusPill.classList.add('connected');
-        statusText.textContent = '🟢 PHONE CONNECTED';
-      }
+      conn.on('open', () => {
+        triggerConsoleBootTransition();
+      });
 
       conn.on('data', (data) => {
         handleIncomingInput(data);
       });
 
       conn.on('close', () => {
-        if (statusPill && statusText) {
-          statusPill.classList.remove('connected');
-          statusText.textContent = 'WAITING FOR PHONE...';
-        }
+        console.log('Phone Controller disconnected');
       });
     });
 
     peer.on('error', (err) => {
       console.warn('PeerJS Error:', err);
     });
+  }
+
+  // Console Connecting Boot Transition Effect
+  function triggerConsoleBootTransition() {
+    if (isConsoleUnlocked) return;
+    isConsoleUnlocked = true;
+
+    // Show boot animation overlay
+    if (bootOverlay) {
+      bootOverlay.classList.add('active');
+    }
+
+    // Play boot SFX if available
+    if (window.SFX && typeof window.SFX.levelUp === 'function') {
+      try { window.SFX.levelUp(); } catch (e) {}
+    }
+
+    setTimeout(() => {
+      if (bootStatusText) bootStatusText.textContent = '⚡ ASTRAL CONSOLE READY!';
+    }, 600);
+
+    setTimeout(() => {
+      // Hide pairing screen
+      if (pairingScreen) pairingScreen.classList.add('hidden');
+      
+      // Reveal PS5 Astral Dashboard
+      if (ps5Dashboard) ps5Dashboard.classList.add('visible');
+      
+      // Fade out boot overlay
+      if (bootOverlay) bootOverlay.classList.remove('active');
+
+      updateFocusUI();
+    }, 1300);
   }
 
   // Handle incoming remote gamepad inputs
@@ -104,9 +158,9 @@
       const code = data.code || key;
 
       if (!isGameActive) {
-        // Menu Navigation Mode
+        // PS5 Dashboard Navigation Mode
         if (data.type === 'keydown') {
-          handleMenuNavigation(key);
+          handleDashboardNavigation(key);
         }
       } else {
         // Allow MENU / ESCAPE / B button to exit game back to Console Hub
@@ -133,7 +187,6 @@
       const iframeDoc = gameIframe.contentWindow ? gameIframe.contentWindow.document : null;
       if (!iframeDoc) return false;
 
-      // Candidate selectors for start/restart/retry/play-again buttons
       const candidateSelectors = [
         '#retry-btn',
         '#restart-btn',
@@ -149,7 +202,6 @@
         const btn = iframeDoc.querySelector(selector);
         if (btn) {
           const parentOverlay = btn.closest('.game-overlay, #start-overlay, #gameover-overlay, #game-overlay, #victory-overlay, #level-overlay');
-          // If the button is visible or its parent overlay is not hidden, click it
           if (!parentOverlay || !parentOverlay.classList.contains('hidden')) {
             btn.click();
             if (parentOverlay) parentOverlay.classList.add('hidden');
@@ -163,24 +215,19 @@
     return false;
   }
 
-  // Menu Navigation Focus Controller
-  function handleMenuNavigation(key) {
-    if (gameCards.length === 0) return;
+  // PS5 Dashboard Carousel Navigation
+  function handleDashboardNavigation(key) {
+    if (psTiles.length === 0) return;
 
-    const cols = 3; // Approx grid columns
     let prevIndex = focusedIndex;
 
-    if (key === 'ArrowRight') {
-      focusedIndex = (focusedIndex + 1) % gameCards.length;
-    } else if (key === 'ArrowLeft') {
-      focusedIndex = (focusedIndex - 1 + gameCards.length) % gameCards.length;
-    } else if (key === 'ArrowDown') {
-      if (focusedIndex + cols < gameCards.length) focusedIndex += cols;
-    } else if (key === 'ArrowUp') {
-      if (focusedIndex - cols >= 0) focusedIndex -= cols;
-    } else if (key === ' ' || key === 'Enter' || key === 'a' || key === 'w') {
+    if (key === 'ArrowRight' || key === 'd' || key === 'D') {
+      focusedIndex = (focusedIndex + 1) % psTiles.length;
+    } else if (key === 'ArrowLeft' || key === 'a' || key === 'A') {
+      focusedIndex = (focusedIndex - 1 + psTiles.length) % psTiles.length;
+    } else if (key === ' ' || key === 'Enter' || key === 'w' || key === 'W') {
       // Launch selected game
-      launchSelectedGame(gameCards[focusedIndex]);
+      launchSelectedGame(psTiles[focusedIndex]);
       return;
     }
 
@@ -190,21 +237,36 @@
   }
 
   function updateFocusUI() {
-    gameCards.forEach((card, idx) => {
+    psTiles.forEach((tile, idx) => {
       if (idx === focusedIndex) {
-        card.classList.add('focused');
-        card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        tile.classList.add('focused');
+        tile.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+
+        // Update Dynamic Hero Banner Content
+        const title = tile.getAttribute('data-title') || 'Space Mission';
+        const cat = tile.getAttribute('data-cat') || 'SINGLEPLAYER MISSION';
+        const desc = tile.getAttribute('data-desc') || 'Retro space arcade mission.';
+        const bg = tile.getAttribute('data-bg') || '';
+
+        if (heroTitle) heroTitle.textContent = title;
+        if (heroCategory) heroCategory.textContent = cat;
+        if (heroDesc) heroDesc.textContent = desc;
+
+        // Dynamically shift hero backdrop atmosphere
+        if (heroBackdrop && bg) {
+          heroBackdrop.style.background = bg;
+        }
       } else {
-        card.classList.remove('focused');
+        tile.classList.remove('focused');
       }
     });
   }
 
   // Launch Game Viewport
-  function launchSelectedGame(card) {
-    if (!card) return;
-    const rawUrl = card.getAttribute('data-url');
-    const title = card.querySelector('h3') ? card.querySelector('h3').textContent : 'Space Mission';
+  function launchSelectedGame(tile) {
+    if (!tile) return;
+    const rawUrl = tile.getAttribute('data-url');
+    const title = tile.getAttribute('data-title') || 'Space Mission';
 
     if (!rawUrl) return;
 
@@ -247,7 +309,7 @@
 
     // Inform Phone Controller of Active Game Skin
     if (activeConn && activeConn.open) {
-      activeConn.send({ type: 'set_layout', gameId: card.getAttribute('data-game') });
+      activeConn.send({ type: 'set_layout', gameId: tile.getAttribute('data-game') });
     }
   }
 
@@ -282,12 +344,12 @@
     }
   }
 
-  // Bind Desktop Card Clicks
-  gameCards.forEach((card, index) => {
-    card.addEventListener('click', () => {
+  // Bind Desktop Tile Clicks & Keyboard Fallback
+  psTiles.forEach((tile, index) => {
+    tile.addEventListener('click', () => {
       focusedIndex = index;
       updateFocusUI();
-      launchSelectedGame(card);
+      launchSelectedGame(tile);
     });
   });
 
@@ -295,10 +357,23 @@
     exitGameBtn.addEventListener('click', closeGameViewport);
   }
 
+  // Allow keyboard arrows testing on desktop
+  document.addEventListener('keydown', (e) => {
+    if (!isConsoleUnlocked && (e.key === 'c' || e.key === 'C')) {
+      // Secret key 'c' to unlock console on desktop testing
+      triggerConsoleBootTransition();
+    } else if (isConsoleUnlocked && !isGameActive) {
+      if (['ArrowLeft', 'ArrowRight', 'a', 'A', 'd', 'D', ' ', 'Enter'].includes(e.key)) {
+        handleDashboardNavigation(e.key);
+      }
+    }
+  });
+
   // Initialize on load
   document.addEventListener('DOMContentLoaded', () => {
     initHostPeer();
-    updateFocusUI();
+    updateLiveClock();
+    setInterval(updateLiveClock, 1000);
   });
 
 })();

@@ -3,319 +3,529 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Space Arcade Console Mode — Turn your mobile phone into a wireless gamepad controller for your PC!">
-  <title>Console Mode — Space Arcade</title>
+  <meta name="description" content="Space Arcade Console Mode — PS5 Astral Dashboard with Wireless Phone Controller Pairing">
+  <title>Astral Console — Space Arcade</title>
   <link rel="icon" type="image/svg+xml" href="assets/spaceship.svg">
   <link rel="stylesheet" href="css/style.css">
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     :root {
-      --console-bg: #070314;
-      --console-card-bg: rgba(18, 10, 42, 0.75);
-      --neon-cyan: #00f0ff;
-      --neon-pink: #ff007f;
-      --neon-yellow: #ffea00;
-      --neon-green: #00ff88;
+      --ps-bg: #05010d;
+      --ps-cyan: #00f0ff;
+      --ps-pink: #ff007f;
+      --ps-yellow: #ffea00;
+      --ps-green: #00ff88;
+      --ps-card-bg: rgba(18, 10, 42, 0.7);
+    }
+
+    * {
+      box-sizing: border-box;
     }
 
     body {
-      background: var(--console-bg);
+      background: var(--ps-bg);
       color: #fff;
       font-family: var(--font-funky, 'Outfit', sans-serif);
       margin: 0;
       padding: 0;
-      overflow-x: hidden;
-      min-height: 100vh;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
     }
 
-    /* CRT Scanline Overlay */
+    /* Ambient Hero Backdrop */
+    .hero-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: radial-gradient(circle at 60% 30%, rgba(0, 240, 255, 0.15) 0%, rgba(5, 1, 13, 0.95) 70%),
+                  radial-gradient(circle at 20% 80%, rgba(255, 0, 127, 0.12) 0%, rgba(5, 1, 13, 0.98) 70%);
+      z-index: 1;
+      transition: background 0.6s ease-in-out;
+    }
+
+    /* Starfield Canvas Z-Index */
+    #starfield {
+      z-index: 2 !important;
+    }
+
+    /* CRT Scanline Effect */
     .crt-overlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: linear-gradient(
-        rgba(18, 16, 16, 0) 50%, 
-        rgba(0, 0, 0, 0.25) 50%
-      );
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%);
       background-size: 100% 4px;
       z-index: 9999;
       pointer-events: none;
-      opacity: 0.4;
+      opacity: 0.35;
     }
 
-    /* Top Bar */
-    .console-navbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1rem 2rem;
-      background: rgba(10, 4, 30, 0.85);
-      border-bottom: 2px solid rgba(0, 240, 255, 0.2);
-      backdrop-filter: blur(12px);
-      position: sticky;
+    /* ========================================================= */
+    /* STATE 1: PAIRING VIEW (Matches exact user image 1)       */
+    /* ========================================================= */
+    .pairing-container {
+      position: fixed;
       top: 0;
-      z-index: 100;
-    }
-
-    .console-title {
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 10;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 12px;
-      font-size: 1.5rem;
-      font-weight: 800;
-      letter-spacing: 2px;
-      color: var(--neon-cyan);
-      text-shadow: 0 0 12px rgba(0, 240, 255, 0.6);
-    }
-
-    .console-title span {
-      background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .connection-status-pill {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 18px;
-      border-radius: 30px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      background: rgba(255, 0, 127, 0.12);
-      border: 1px solid rgba(255, 0, 127, 0.4);
-      color: var(--neon-pink);
-      box-shadow: 0 0 15px rgba(255, 0, 127, 0.2);
-      transition: all 0.3s ease;
-    }
-
-    .connection-status-pill.connected {
-      background: rgba(0, 255, 136, 0.12);
-      border-color: var(--neon-green);
-      color: var(--neon-green);
-      box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
-    }
-
-    .status-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--neon-pink);
-      box-shadow: 0 0 8px var(--neon-pink);
-      animation: pulseDot 1.5s infinite alternate;
-    }
-
-    .connection-status-pill.connected .status-dot {
-      background: var(--neon-green);
-      box-shadow: 0 0 8px var(--neon-green);
-    }
-
-    @keyframes pulseDot {
-      from { opacity: 0.4; transform: scale(0.8); }
-      to { opacity: 1; transform: scale(1.2); }
-    }
-
-    /* Main Console Hub Layout */
-    .console-hub-container {
-      display: grid;
-      grid-template-columns: 320px 1fr;
-      gap: 2rem;
-      max-width: 1400px;
-      margin: 2rem auto;
-      padding: 0 2rem;
-    }
-
-    @media (max-width: 900px) {
-      .console-hub-container {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    /* Controller Setup Panel */
-    .qr-setup-card {
-      background: var(--console-card-bg);
-      border: 1px solid rgba(0, 240, 255, 0.25);
-      border-radius: 16px;
+      justify-content: center;
       padding: 1.5rem;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .pairing-container.hidden {
+      opacity: 0;
+      transform: scale(0.95);
+      pointer-events: none;
+    }
+
+    .pair-card-frame {
+      background: rgba(12, 6, 32, 0.85);
+      border: 1.5px solid rgba(0, 240, 255, 0.3);
+      border-radius: 24px;
+      padding: 2.2rem 2.5rem;
+      width: 100%;
+      max-width: 440px;
       display: flex;
       flex-direction: column;
       align-items: center;
       text-align: center;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 240, 255, 0.05);
-      height: fit-content;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8), inset 0 0 30px rgba(0, 240, 255, 0.08);
+      backdrop-filter: blur(16px);
+      position: relative;
     }
 
-    .qr-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--neon-cyan);
-      margin-bottom: 0.5rem;
+    .pair-card-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--ps-cyan);
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 0 12px rgba(0, 240, 255, 0.6);
     }
 
-    .qr-desc {
-      font-size: 0.85rem;
-      color: #a0aec0;
-      margin-bottom: 1.2rem;
+    .pair-card-desc {
+      font-size: 0.9rem;
+      color: #cbd5e1;
+      margin-bottom: 1.4rem;
       line-height: 1.4;
     }
 
-    .qr-code-box {
-      background: #fff;
-      padding: 14px;
-      border-radius: 12px;
-      box-shadow: 0 0 25px rgba(0, 240, 255, 0.4);
-      margin-bottom: 1rem;
-      min-width: 180px;
-      min-height: 180px;
+    .qr-box-wrap {
+      background: #ffffff;
+      padding: 16px;
+      border-radius: 20px;
+      box-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
+      margin-bottom: 1.2rem;
       display: flex;
       align-items: center;
       justify-content: center;
+      width: 220px;
+      height: 220px;
     }
 
-    .qr-code-box canvas, .qr-code-box img {
+    .qr-box-wrap canvas, .qr-box-wrap img {
       display: block;
-      max-width: 180px;
-      max-height: 180px;
+      max-width: 188px;
+      max-height: 188px;
     }
 
-    .room-code-badge {
+    .room-badge-pill {
       font-family: monospace;
-      font-size: 1.2rem;
-      font-weight: 800;
-      letter-spacing: 3px;
-      color: var(--neon-yellow);
-      background: rgba(255, 234, 0, 0.1);
-      border: 1px dashed var(--neon-yellow);
-      padding: 6px 16px;
-      border-radius: 8px;
-      margin-bottom: 1rem;
+      font-size: 1.4rem;
+      font-weight: 900;
+      letter-spacing: 4px;
+      color: var(--ps-yellow);
+      background: rgba(255, 234, 0, 0.08);
+      border: 2px dashed var(--ps-yellow);
+      padding: 8px 24px;
+      border-radius: 12px;
+      margin-bottom: 1.4rem;
+      box-shadow: 0 0 15px rgba(255, 234, 0, 0.2);
     }
 
-    .controller-instructions {
-      font-size: 0.8rem;
-      color: #cbd5e1;
+    .controls-guide-box {
+      background: rgba(0, 0, 0, 0.45);
+      border-left: 4px solid var(--ps-cyan);
+      border-radius: 12px;
+      padding: 1rem 1.2rem;
       text-align: left;
       width: 100%;
-      background: rgba(0, 0, 0, 0.3);
-      padding: 12px;
-      border-radius: 8px;
-      border-left: 3px solid var(--neon-cyan);
+      font-size: 0.85rem;
+      color: #e2e8f0;
+      line-height: 1.5;
     }
 
-    .controller-instructions ul {
-      margin: 6px 0 0 16px;
-      padding: 0;
-    }
-
-    .controller-instructions li {
-      margin-bottom: 4px;
-    }
-
-    /* Game Selector Grid */
-    .console-games-section {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .section-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .section-title {
-      font-size: 1.3rem;
+    .controls-guide-title {
       font-weight: 800;
-      letter-spacing: 1px;
       color: #fff;
-    }
-
-    .console-games-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 1.2rem;
-    }
-
-    .console-game-card {
-      background: var(--console-card-bg);
-      border: 2px solid rgba(255, 255, 255, 0.08);
-      border-radius: 14px;
-      padding: 1rem;
-      cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .console-game-card:hover, .console-game-card.focused {
-      transform: translateY(-5px) scale(1.02);
-      border-color: var(--neon-cyan);
-      box-shadow: 0 10px 25px rgba(0, 240, 255, 0.3), inset 0 0 15px rgba(0, 240, 255, 0.1);
-      outline: none;
-    }
-
-    .console-game-card.focused::after {
-      content: '🎮 FOCUSED';
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: var(--neon-cyan);
-      color: #000;
-      font-size: 0.65rem;
-      font-weight: 900;
-      padding: 2px 8px;
-      border-radius: 4px;
-      letter-spacing: 1px;
-    }
-
-    .game-thumb {
-      width: 100%;
-      height: 120px;
-      border-radius: 8px;
-      object-fit: cover;
-      background: rgba(0,0,0,0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 3rem;
-    }
-
-    .game-card-info h3 {
-      margin: 0 0 4px 0;
-      font-size: 1.05rem;
-      color: #fff;
-    }
-
-    .game-card-info p {
-      margin: 0;
-      font-size: 0.78rem;
-      color: #94a3b8;
-    }
-
-    .launch-badge {
-      align-self: flex-start;
-      margin-top: auto;
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: var(--neon-pink);
+      margin-bottom: 6px;
       display: flex;
       align-items: center;
       gap: 6px;
     }
 
-    /* Active Game Viewport Overlay */
+    .controls-guide-box ul {
+      margin: 0;
+      padding-left: 1.2rem;
+    }
+
+    .controls-guide-box li {
+      margin-bottom: 4px;
+    }
+
+    /* ========================================================= */
+    /* CONSOLE CONNECTING BOOT ANIMATION OVERLAY                 */
+    /* ========================================================= */
+    .console-boot-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #05010d;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    .console-boot-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .boot-pulse-ring {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 4px solid var(--ps-cyan);
+      border-top-color: transparent;
+      animation: bootSpin 1s linear infinite;
+      box-shadow: 0 0 30px var(--ps-cyan);
+      margin-bottom: 2rem;
+    }
+
+    @keyframes bootSpin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .boot-status-text {
+      font-size: 1.5rem;
+      font-weight: 900;
+      letter-spacing: 3px;
+      color: var(--ps-cyan);
+      text-shadow: 0 0 20px var(--ps-cyan);
+      text-transform: uppercase;
+      animation: bootPulseText 1s ease-in-out infinite alternate;
+    }
+
+    @keyframes bootPulseText {
+      from { opacity: 0.6; transform: scale(0.98); }
+      to { opacity: 1; transform: scale(1.02); }
+    }
+
+    /* ========================================================= */
+    /* STATE 2: PLAYSTATION 5 ASTRAL DASHBOARD (Matches image 2) */
+    /* ========================================================= */
+    .ps5-dashboard {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 1.8rem 3rem;
+      opacity: 0;
+      transform: translateY(20px);
+      pointer-events: none;
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .ps5-dashboard.visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    /* PS5 Top Navigation Header */
+    .ps-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      z-index: 10;
+    }
+
+    .ps-user-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--ps-pink), var(--ps-cyan));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      border: 2px solid #fff;
+      box-shadow: 0 0 15px rgba(255, 0, 127, 0.5);
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .user-name {
+      font-weight: 800;
+      font-size: 1.1rem;
+      letter-spacing: 1px;
+      color: #fff;
+    }
+
+    .user-sub {
+      font-size: 0.75rem;
+      color: var(--ps-green);
+      font-weight: 600;
+    }
+
+    .ps-tabs {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .ps-tab {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.5);
+      cursor: pointer;
+      padding: 6px 14px;
+      border-radius: 20px;
+      transition: all 0.25s;
+      letter-spacing: 1px;
+    }
+
+    .ps-tab.active {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    }
+
+    .ps-header-right {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .ps-clock {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 1px;
+    }
+
+    .ps-controller-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--ps-green);
+      background: rgba(0, 255, 136, 0.12);
+      border: 1px solid var(--ps-green);
+      padding: 4px 12px;
+      border-radius: 14px;
+      box-shadow: 0 0 12px rgba(0, 255, 136, 0.3);
+    }
+
+    /* PS5 Active Game Dynamic Hero Info Banner */
+    .ps-game-hero-info {
+      margin-top: 1rem;
+      z-index: 10;
+      max-width: 650px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .ps-hero-category {
+      font-size: 0.8rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: var(--ps-cyan);
+      text-transform: uppercase;
+    }
+
+    .ps-hero-title {
+      font-size: 2.8rem;
+      font-weight: 900;
+      margin: 0;
+      line-height: 1.1;
+      letter-spacing: 1px;
+      background: linear-gradient(180deg, #ffffff 0%, #a5b4fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 5px 25px rgba(0, 0, 0, 0.8);
+    }
+
+    .ps-hero-desc {
+      font-size: 0.95rem;
+      color: #cbd5e1;
+      margin: 0;
+      line-height: 1.4;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
+    }
+
+    /* PS5 Horizontal Game Carousel (Matches Image 2) */
+    .ps-carousel-wrap {
+      width: 100%;
+      z-index: 10;
+      margin-top: auto;
+      padding-bottom: 0.5rem;
+    }
+
+    .ps-carousel-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 0.8rem;
+      text-transform: uppercase;
+    }
+
+    .ps-carousel {
+      display: flex;
+      align-items: center;
+      gap: 1.4rem;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      padding: 10px 4px 18px 4px;
+      scrollbar-width: none; /* Hide scrollbar Firefox */
+    }
+
+    .ps-carousel::-webkit-scrollbar {
+      display: none; /* Hide scrollbar Chrome/Safari */
+    }
+
+    .ps-tile {
+      flex: 0 0 170px;
+      height: 220px;
+      background: var(--ps-card-bg);
+      border-radius: 18px;
+      border: 2.5px solid rgba(255, 255, 255, 0.12);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 1rem;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      backdrop-filter: blur(10px);
+    }
+
+    .ps-tile:hover, .ps-tile.focused {
+      transform: scale(1.1) translateY(-10px);
+      border-color: #ffffff;
+      box-shadow: 0 0 35px var(--ps-cyan), 0 15px 30px rgba(0, 0, 0, 0.8);
+      z-index: 15;
+    }
+
+    .ps-tile-icon {
+      font-size: 3.5rem;
+      align-self: center;
+      margin-top: 1rem;
+      filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.5));
+    }
+
+    .ps-tile-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .ps-tile-name {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .ps-tile-tag {
+      font-size: 0.68rem;
+      color: var(--ps-cyan);
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    /* PS5 Bottom Footer Controls Guide */
+    .ps-footer-guide {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding-top: 0.8rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 10;
+      font-size: 0.82rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .ps-guide-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ps-btn-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--ps-cyan);
+      color: #000;
+      font-weight: 900;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+    }
+
+    .ps-btn-icon.b {
+      background: var(--ps-pink);
+      color: #fff;
+    }
+
+    /* Embedded Game Viewport Overlay */
     .viewport-overlay {
       position: fixed;
       top: 0;
@@ -345,7 +555,7 @@
     .viewport-game-title {
       font-size: 1.1rem;
       font-weight: 800;
-      color: var(--neon-cyan);
+      color: var(--ps-cyan);
     }
 
     .close-viewport-btn {
@@ -374,34 +584,29 @@
 </head>
 <body>
 
+  <!-- Dynamic Backdrop Artwork -->
+  <div class="hero-backdrop" id="hero-backdrop"></div>
+
+  <!-- CRT Scanline Effect -->
   <div class="crt-overlay"></div>
+
+  <!-- Starfield Canvas -->
   <div id="starfield"></div>
 
-  <!-- Top Navigation Bar -->
-  <header class="console-navbar">
-    <div class="console-title">
-      🕹️ <span>SPACE ARCADE CONSOLE</span>
-    </div>
-    <div class="connection-status-pill" id="status-pill">
-      <div class="status-dot"></div>
-      <span id="status-text">WAITING FOR PHONE...</span>
-    </div>
-  </header>
-
-  <!-- Console Hub Grid -->
-  <main class="console-hub-container">
-    
-    <!-- Left: QR Code Pairing Panel -->
-    <section class="qr-setup-card">
-      <div class="qr-title">📱 Phone Controller</div>
-      <p class="qr-desc">Scan with your phone camera to pair your smartphone as a wireless gamepad!</p>
+  <!-- ========================================================= -->
+  <!-- STATE 1: INITIAL PAIRING VIEW (Matches exact user image 1) -->
+  <!-- ========================================================= -->
+  <main class="pairing-container" id="pairing-screen">
+    <div class="pair-card-frame">
+      <div class="pair-card-title">📱 Phone Controller</div>
+      <p class="pair-card-desc">Scan with your phone camera to pair your smartphone as a wireless gamepad!</p>
       
-      <div class="qr-code-box" id="qrcode"></div>
+      <div class="qr-box-wrap" id="qrcode"></div>
       
-      <div class="room-code-badge" id="room-code-display">ROOM: ----</div>
+      <div class="room-badge-pill" id="room-code-display">ROOM: ----</div>
 
-      <div class="controller-instructions">
-        <strong>🎮 Quick Controls:</strong>
+      <div class="controls-guide-box">
+        <div class="controls-guide-title">🎮 Quick Controls:</div>
         <ul>
           <li><strong>D-Pad / Stick:</strong> Navigate menu & movement</li>
           <li><strong>Button A:</strong> Select / Launch / Jump / Fire</li>
@@ -409,109 +614,156 @@
           <li><strong>MENU / START:</strong> Toggle Console Hub</li>
         </ul>
       </div>
-    </section>
+    </div>
+  </main>
 
-    <!-- Right: Retro Arcade Games Grid -->
-    <section class="console-games-section">
-      <div class="section-header">
-        <h2 class="section-title">👾 Select Mission</h2>
+  <!-- ========================================================= -->
+  <!-- CONSOLE BOOT ANIMATION OVERLAY                            -->
+  <!-- ========================================================= -->
+  <div class="console-boot-overlay" id="boot-overlay">
+    <div class="boot-pulse-ring"></div>
+    <div class="boot-status-text" id="boot-status-text">🎮 PHONE CONNECTED!</div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- STATE 2: PLAYSTATION 5 ASTRAL DASHBOARD (Matches image 2) -->
+  <!-- ========================================================= -->
+  <div class="ps5-dashboard" id="ps5-dashboard">
+    
+    <!-- Header -->
+    <header class="ps-header">
+      <div class="ps-user-badge">
+        <div class="user-avatar">👨‍🚀</div>
+        <div class="user-info">
+          <span class="user-name">CosmicPlayer20</span>
+          <span class="user-sub">LVL 99 • ASTRAL CONSOLE</span>
+        </div>
       </div>
 
-      <div class="console-games-grid" id="games-grid">
+      <div class="ps-tabs">
+        <div class="ps-tab active">Games</div>
+        <div class="ps-tab">Singleplayer</div>
+        <div class="ps-tab">Settings</div>
+      </div>
+
+      <div class="ps-header-right">
+        <div class="ps-controller-pill">📱 Controller Connected</div>
+        <div class="ps-clock" id="live-clock">01:52 AM</div>
+      </div>
+    </header>
+
+    <!-- Dynamic Focused Game Hero Banner -->
+    <section class="ps-game-hero-info">
+      <div class="ps-hero-category" id="hero-category">SINGLEPLAYER MISSION</div>
+      <h1 class="ps-hero-title" id="hero-title">Space Worm</h1>
+      <p class="ps-hero-desc" id="hero-desc">Guide your cosmic snake & collect stars in deep space!</p>
+    </section>
+
+    <!-- Horizontal PlayStation Game Carousel -->
+    <section class="ps-carousel-wrap">
+      <div class="ps-carousel-title">Games Library</div>
+      <div class="ps-carousel" id="ps-carousel">
         
-        <!-- Space Worm (Snake) -->
-        <div class="console-game-card focused" data-game="snake" data-url="games/snake.html">
-          <div class="game-thumb">🐍</div>
-          <div class="game-card-info">
-            <h3>Space Worm</h3>
-            <p>Guide your cosmic snake & collect stars!</p>
+        <!-- Space Worm -->
+        <div class="ps-tile focused" data-game="snake" data-url="games/snake.html" data-title="Space Worm" data-cat="SINGLEPLAYER MISSION" data-desc="Guide your cosmic snake, dodge asteroids & collect glowing stars!" data-bg="radial-gradient(circle at 60% 30%, rgba(0, 255, 136, 0.25) 0%, rgba(5, 1, 13, 0.95) 70%)">
+          <div class="ps-tile-icon">🐍</div>
+          <div class="ps-tile-info">
+            <div class="ps-tile-name">Space Worm</div>
+            <div class="ps-tile-tag">CLASSIC RETRO</div>
           </div>
-          <span class="launch-badge">Press A to Launch 🚀</span>
         </div>
 
         <!-- Pac-Man -->
-        <div class="console-game-card" data-game="pacman" data-url="games/pacman.html">
-          <div class="game-thumb">👻</div>
-          <div class="game-card-info">
-            <h3>Pac-Man</h3>
-            <p>Eat energy dots & dodge ghost invaders!</p>
+        <div class="ps-tile" data-game="pacman" data-url="games/pacman.html" data-title="Pac-Man" data-cat="ARCADE ESCAPE" data-desc="Eat energy dots & dodge ghost invaders in a glowing cosmic maze!" data-bg="radial-gradient(circle at 60% 30%, rgba(255, 234, 0, 0.25) 0%, rgba(5, 1, 13, 0.95) 70%)">
+          <div class="ps-tile-icon">👻</div>
+          <div class="ps-tile-info">
+            <div class="ps-tile-name">Pac-Man</div>
+            <div class="ps-tile-tag">MAZE RUNNER</div>
           </div>
-          <span class="launch-badge">Press A to Launch 🚀</span>
         </div>
 
         <!-- Space Troopers -->
-        <div class="console-game-card" data-game="troopers" data-url="games/troopers.html">
-          <div class="game-thumb">👾</div>
-          <div class="game-card-info">
-            <h3>Space Troopers</h3>
-            <p>Blast space alien invaders from your starship!</p>
+        <div class="ps-tile" data-game="troopers" data-url="games/troopers.html" data-title="Space Troopers" data-cat="ACTION SHOOTER" data-desc="Blast space alien invaders from your starship defense laser!" data-bg="radial-gradient(circle at 60% 30%, rgba(255, 0, 127, 0.25) 0%, rgba(5, 1, 13, 0.95) 70%)">
+          <div class="ps-tile-icon">👾</div>
+          <div class="ps-tile-info">
+            <div class="ps-tile-name">Space Troopers</div>
+            <div class="ps-tile-tag">SPACE SHOOTER</div>
           </div>
-          <span class="launch-badge">Press A to Launch 🚀</span>
         </div>
 
         <!-- Cosmic Blocks (Tetris) -->
-        <div class="console-game-card" data-game="tetris" data-url="games/tetris.html">
-          <div class="game-thumb">🧱</div>
-          <div class="game-card-info">
-            <h3>Cosmic Blocks</h3>
-            <p>Rotate & clear block lines in deep space!</p>
+        <div class="ps-tile" data-game="tetris" data-url="games/tetris.html" data-title="Cosmic Blocks" data-cat="PUZZLE ARCHITECTURE" data-desc="Rotate & stack geometric block lines in high-speed deep space!" data-bg="radial-gradient(circle at 60% 30%, rgba(180, 74, 255, 0.25) 0%, rgba(5, 1, 13, 0.95) 70%)">
+          <div class="ps-tile-icon">🧱</div>
+          <div class="ps-tile-info">
+            <div class="ps-tile-name">Cosmic Blocks</div>
+            <div class="ps-tile-tag">TETRIS PUZZLE</div>
           </div>
-          <span class="launch-badge">Press A to Launch 🚀</span>
         </div>
 
         <!-- Block Blast -->
-        <div class="console-game-card" data-game="blockblast" data-url="games/blockblast.html">
-          <div class="game-thumb">💥</div>
-          <div class="game-card-info">
-            <h3>Block Blast</h3>
-            <p>Place geometric blocks to trigger explosive clears!</p>
+        <div class="ps-tile" data-game="blockblast" data-url="games/blockblast.html" data-title="Block Blast" data-cat="STRATEGY CLEAR" data-desc="Place geometric block shapes to trigger explosive multi-line clears!" data-bg="radial-gradient(circle at 60% 30%, rgba(0, 240, 255, 0.25) 0%, rgba(5, 1, 13, 0.95) 70%)">
+          <div class="ps-tile-icon">💥</div>
+          <div class="ps-tile-info">
+            <div class="ps-tile-name">Block Blast</div>
+            <div class="ps-tile-tag">BLOCK PUZZLE</div>
           </div>
-          <span class="launch-badge">Press A to Launch 🚀</span>
         </div>
 
         <!-- Blackhole Ninja -->
-        <div class="console-game-card" data-game="blackholeninja" data-url="games/blackholeninja.html">
-          <div class="game-thumb">🥷</div>
-          <div class="game-card-info">
-            <h3>Blackhole Ninja</h3>
-            <p>Parkour through a space station to escape a black hole!</p>
+        <div class="ps-tile" data-game="blackholeninja" data-url="games/blackholeninja.html" data-title="Blackhole Ninja" data-cat="PARKOUR PLATFORMER" data-desc="Parkour through a collapsing space station to escape a black hole!" data-bg="radial-gradient(circle at 60% 30%, rgba(139, 92, 246, 0.3) 0%, rgba(5, 1, 13, 0.95) 70%)">
+          <div class="ps-tile-icon">🥷</div>
+          <div class="ps-tile-info">
+            <div class="ps-tile-name">Blackhole Ninja</div>
+            <div class="ps-tile-tag">NINJA ESCAPE</div>
           </div>
-          <span class="launch-badge">Press A to Launch 🚀</span>
         </div>
 
         <!-- Galactic Wordle -->
-        <div class="console-game-card" data-game="wordle" data-url="games/wordle.html">
-          <div class="game-thumb">🪐</div>
-          <div class="game-card-info">
-            <h3>Galactic Wordle</h3>
-            <p>Guess the secret 5-letter cosmic word!</p>
+        <div class="ps-tile" data-game="wordle" data-url="games/wordle.html" data-title="Galactic Wordle" data-cat="WORD CHALLENGE" data-desc="Guess the secret 5-letter cosmic word in 6 attempts!" data-bg="radial-gradient(circle at 60% 30%, rgba(245, 158, 11, 0.25) 0%, rgba(5, 1, 13, 0.95) 70%)">
+          <div class="ps-tile-icon">🪐</div>
+          <div class="ps-tile-info">
+            <div class="ps-tile-name">Galactic Wordle</div>
+            <div class="ps-tile-tag">WORD PUZZLE</div>
           </div>
-          <span class="launch-badge">Press A to Launch 🚀</span>
         </div>
 
         <!-- Extreme Saga -->
-        <div class="console-game-card" data-game="extreme" data-url="games/blockblast-extreme.html">
-          <div class="game-thumb">🔥</div>
-          <div class="game-card-info">
-            <h3>Extreme Saga</h3>
-            <p>Infinite high-score survival mode!</p>
+        <div class="ps-tile" data-game="extreme" data-url="games/blockblast-extreme.html" data-title="Extreme Saga" data-cat="HIGH SCORE SURVIVAL" data-desc="No levels. No limits. Just push your score to the absolute maximum!" data-bg="radial-gradient(circle at 60% 30%, rgba(239, 68, 68, 0.3) 0%, rgba(5, 1, 13, 0.95) 70%)">
+          <div class="ps-tile-icon">🔥</div>
+          <div class="ps-tile-info">
+            <div class="ps-tile-name">Extreme Saga</div>
+            <div class="ps-tile-tag">EXTREME MODE</div>
           </div>
-          <span class="launch-badge">Press A to Launch 🚀</span>
         </div>
 
         <!-- Space Rangers -->
-        <div class="console-game-card" data-game="spacerangers" data-url="games/spacerangers.html">
-          <div class="game-thumb">🚀</div>
-          <div class="game-card-info">
-            <h3>Space Rangers</h3>
-            <p>Co-op space fighter jet battles!</p>
+        <div class="ps-tile" data-game="spacerangers" data-url="games/spacerangers.html" data-title="Space Rangers" data-cat="ACTION FLEET" data-desc="Command your fighter jet fleet and defend the space outpost!" data-bg="radial-gradient(circle at 60% 30%, rgba(59, 130, 246, 0.3) 0%, rgba(5, 1, 13, 0.95) 70%)">
+          <div class="ps-tile-icon">🚀</div>
+          <div class="ps-tile-info">
+            <div class="ps-tile-name">Space Rangers</div>
+            <div class="ps-tile-tag">JET BATTLE</div>
           </div>
-          <span class="launch-badge">Press A to Launch 🚀</span>
         </div>
 
       </div>
     </section>
-  </main>
+
+    <!-- Bottom Footer Guide -->
+    <footer class="ps-footer-guide">
+      <div class="ps-guide-item">
+        <span class="ps-btn-icon">A</span> Launch Mission
+      </div>
+      <div class="ps-guide-item">
+        <span class="ps-btn-icon b">B</span> Console Hub
+      </div>
+      <div class="ps-guide-item">
+        <span>✇ D-Pad Scroll Library</span>
+      </div>
+      <div class="ps-guide-item" style="color: var(--ps-green);">
+        <span>📱 Wireless Gamepad Active</span>
+      </div>
+    </footer>
+  </div>
 
   <!-- Embedded Game Viewport Overlay -->
   <div class="viewport-overlay hidden" id="viewport-overlay">
