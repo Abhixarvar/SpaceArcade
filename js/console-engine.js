@@ -317,15 +317,13 @@
   // Dispatch key synthetic event into iframe
   function dispatchKeyToIframe(type, key, code) {
     try {
-      const event = new KeyboardEvent(type, {
-        key: key,
-        code: code,
-        bubbles: true,
-        cancelable: true
-      });
-      document.dispatchEvent(event);
-
       if (gameIframe && gameIframe.contentWindow && gameIframe.contentWindow.document) {
+        const event = new KeyboardEvent(type, {
+          key: key,
+          code: code,
+          bubbles: true,
+          cancelable: true
+        });
         gameIframe.contentWindow.document.dispatchEvent(event);
       }
     } catch (err) {

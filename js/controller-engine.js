@@ -93,8 +93,11 @@
 
     buttons.forEach((btn) => {
       const key = btn.getAttribute('data-key');
+      let isTouching = false;
 
       const handlePress = (e) => {
+        if (e.type === 'mousedown' && isTouching) return;
+        if (e.type === 'touchstart') isTouching = true;
         if (e.cancelable) e.preventDefault();
         btn.classList.add('active');
 
@@ -112,6 +115,10 @@
       };
 
       const handleRelease = (e) => {
+        if (e.type === 'mouseup' && isTouching) {
+          isTouching = false;
+          return;
+        }
         if (e.cancelable) e.preventDefault();
         btn.classList.remove('active');
 
