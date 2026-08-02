@@ -1,6 +1,6 @@
 /**
- * Space Arcade — Sleek Aesthetic Navigation Module
- * Injects a futuristic floating navigation button & glassmorphism dropdown menu.
+ * Space Arcade — UFO Saucer Aesthetic Navigation Module
+ * Injects a floating retro UFO spaceship button & glassmorphism dropdown menu.
  */
 
 (function () {
@@ -18,79 +18,139 @@
         z-index: 999999 !important;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
         pointer-events: auto !important;
-        display: block !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
       }
 
-      .arcade-nav-btn {
-        display: flex !important;
-        align-items: center !important;
-        gap: 8px !important;
-        padding: 8px 16px !important;
-        background: rgba(10, 5, 28, 0.88) !important;
-        backdrop-filter: blur(12px) !important;
-        -webkit-backdrop-filter: blur(12px) !important;
-        border: 1px solid rgba(0, 240, 255, 0.4) !important;
-        border-radius: 30px !important;
-        color: #ffffff !important;
-        font-size: 0.82rem !important;
-        font-weight: 700 !important;
-        letter-spacing: 1.2px !important;
-        text-transform: uppercase !important;
+      /* UFO Saucer Trigger Button */
+      .ufo-trigger {
+        position: relative !important;
+        width: 84px !important;
+        height: 68px !important;
         cursor: pointer !important;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 240, 255, 0.2) !important;
-        transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
         user-select: none !important;
         outline: none !important;
-        line-height: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        animation: ufoHoverFloat 3.5s ease-in-out infinite !important;
+        transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
       }
 
-      .arcade-nav-btn:hover {
-        background: rgba(18, 10, 48, 0.96) !important;
-        border-color: rgba(0, 240, 255, 0.9) !important;
-        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.6), 0 0 22px rgba(0, 240, 255, 0.4) !important;
-        transform: translateY(-1px) scale(1.03) !important;
+      @keyframes ufoHoverFloat {
+        0%, 100% { transform: translateY(0) rotate(-1.5deg); }
+        50% { transform: translateY(-7px) rotate(1.5deg); }
       }
 
-      .arcade-nav-btn:active {
-        transform: translateY(0) scale(0.98) !important;
+      .ufo-trigger:hover {
+        transform: scale(1.08) translateY(-2px) !important;
       }
 
-      .arcade-nav-btn.open {
+      /* Translucent Glass Dome */
+      .ufo-dome {
+        width: 38px !important;
+        height: 22px !important;
+        background: rgba(0, 240, 255, 0.45) !important;
+        border-radius: 38px 38px 0 0 !important;
+        border: 1.5px solid rgba(0, 240, 255, 0.9) !important;
+        border-bottom: none !important;
+        box-shadow: inset 0 4px 8px rgba(255, 255, 255, 0.6), 0 0 14px rgba(0, 240, 255, 0.7) !important;
+        position: relative !important;
+        z-index: 2 !important;
+      }
+
+      /* Metallic Saucer Body */
+      .ufo-body {
+        width: 80px !important;
+        height: 20px !important;
+        background: linear-gradient(180deg, #e2e8f0 0%, #64748b 100%) !important;
+        border-radius: 40px !important;
+        border: 1px solid rgba(255, 255, 255, 0.7) !important;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.8), 0 0 12px rgba(0, 240, 255, 0.3) !important;
+        display: flex !important;
+        justify-content: space-evenly !important;
+        align-items: center !important;
+        position: relative !important;
+        z-index: 3 !important;
+        margin-top: -2px !important;
+      }
+
+      /* LED Lights */
+      .ufo-light {
+        width: 7px !important;
+        height: 7px !important;
+        border-radius: 50% !important;
+        background: #ff0055 !important;
+        box-shadow: 0 0 8px #ff0055 !important;
+        animation: ufoLightPulse 1.2s infinite alternate !important;
+      }
+      .ufo-light:nth-child(2) { background: #00f0ff !important; box-shadow: 0 0 8px #00f0ff !important; animation-delay: 0.3s !important; }
+      .ufo-light:nth-child(3) { background: #ffea00 !important; box-shadow: 0 0 8px #ffea00 !important; animation-delay: 0.6s !important; }
+      .ufo-light:nth-child(4) { background: #00ff88 !important; box-shadow: 0 0 8px #00ff88 !important; animation-delay: 0.9s !important; }
+
+      @keyframes ufoLightPulse {
+        from { opacity: 0.4; transform: scale(0.8); }
+        to { opacity: 1; transform: scale(1.1); }
+      }
+
+      /* Light Beam Rays emanating under UFO */
+      .ufo-beam {
+        position: absolute !important;
+        top: 36px !important;
+        width: 56px !important;
+        height: 22px !important;
+        background: linear-gradient(180deg, rgba(0, 240, 255, 0.5) 0%, rgba(0, 240, 255, 0) 100%) !important;
+        clip-path: polygon(25% 0%, 75% 0%, 100% 100%, 0% 100%) !important;
+        opacity: 0.35 !important;
+        transition: all 0.3s ease !important;
+        z-index: 1 !important;
+        pointer-events: none !important;
+      }
+
+      .ufo-trigger:hover .ufo-beam,
+      #arcade-nav-container.open .ufo-beam {
+        opacity: 0.9 !important;
+        height: 32px !important;
+        background: linear-gradient(180deg, rgba(0, 240, 255, 0.85) 0%, rgba(255, 0, 127, 0.3) 100%) !important;
+      }
+
+      /* Menu Badge Pill */
+      .ufo-pill-badge {
+        font-size: 0.62rem !important;
+        font-weight: 800 !important;
+        letter-spacing: 1.2px !important;
+        color: #00f0ff !important;
+        background: rgba(10, 5, 28, 0.9) !important;
+        border: 1px solid rgba(0, 240, 255, 0.5) !important;
+        border-radius: 10px !important;
+        padding: 2px 8px !important;
+        text-transform: uppercase !important;
+        margin-top: 14px !important;
+        z-index: 4 !important;
+        box-shadow: 0 0 10px rgba(0, 240, 255, 0.3) !important;
+        transition: all 0.2s ease !important;
+      }
+
+      .ufo-trigger:hover .ufo-pill-badge,
+      #arcade-nav-container.open .ufo-pill-badge {
+        color: #ffffff !important;
         border-color: #ff007f !important;
-        box-shadow: 0 0 22px rgba(255, 0, 127, 0.5) !important;
-      }
-
-      .arcade-nav-icon {
-        font-size: 1.05rem !important;
-        display: inline-block !important;
-        transition: transform 0.3s ease !important;
-      }
-
-      .arcade-nav-btn:hover .arcade-nav-icon {
-        transform: rotate(-12deg) scale(1.15) !important;
-      }
-
-      .arcade-nav-arrow {
-        font-size: 0.65rem !important;
-        opacity: 0.75 !important;
-        transition: transform 0.3s ease !important;
-        margin-left: 2px !important;
-      }
-
-      .arcade-nav-btn.open .arcade-nav-arrow {
-        transform: rotate(180deg) !important;
+        background: rgba(255, 0, 127, 0.85) !important;
+        box-shadow: 0 0 14px rgba(255, 0, 127, 0.6) !important;
       }
 
       /* Dropdown Menu */
       .arcade-nav-dropdown {
         position: absolute !important;
-        top: calc(100% + 10px) !important;
+        top: calc(100% + 4px) !important;
         left: 0 !important;
         width: 240px !important;
-        background: rgba(11, 6, 32, 0.94) !important;
+        background: rgba(11, 6, 32, 0.95) !important;
         backdrop-filter: blur(16px) !important;
         -webkit-backdrop-filter: blur(16px) !important;
-        border: 1px solid rgba(0, 240, 255, 0.3) !important;
+        border: 1px solid rgba(0, 240, 255, 0.35) !important;
         border-radius: 16px !important;
         padding: 8px !important;
         display: flex !important;
@@ -245,18 +305,28 @@
       top: '16px',
       left: '16px',
       zIndex: '999999',
-      display: 'block',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'flex-start',
       pointerEvents: 'auto'
     });
 
-    // Create toggle button
-    const navBtn = document.createElement('button');
-    navBtn.className = 'arcade-nav-btn';
-    navBtn.setAttribute('aria-label', 'Toggle Navigation');
-    navBtn.innerHTML = `
-      <span class="arcade-nav-icon">🚀</span>
-      <span>Menu</span>
-      <span class="arcade-nav-arrow">▼</span>
+    // Create UFO Saucer Trigger
+    const ufoTrigger = document.createElement('div');
+    ufoTrigger.className = 'ufo-trigger';
+    ufoTrigger.setAttribute('title', 'Navigation Menu');
+    ufoTrigger.setAttribute('role', 'button');
+    ufoTrigger.setAttribute('tabindex', '0');
+    ufoTrigger.innerHTML = `
+      <div class="ufo-dome"></div>
+      <div class="ufo-body">
+        <div class="ufo-light"></div>
+        <div class="ufo-light"></div>
+        <div class="ufo-light"></div>
+        <div class="ufo-light"></div>
+      </div>
+      <div class="ufo-beam"></div>
+      <div class="ufo-pill-badge">MENU ▾</div>
     `;
 
     // Create dropdown menu
@@ -283,7 +353,7 @@
       dropdown.appendChild(item);
     });
 
-    container.appendChild(navBtn);
+    container.appendChild(ufoTrigger);
     container.appendChild(dropdown);
     document.body.appendChild(container);
 
@@ -291,15 +361,21 @@
     function toggleMenu(e) {
       if (e) e.stopPropagation();
       const isOpen = container.classList.toggle('open');
-      navBtn.classList.toggle('open', isOpen);
+      ufoTrigger.classList.toggle('open', isOpen);
     }
 
     function closeMenu() {
       container.classList.remove('open');
-      navBtn.classList.remove('open');
+      ufoTrigger.classList.remove('open');
     }
 
-    navBtn.addEventListener('click', toggleMenu);
+    ufoTrigger.addEventListener('click', toggleMenu);
+    ufoTrigger.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleMenu(e);
+      }
+    });
 
     // Close on outside click
     document.addEventListener('click', (e) => {
