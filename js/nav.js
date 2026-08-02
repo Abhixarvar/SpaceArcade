@@ -251,6 +251,7 @@
 
   function initArcadeNav() {
     if (document.getElementById('arcade-nav-container')) return;
+    if (window.self !== window.top || window.location.search.includes('console=1') || window.location.search.includes('autostart=1')) return;
 
     injectNavStyles();
 

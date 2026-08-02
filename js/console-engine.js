@@ -109,15 +109,58 @@
           handleMenuNavigation(key);
         }
       } else {
+        // Allow MENU / ESCAPE / B button to exit game back to Console Hub
+        if (data.type === 'keydown' && (key === 'Escape' || key === 'b' || key === 'B')) {
+          closeGameViewport();
+          return;
+        }
+
+        // If Button A / Space / Enter is pressed, check if a restart or start overlay button can be clicked
+        if (data.type === 'keydown' && (key === ' ' || key === 'Enter' || key === 'a' || key === 'A' || key === 'w')) {
+          const handled = handleActionKeyInIframe();
+          if (handled) return;
+        }
+
         // Game Viewport Mode: Dispatch keyboard event into iframe
         dispatchKeyToIframe(data.type, key, code);
-
-        // Allow MENU / ESCAPE / B button to exit game back to Console Hub
-        if (data.type === 'keydown' && (key === 'Escape' || key === 'b')) {
-          closeGameViewport();
-        }
       }
     }
+  }
+
+  // Handle Button A / Action key clicks inside iframe (Restart / Play Again / Start)
+  function handleActionKeyInIframe() {
+    try {
+      const iframeDoc = gameIframe.contentWindow ? gameIframe.contentWindow.document : null;
+      if (!iframeDoc) return false;
+
+      // Candidate selectors for start/restart/retry/play-again buttons
+      const candidateSelectors = [
+        '#retry-btn',
+        '#restart-btn',
+        '#play-again-btn',
+        '#rematch-btn',
+        '#start-btn',
+        '#begin-btn',
+        '#next-btn',
+        '.btn-primary'
+      ];
+
+      for (const selector of candidateSelectors) {
+        const btn = iframeDoc.querySelector(selector);
+        if (btn) {
+          const parentOverlay = btn.closest('.game-overlay, #start-overlay, #gameover-overlay, #game-overlay, #victory-overlay, #level-overlay');
+          // If the button is visible or its parent overlay is not hidden, click it
+          if (!parentOverlay || !parentOverlay.classList.contains('hidden')) {
+            btn.click();
+            if (parentOverlay) parentOverlay.classList.add('hidden');
+            return true;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Action key iframe handling warning:', err);
+    }
+    return false;
   }
 
   // Menu Navigation Focus Controller
@@ -160,15 +203,47 @@
   // Launch Game Viewport
   function launchSelectedGame(card) {
     if (!card) return;
-    const url = card.getAttribute('data-url');
+    const rawUrl = card.getAttribute('data-url');
     const title = card.querySelector('h3') ? card.querySelector('h3').textContent : 'Space Mission';
 
-    if (!url) return;
+    if (!rawUrl) return;
 
     isGameActive = true;
     viewportTitle.textContent = title;
-    gameIframe.src = url;
+    
+    // Append console=1 & autostart=1 to bypass start screen & hide UFO
+    const separator = rawUrl.includes('?') ? '&' : '?';
+    const targetUrl = `${rawUrl}${separator}console=1&autostart=1`;
+    gameIframe.src = targetUrl;
     viewportOverlay.classList.remove('hidden');
+
+    // Auto-trigger start button inside iframe to immediately start gameplay
+    gameIframe.onload = () => {
+      try {
+        const iframeDoc = gameIframe.contentWindow ? gameIframe.contentWindow.document : null;
+        if (!iframeDoc) return;
+
+        const autoTrigger = () => {
+          const startBtn = iframeDoc.querySelector('#start-btn, #begin-btn, #start-mission, [data-start], .btn-primary');
+          const startOverlay = iframeDoc.querySelector('#start-overlay, .start-overlay');
+          
+          if (startBtn) {
+            startBtn.click();
+          }
+          if (startOverlay) {
+            startOverlay.classList.add('hidden');
+            startOverlay.style.display = 'none';
+          }
+        };
+
+        autoTrigger();
+        setTimeout(autoTrigger, 100);
+        setTimeout(autoTrigger, 350);
+        setTimeout(autoTrigger, 700);
+      } catch (err) {
+        console.warn('Iframe auto-start trigger error:', err);
+      }
+    };
 
     // Inform Phone Controller of Active Game Skin
     if (activeConn && activeConn.open) {
