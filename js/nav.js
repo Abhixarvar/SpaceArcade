@@ -251,12 +251,12 @@
 
   function initArcadeNav() {
     if (document.getElementById('arcade-nav-container')) return;
-    if (window.self !== window.top || window.location.search.includes('console=1') || window.location.search.includes('autostart=1')) return;
+    const path = window.location.pathname;
+    if (window.self !== window.top || path.includes('console') || window.location.search.includes('console') || window.location.search.includes('autostart=1')) return;
 
     injectNavStyles();
 
     // Check if current page is in a subfolder (e.g., /games/)
-    const path = window.location.pathname;
     const isGamePage = path.includes('/games/');
     const prefix = isGamePage ? '../' : '';
 
