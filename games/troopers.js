@@ -761,7 +761,7 @@
 
   // Auto-start if launched from Lobby
   const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('room')) {
+  if (urlParams.get('room') || urlParams.get('autostart') || urlParams.get('console') || window.self !== window.top) {
     setTimeout(startGame, 500);
   }
 

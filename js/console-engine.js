@@ -282,10 +282,10 @@
     // Auto-trigger start button inside iframe to immediately start gameplay
     gameIframe.onload = () => {
       try {
-        const iframeDoc = gameIframe.contentWindow ? gameIframe.contentWindow.document : null;
-        if (!iframeDoc) return;
-
         const autoTrigger = () => {
+          const iframeDoc = gameIframe.contentWindow ? gameIframe.contentWindow.document : null;
+          if (!iframeDoc) return;
+
           const startBtn = iframeDoc.querySelector('#start-btn, #begin-btn, #start-mission, [data-start], .btn-primary');
           const startOverlay = iframeDoc.querySelector('#start-overlay, .start-overlay');
           
@@ -298,10 +298,9 @@
           }
         };
 
-        autoTrigger();
-        setTimeout(autoTrigger, 100);
-        setTimeout(autoTrigger, 350);
-        setTimeout(autoTrigger, 700);
+        for (let delay of [50, 150, 300, 500, 800, 1200, 1800, 2500]) {
+          setTimeout(autoTrigger, delay);
+        }
       } catch (err) {
         console.warn('Iframe auto-start trigger error:', err);
       }
