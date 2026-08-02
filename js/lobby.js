@@ -235,6 +235,9 @@
             showOverlay(roomUiOverlay);
             renderMembers();
             updateViewportHeader('Host Lobby - Waiting for players');
+            if (window.SFX && window.SFX.createParty) {
+              window.SFX.createParty();
+            }
           });
 
           peer.on('connection', (conn) => {
@@ -285,6 +288,9 @@
           });
           broadcast({ type: 'ROOM_UPDATE', members: members, game: selectedGame });
           renderMembers();
+          if (window.SFX && window.SFX.joinParty) {
+            window.SFX.joinParty();
+          }
           break;
 
         case 'READY':
@@ -367,6 +373,9 @@
 
     conn.on('open', () => {
       conn.send({ type: 'HANDSHAKE', name: myName });
+      if (window.SFX && window.SFX.joinParty) {
+        window.SFX.joinParty();
+      }
     });
 
     conn.on('data', (data) => {

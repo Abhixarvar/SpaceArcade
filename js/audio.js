@@ -4,16 +4,12 @@
 // Safety no-op shim — overwritten by actual engine below
 if (!window.SFX) {
   const noop = () => {};
-  window.SFX = { shoot:noop, eat:noop, powerup:noop, explode:noop, hit:noop, gameOver:noop, levelUp:noop, ghostEat:noop, step:noop, startBGM:noop, stopBGM:noop, setVolume:noop, getVolume:()=>0.5 };
+  window.SFX = { shoot:noop, eat:noop, powerup:noop, explode:noop, hit:noop, gameOver:noop, levelUp:noop, ghostEat:noop, step:noop, startBGM:noop, stopBGM:noop, createParty:noop, joinParty:noop, setVolume:noop, getVolume:()=>0.5 };
 }
 
 window.SFX = (function () {
   let ctx = null;
   let masterGain = null;
-  let bgmOsc = null;
-  let bgmGain = null;
-  let isBgmPlaying = false;
-  let bgmInterval = null;
   let currentVol = parseFloat(localStorage.getItem('spaceArcadeVolume') || '0.5');
 
   function ensure() {
@@ -67,37 +63,11 @@ window.SFX = (function () {
     src.start();
   }
 
-  // Procedural BGM Sequence
-  const sequence = [220, 261.63, 329.63, 392.00, 329.63, 261.63]; // A Minor Pentatonic
-  let seqIndex = 0;
-
-  function playBGMNote() {
-    if (!isBgmPlaying) return;
-    const c = ensure();
-    const freq = sequence[seqIndex] / 2; // Deep spacey bass tone
-    seqIndex = (seqIndex + 1) % sequence.length;
-
-    const osc = c.createOscillator();
-    const gain = c.createGain();
-    
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(freq, c.currentTime);
-    
-    // Spacey envelope
-    gain.gain.setValueAtTime(0.001, c.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.04, c.currentTime + 0.1);
-    gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.4);
-    
-    osc.connect(gain).connect(masterGain);
-    osc.start(c.currentTime);
-    osc.stop(c.currentTime + 0.4);
-  }
-
   return {
     setVolume(val) {
       currentVol = Math.max(0, Math.min(1, val));
       localStorage.setItem('spaceArcadeVolume', currentVol.toString());
-      if (masterGain) {
+      if (masterGain && ctx) {
         masterGain.gain.setTargetAtTime(currentVol, ctx.currentTime, 0.1);
       }
     },
@@ -106,20 +76,22 @@ window.SFX = (function () {
       return currentVol;
     },
 
-    startBGM() {
-      if (isBgmPlaying) return;
-      ensure(); // init context if needed
-      isBgmPlaying = true;
-      if (bgmInterval) clearInterval(bgmInterval);
-      bgmInterval = setInterval(playBGMNote, 400); // 150 BPM
+    startBGM() {},
+    stopBGM() {},
+
+    /** Chime for creating a party - triumphant ascending multi-note synth chime */
+    createParty() {
+      tone(523.25, 'sine', 0.12, 0.2); // C5
+      setTimeout(() => tone(659.25, 'sine', 0.12, 0.2), 90); // E5
+      setTimeout(() => tone(783.99, 'sine', 0.12, 0.2), 180); // G5
+      setTimeout(() => tone(1046.50, 'triangle', 0.25, 0.25), 270); // C6
     },
 
-    stopBGM() {
-      isBgmPlaying = false;
-      if (bgmInterval) {
-        clearInterval(bgmInterval);
-        bgmInterval = null;
-      }
+    /** Chime for joining a party - upbeat two/three-stage party join chime */
+    joinParty() {
+      tone(587.33, 'triangle', 0.1, 0.18); // D5
+      setTimeout(() => tone(783.99, 'sine', 0.1, 0.2), 80); // G5
+      setTimeout(() => tone(1046.50, 'sine', 0.2, 0.22), 160); // C6
     },
 
     /** Laser / shoot */
@@ -164,4 +136,5 @@ window.SFX = (function () {
     step() { tone(200, 'sine', 0.03, 0.04, 250); },
   };
 })();
+
 
