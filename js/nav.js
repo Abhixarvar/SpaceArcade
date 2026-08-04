@@ -400,9 +400,48 @@
     });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initArcadeNav);
-  } else {
+  function initTagFilter() {
+    const filterChips = document.querySelectorAll('.filter-chip');
+    const gameCards = document.querySelectorAll('.game-card');
+
+    if (!filterChips.length || !gameCards.length) return;
+
+    filterChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        const filter = chip.getAttribute('data-filter') || 'all';
+
+        // Update active chip
+        filterChips.forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+
+        if (window.SFX && typeof window.SFX.step === 'function') {
+          try { window.SFX.step(); } catch(e) {}
+        }
+
+        // Filter cards
+        gameCards.forEach(card => {
+          const tagsStr = card.getAttribute('data-tags') || '';
+          const cardTags = tagsStr.split(',').map(t => t.trim().toLowerCase());
+
+          if (filter === 'all' || cardTags.includes(filter.toLowerCase())) {
+            card.classList.remove('filtered-out');
+          } else {
+            card.classList.add('filtered-out');
+          }
+        });
+      });
+    });
+  }
+
+  function init() {
     initArcadeNav();
+    initTagFilter();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
   }
 })();
+
