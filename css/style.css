@@ -939,18 +939,52 @@ button { cursor: none; }
 }
 
 .waiting-spinner {
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-  border: 3px solid rgba(0, 240, 255, 0.2);
-  border-top-color: var(--cyan);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  display: block;
+  position: relative;
+  width: 150px;
+  height: 52px;
   margin: 16px auto;
+  overflow: hidden;
+  border-radius: 14px;
+  background: rgba(0, 240, 255, 0.06);
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.15), inset 0 0 12px rgba(0, 240, 255, 0.08);
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+.waiting-spinner::before {
+  content: '🛸';
+  position: absolute;
+  top: 8px;
+  left: -45px;
+  font-size: 1.8rem;
+  filter: drop-shadow(0 0 10px #00f0ff);
+  animation: miniUfoFlyAcross 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.waiting-spinner::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #00f0ff, #ff007f, #00ff88, transparent);
+  background-size: 200% 100%;
+  animation: ufoProgressGlow 1.2s linear infinite;
+}
+
+@keyframes miniUfoFlyAcross {
+  0% {
+    left: -45px;
+    transform: translateY(0) rotate(8deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(-6deg);
+  }
+  100% {
+    left: 165px;
+    transform: translateY(2px) rotate(6deg);
+  }
 }
 
 /* --- Pong Game HUD --- */
@@ -2650,6 +2684,267 @@ body:has(#pairing-screen) #arcade-nav-container {
 /* Card Hidden State when filtered */
 .game-card.filtered-out {
   display: none !important;
+}
+
+/* ========================================================= */
+/* UFO FLYING LOADING SCREEN & ANIMATIONS                     */
+/* ========================================================= */
+
+.ufo-loader-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 999999;
+  background: radial-gradient(ellipse at center, #0b0520 0%, #03010b 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+  overflow: hidden;
+  backdrop-filter: blur(16px);
+}
+
+.ufo-loader-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Space Background Lines & Stars */
+.ufo-space-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.ufo-speed-lines {
+  position: absolute;
+  width: 200%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0px,
+    transparent 120px,
+    rgba(0, 240, 255, 0.08) 120px,
+    rgba(0, 240, 255, 0.08) 123px
+  );
+  animation: ufoSpeedLines 1.2s linear infinite;
+}
+
+@keyframes ufoSpeedLines {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.ufo-stars-field {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(2px 2px at 20px 30px, #ffffff, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 50px 80px, #00f0ff, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 100px 40px, #ff007f, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 180px 140px, #ffffff, rgba(0,0,0,0)),
+    radial-gradient(3px 3px at 260px 200px, #00ff88, rgba(0,0,0,0));
+  background-repeat: repeat;
+  background-size: 320px 320px;
+  opacity: 0.65;
+  animation: ufoStarsMove 6s linear infinite;
+}
+
+@keyframes ufoStarsMove {
+  from { transform: translateX(0) translateY(0); }
+  to { transform: translateX(-320px) translateY(40px); }
+}
+
+/* UFO Flight Track Across Screen */
+.ufo-flight-track {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.ufo-ship-container {
+  position: absolute;
+  top: 35vh;
+  left: -220px;
+  width: 170px;
+  height: 140px;
+  animation: ufoFlyAcrossScreen 3.2s cubic-bezier(0.35, 0, 0.25, 1) infinite;
+  filter: drop-shadow(0 15px 30px rgba(0, 240, 255, 0.5));
+}
+
+@keyframes ufoFlyAcrossScreen {
+  0% {
+    left: -220px;
+    top: 48vh;
+    transform: rotate(14deg) scale(0.85);
+  }
+  20% {
+    top: 30vh;
+    transform: rotate(-7deg) scale(1);
+  }
+  45% {
+    top: 44vh;
+    transform: rotate(8deg) scale(1.12);
+  }
+  70% {
+    top: 26vh;
+    transform: rotate(-5deg) scale(1.05);
+  }
+  100% {
+    left: calc(100vw + 220px);
+    top: 38vh;
+    transform: rotate(12deg) scale(0.9);
+  }
+}
+
+/* Tractor Beam under the Flying UFO */
+.ufo-tractor-beam {
+  position: absolute;
+  top: 68px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 70px solid transparent;
+  border-right: 70px solid transparent;
+  border-bottom: 240px solid rgba(0, 240, 255, 0.22);
+  filter: drop-shadow(0 0 25px rgba(0, 240, 255, 0.65));
+  pointer-events: none;
+  animation: ufoBeamPulse 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes ufoBeamPulse {
+  0% {
+    opacity: 0.65;
+    border-left-width: 60px;
+    border-right-width: 60px;
+    border-bottom-color: rgba(0, 240, 255, 0.18);
+  }
+  100% {
+    opacity: 1;
+    border-left-width: 82px;
+    border-right-width: 82px;
+    border-bottom-color: rgba(0, 255, 136, 0.38);
+  }
+}
+
+/* Plasma Trail behind UFO */
+.ufo-plasma-trail {
+  position: absolute;
+  top: 48px;
+  right: 125px;
+  width: 150px;
+  height: 14px;
+  background: linear-gradient(90deg, rgba(0,240,255,0) 0%, rgba(0,240,255,0.6) 40%, rgba(255,0,127,0.95) 100%);
+  border-radius: 20px;
+  filter: blur(5px);
+  transform-origin: right center;
+  animation: ufoTrailPulse 0.4s ease-in-out infinite alternate;
+}
+
+@keyframes ufoTrailPulse {
+  from { opacity: 0.5; transform: scaleX(0.75); }
+  to { opacity: 1; transform: scaleX(1.25); }
+}
+
+/* LED blinking lights on UFO rim */
+.ufo-led-dot {
+  animation: ufoLedBlink 0.6s ease-in-out infinite alternate;
+}
+.led-1 { animation-delay: 0.0s; }
+.led-2 { animation-delay: 0.12s; }
+.led-3 { animation-delay: 0.24s; }
+.led-4 { animation-delay: 0.36s; }
+.led-5 { animation-delay: 0.48s; }
+
+@keyframes ufoLedBlink {
+  from { opacity: 0.3; r: 2.5; }
+  to { opacity: 1; r: 4.5; filter: drop-shadow(0 0 6px currentColor); }
+}
+
+/* UFO Status Box */
+.ufo-status-box {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 200px;
+  background: rgba(10, 5, 26, 0.88);
+  border: 1.5px solid rgba(0, 240, 255, 0.4);
+  padding: 1.5rem 2.6rem;
+  border-radius: 22px;
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.8), inset 0 0 30px rgba(0, 240, 255, 0.15);
+  text-align: center;
+  backdrop-filter: blur(12px);
+}
+
+.ufo-status-badge {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: #ff007f;
+  background: rgba(255, 0, 127, 0.14);
+  border: 1px solid rgba(255, 0, 127, 0.45);
+  padding: 4px 16px;
+  border-radius: 20px;
+  margin-bottom: 0.8rem;
+  text-transform: uppercase;
+}
+
+.ufo-status-text {
+  font-family: var(--font-funky, 'Outfit', sans-serif);
+  font-size: 1.4rem;
+  font-weight: 900;
+  letter-spacing: 3px;
+  color: var(--cyan, #00f0ff);
+  text-shadow: 0 0 18px rgba(0, 240, 255, 0.8);
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+  animation: ufoTextPulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes ufoTextPulse {
+  from { opacity: 0.7; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1.02); }
+}
+
+.ufo-progress-bar {
+  width: 250px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  position: relative;
+}
+
+.ufo-progress-fill {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #ff007f, #00f0ff, #00ff88, #ffea00);
+  background-size: 200% 100%;
+  border-radius: 10px;
+  animation: ufoProgressGlow 1.4s linear infinite;
+}
+
+@keyframes ufoProgressGlow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
 }
 
 
