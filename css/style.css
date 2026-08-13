@@ -2947,4 +2947,108 @@ body:has(#pairing-screen) #arcade-nav-container {
   100% { background-position: 200% 50%; }
 }
 
+/* ========================================================= */
+/* ARCADE GLOBAL FOOTER & GITHUB REPORT SYSTEM               */
+/* ========================================================= */
+
+.arcade-footer {
+  margin-top: 3.5rem;
+  margin-bottom: 2rem;
+  padding: 1.8rem 1.2rem;
+  border-top: 1px dashed rgba(0, 240, 255, 0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted, #94a3b8);
+  position: relative;
+  z-index: 10;
+}
+
+.arcade-footer-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+  flex-wrap: wrap;
+}
+
+.btn-github-report {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  background: rgba(255, 0, 127, 0.15);
+  border: 1px solid rgba(255, 0, 127, 0.55);
+  color: #ff66b2;
+  border-radius: 24px;
+  font-weight: 800;
+  font-size: 0.82rem;
+  text-decoration: none;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 0 14px rgba(255, 0, 127, 0.25);
+  cursor: pointer;
+}
+
+.btn-github-report:hover {
+  background: linear-gradient(135deg, #ff007f, #b44aff);
+  color: #ffffff;
+  border-color: #ff007f;
+  transform: translateY(-3px) scale(1.04);
+  box-shadow: 0 0 24px rgba(255, 0, 127, 0.7);
+}
+
+.btn-github-repo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  background: rgba(0, 240, 255, 0.15);
+  border: 1px solid rgba(0, 240, 255, 0.55);
+  color: #00f0ff;
+  border-radius: 24px;
+  font-weight: 800;
+  font-size: 0.82rem;
+  text-decoration: none;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 0 14px rgba(0, 240, 255, 0.25);
+  cursor: pointer;
+}
+
+.btn-github-repo:hover {
+  background: linear-gradient(135deg, #00f0ff, #00ffaa);
+  color: #05010d;
+  border-color: #00f0ff;
+  transform: translateY(-3px) scale(1.04);
+  box-shadow: 0 0 24px rgba(0, 240, 255, 0.7);
+}
+
+.repo-address-tag {
+  font-family: monospace;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--cyan, #00f0ff);
+  background: rgba(0, 240, 255, 0.08);
+  padding: 4px 12px;
+  border-radius: 8px;
+  border: 1px dashed rgba(0, 240, 255, 0.35);
+  text-decoration: none;
+  display: inline-block;
+  margin-left: 4px;
+  transition: all 0.2s ease;
+}
+
+.repo-address-tag:hover {
+  color: #ffffff;
+  background: rgba(0, 240, 255, 0.25);
+  border-color: #00f0ff;
+}
+
 
