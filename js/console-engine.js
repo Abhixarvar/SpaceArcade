@@ -272,6 +272,10 @@
     // Auto-trigger start button inside iframe to immediately start gameplay
     gameIframe.onload = () => {
       try {
+        if (gameIframe.contentWindow) {
+          gameIframe.contentWindow.focus();
+        }
+
         const autoTrigger = () => {
           const iframeDoc = gameIframe.contentWindow ? gameIframe.contentWindow.document : null;
           if (!iframeDoc) return;
