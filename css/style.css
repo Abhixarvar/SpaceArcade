@@ -72,12 +72,14 @@ button { cursor: none; }
   position: absolute;
   border-radius: 50%;
   background: #fff;
+  will-change: opacity;
+  transform: translateZ(0);
   animation: twinkle var(--duration) ease-in-out infinite alternate;
 }
 
 @keyframes twinkle {
-  0% { opacity: var(--min-opacity, 0.2); transform: scale(1); }
-  100% { opacity: var(--max-opacity, 1); transform: scale(1.3); }
+  0% { opacity: var(--min-opacity, 0.2); }
+  100% { opacity: var(--max-opacity, 1); }
 }
 
 .shooting-star {
@@ -279,15 +281,15 @@ button { cursor: none; }
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0 0 30px rgba(0, 240, 255, 0.4));
+  filter: drop-shadow(0 0 25px rgba(0, 240, 255, 0.4));
   animation: titlePulse 3s ease-in-out infinite alternate;
   line-height: 1.1;
 }
 
 @keyframes titlePulse {
-  0% { filter: drop-shadow(0 0 20px rgba(0, 240, 255, 0.3)); }
-  50% { filter: drop-shadow(0 0 40px rgba(180, 74, 255, 0.5)); }
-  100% { filter: drop-shadow(0 0 20px rgba(255, 107, 157, 0.3)); }
+  0% { opacity: 0.9; }
+  50% { opacity: 1; }
+  100% { opacity: 0.92; }
 }
 
 .hero-subtitle {
@@ -597,14 +599,14 @@ button { cursor: none; }
 
 /* --- Game Card --- */
 .game-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(16, 18, 48, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-lg);
   padding: 40px 30px 35px;
   text-align: center;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.3s, box-shadow 0.3s, background 0.3s;
   position: relative;
   overflow: hidden;
   text-decoration: none;
@@ -2084,11 +2086,12 @@ button { cursor: none; }
   transform: translate(-50%, -50%);
   filter: drop-shadow(0 0 30px rgba(0, 240, 255, 0.6));
   animation: floatShip 6s ease-in-out infinite alternate;
+  will-change: transform;
 }
 
 @keyframes floatShip {
-  0% { transform: translate(-50%, -50%) translateY(0); filter: drop-shadow(0 0 30px rgba(0, 240, 255, 0.6)); }
-  100% { transform: translate(-50%, -50%) translateY(-30px); filter: drop-shadow(0 0 50px rgba(0, 240, 255, 0.8)); }
+  0% { transform: translate3d(-50%, -50%, 0) translateY(0); }
+  100% { transform: translate3d(-50%, -50%, 0) translateY(-30px); }
 }
 
 /* --- Restore Default Cursors --- */
@@ -2928,6 +2931,9 @@ body:has(#pairing-screen) #arcade-nav-container {
     rgba(0, 240, 255, 0.08) 120px,
     rgba(0, 240, 255, 0.08) 123px
   );
+}
+
+.ufo-loader-overlay.active .ufo-speed-lines {
   animation: ufoSpeedLines 1.2s linear infinite;
 }
 
@@ -2949,6 +2955,9 @@ body:has(#pairing-screen) #arcade-nav-container {
   background-repeat: repeat;
   background-size: 320px 320px;
   opacity: 0.65;
+}
+
+.ufo-loader-overlay.active .ufo-stars-field {
   animation: ufoStarsMove 6s linear infinite;
 }
 
@@ -2973,8 +2982,11 @@ body:has(#pairing-screen) #arcade-nav-container {
   left: -220px;
   width: 170px;
   height: 140px;
-  animation: ufoFlyAcrossScreen 3.2s cubic-bezier(0.35, 0, 0.25, 1) infinite;
   filter: drop-shadow(0 15px 30px rgba(0, 240, 255, 0.5));
+}
+
+.ufo-loader-overlay.active .ufo-ship-container {
+  animation: ufoFlyAcrossScreen 3.2s cubic-bezier(0.35, 0, 0.25, 1) infinite;
 }
 
 @keyframes ufoFlyAcrossScreen {

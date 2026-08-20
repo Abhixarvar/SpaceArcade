@@ -3,7 +3,7 @@
   const container = document.getElementById('starfield');
   if (!container) return;
 
-  const STAR_COUNT = 150;
+  const STAR_COUNT = 45;
 
   // Create twinkling stars
   for (let i = 0; i < STAR_COUNT; i++) {
@@ -21,6 +21,8 @@
     star.style.height = size + 'px';
     star.style.left = x + '%';
     star.style.top = y + '%';
+    star.style.willChange = 'opacity';
+    star.style.transform = 'translateZ(0)';
     star.style.setProperty('--duration', duration + 's');
     star.style.setProperty('--min-opacity', minOp);
     star.style.setProperty('--max-opacity', maxOp);

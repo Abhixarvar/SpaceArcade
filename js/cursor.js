@@ -50,7 +50,7 @@
     function sendFrames() {
       const now = performance.now();
       if (now - lastFrameTime > 80) { // Stream around 12 FPS (80ms interval) to keep it fast & smooth
-        const canvas = document.querySelector('canvas');
+        const canvas = document.querySelector('canvas:not(.card-preview)');
         if (canvas) {
           try {
             const dataUrl = canvas.toDataURL('image/jpeg', 0.4); // compressed JPEG for performance
