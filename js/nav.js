@@ -452,6 +452,102 @@
     });
   }
 
+  function initGameInfoModals() {
+    const infoBtns = document.querySelectorAll('.game-info-btn');
+    if (!infoBtns.length) return;
+
+    // Create backdrop and modal container if not already present
+    let backdrop = document.querySelector('.game-info-modal-backdrop');
+    if (!backdrop) {
+      backdrop = document.createElement('div');
+      backdrop.className = 'game-info-modal-backdrop';
+      backdrop.setAttribute('aria-hidden', 'true');
+      backdrop.innerHTML = `
+        <div class="game-info-modal" role="dialog" aria-modal="true">
+          <button class="game-info-modal-close" aria-label="Close modal">&times;</button>
+          <div class="game-info-modal-header">
+            <div class="game-info-modal-icon">🎮</div>
+            <h2 class="game-info-modal-title">Game Title</h2>
+          </div>
+          <div class="game-info-modal-tags"></div>
+          <div class="game-info-modal-desc"></div>
+          <div class="game-info-modal-actions">
+            <button class="game-info-modal-btn game-info-modal-btn--close" type="button">Close</button>
+            <a href="#" class="game-info-modal-btn game-info-modal-btn--launch">Launch Mission</a>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(backdrop);
+    }
+
+    const modalTitle = backdrop.querySelector('.game-info-modal-title');
+    const modalIcon = backdrop.querySelector('.game-info-modal-icon');
+    const modalTags = backdrop.querySelector('.game-info-modal-tags');
+    const modalDesc = backdrop.querySelector('.game-info-modal-desc');
+    const launchBtn = backdrop.querySelector('.game-info-modal-btn--launch');
+    const closeBtns = backdrop.querySelectorAll('.game-info-modal-close, .game-info-modal-btn--close');
+
+    function closeModal() {
+      backdrop.classList.remove('open');
+      backdrop.setAttribute('aria-hidden', 'true');
+      if (window.SFX && typeof window.SFX.step === 'function') {
+        try { window.SFX.step(); } catch(e) {}
+      }
+    }
+
+    closeBtns.forEach(btn => btn.addEventListener('click', closeModal));
+
+    backdrop.addEventListener('click', (e) => {
+      if (e.target === backdrop) closeModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && backdrop.classList.contains('open')) {
+        closeModal();
+      }
+    });
+
+    infoBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const card = btn.closest('.game-card');
+        if (!card) return;
+
+        const title = card.querySelector('.thumb-title')?.textContent || 'Game';
+        const desc = card.getAttribute('data-desc') || 'No description available.';
+        const href = card.getAttribute('href') || '#';
+        const tagsContainer = card.querySelector('.card-tags');
+
+        // Extract leading emoji icon from description if present, default 🎮
+        const match = desc.match(/^(\p{Extended_Pictographic})/u);
+        const iconEmoji = match ? match[1] : '🎮';
+        const cleanDesc = desc.replace(/^(\p{Extended_Pictographic})\s*/u, '');
+
+        modalTitle.textContent = title;
+        modalIcon.textContent = iconEmoji;
+        modalDesc.textContent = cleanDesc || desc;
+        launchBtn.setAttribute('href', href);
+
+        if (tagsContainer) {
+          modalTags.innerHTML = tagsContainer.innerHTML;
+        } else {
+          modalTags.innerHTML = '';
+        }
+
+        backdrop.classList.add('open');
+        backdrop.setAttribute('aria-hidden', 'false');
+
+        if (window.SFX && typeof window.SFX.powerup === 'function') {
+          try { window.SFX.powerup(); } catch(err) {}
+        } else if (window.SFX && typeof window.SFX.step === 'function') {
+          try { window.SFX.step(); } catch(err) {}
+        }
+      });
+    });
+  }
+
   function injectArcadeFooter() {
     if (document.querySelector('.arcade-footer')) return;
     const targetParent = document.querySelector('.page-content') || document.querySelector('.game-page') || document.querySelector('.discord-lounge') || document.body;
@@ -479,6 +575,7 @@
   function init() {
     initArcadeNav();
     initTagFilter();
+    initGameInfoModals();
     injectArcadeFooter();
   }
 
