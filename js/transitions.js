@@ -37,15 +37,11 @@
                 </linearGradient>
                 <linearGradient id="ufoRimGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%" stop-color="#ff007f" />
-                  <stop offset="25%" stop-color="#00f0ff" />
+                  <stop offset="25%" stop-color="#00f0ff" stop-opacity="0.9" />
                   <stop offset="50%" stop-color="#00ff88" />
-                  <stop offset="75%" stop-color="#ffea00" />
+                  <stop offset="75%" stop-color="#ffea00" stop-opacity="0.9" />
                   <stop offset="100%" stop-color="#ff007f" />
                 </linearGradient>
-                <filter id="ufoGlow" x="-30%" y="-30%" width="160%" height="160%">
-                  <feGaussianBlur stdDeviation="4" result="blur" />
-                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                </filter>
               </defs>
               <!-- Glass Dome -->
               <path d="M 48 42 A 32 26 0 0 1 112 42 Z" fill="url(#ufoDomeGrad)" stroke="#00f0ff" stroke-width="1.5" />
@@ -54,7 +50,7 @@
               <!-- Saucer Main Disk -->
               <ellipse cx="80" cy="48" rx="72" ry="18" fill="url(#ufoBodyGrad)" stroke="rgba(255,255,255,0.4)" stroke-width="1" />
               <!-- Neon Pulsing Rim -->
-              <ellipse cx="80" cy="52" rx="70" ry="8" fill="none" stroke="url(#ufoRimGrad)" stroke-width="2.5" filter="url(#ufoGlow)" />
+              <ellipse cx="80" cy="52" rx="70" ry="8" fill="none" stroke="url(#ufoRimGrad)" stroke-width="2.5" />
               <!-- Saucer LED Lights -->
               <circle class="ufo-led-dot led-1" cx="28" cy="53" r="3.5" fill="#ff007f" />
               <circle class="ufo-led-dot led-2" cx="50" cy="57" r="3.5" fill="#00f0ff" />

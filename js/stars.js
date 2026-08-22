@@ -1,54 +1,64 @@
-/* ===== Animated Starfield ===== */
+/* ===== Animated Starfield (Low-End Optimized) ===== */
 (function () {
   const container = document.getElementById('starfield');
   if (!container) return;
 
-  const STAR_COUNT = 45;
+  const isLowPower = () => {
+    const ecoSaved = localStorage.getItem('spaceArcadeEcoMode') === 'true';
+    const lowCores = navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4;
+    const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    return ecoSaved || lowCores || reducedMotion;
+  };
 
-  // Create twinkling stars
-  for (let i = 0; i < STAR_COUNT; i++) {
-    const star = document.createElement('div');
-    star.className = 'star';
-    const size = Math.random() * 2.5 + 0.5;
-    const x = Math.random() * 100;
-    const y = Math.random() * 100;
-    const duration = Math.random() * 4 + 2;
-    const delay = Math.random() * 4;
-    const minOp = Math.random() * 0.3 + 0.1;
-    const maxOp = Math.random() * 0.5 + 0.5;
+  let timer = null;
 
-    star.style.width = size + 'px';
-    star.style.height = size + 'px';
-    star.style.left = x + '%';
-    star.style.top = y + '%';
-    star.style.willChange = 'opacity';
-    star.style.transform = 'translateZ(0)';
-    star.style.setProperty('--duration', duration + 's');
-    star.style.setProperty('--min-opacity', minOp);
-    star.style.setProperty('--max-opacity', maxOp);
-    star.style.animationDelay = delay + 's';
+  function renderStars() {
+    container.innerHTML = '';
+    const STAR_COUNT = isLowPower() ? 20 : 45;
 
-    // Bigger stars get a subtle color tint
-    if (size > 2) {
-      const colors = ['#00f0ff', '#b44aff', '#ff6b9d', '#ffd700'];
-      star.style.background = colors[Math.floor(Math.random() * colors.length)];
+    // Create twinkling stars
+    for (let i = 0; i < STAR_COUNT; i++) {
+      const star = document.createElement('div');
+      star.className = 'star';
+      const size = Math.random() * 2.5 + 0.5;
+      const x = Math.random() * 100;
+      const y = Math.random() * 100;
+      const duration = Math.random() * 4 + 2;
+      const delay = Math.random() * 4;
+      const minOp = Math.random() * 0.3 + 0.1;
+      const maxOp = Math.random() * 0.5 + 0.5;
+
+      star.style.width = size + 'px';
+      star.style.height = size + 'px';
+      star.style.left = x + '%';
+      star.style.top = y + '%';
+      star.style.willChange = 'opacity';
+      star.style.transform = 'translateZ(0)';
+      star.style.setProperty('--duration', duration + 's');
+      star.style.setProperty('--min-opacity', minOp);
+      star.style.setProperty('--max-opacity', maxOp);
+      star.style.animationDelay = delay + 's';
+
+      if (size > 2) {
+        const colors = ['#00f0ff', '#b44aff', '#ff6b9d', '#ffd700'];
+        star.style.background = colors[Math.floor(Math.random() * colors.length)];
+      }
+
+      container.appendChild(star);
     }
-
-    container.appendChild(star);
   }
 
-  // Shooting stars
+  // Shooting stars (disabled on low power / eco mode)
   function createShootingStar() {
+    if (document.hidden || isLowPower()) return;
     const star = document.createElement('div');
     star.className = 'shooting-star';
     star.style.left = Math.random() * 60 + '%';
     star.style.top = Math.random() * 40 + '%';
     
-    // Set rotation via CSS variable to avoid overriding animation translate
     const rotation = 30 + Math.random() * 20;
     star.style.setProperty('--rot', `${rotation}deg`);
 
-    // Pick a random vibrant color
     const colors = ['#00f0ff', '#b44aff', '#ff6b9d', '#ffd700', '#ffffff'];
     const color = colors[Math.floor(Math.random() * colors.length)];
     star.style.setProperty('--color', color);
@@ -57,14 +67,20 @@
     setTimeout(() => star.remove(), 1500);
   }
 
-  // Random shooting stars every 3-8 seconds
   function scheduleShootingStar() {
-    const delay = Math.random() * 5000 + 3000;
-    setTimeout(() => {
+    if (timer) clearTimeout(timer);
+    const delay = Math.random() * 5000 + 4000;
+    timer = setTimeout(() => {
       createShootingStar();
       scheduleShootingStar();
     }, delay);
   }
 
+  renderStars();
   scheduleShootingStar();
+
+  // Listen for Eco Mode changes
+  window.addEventListener('ecoModeChange', () => {
+    renderStars();
+  });
 })();

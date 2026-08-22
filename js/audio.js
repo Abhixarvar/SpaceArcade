@@ -134,6 +134,25 @@ window.SFX = (function () {
     },
     /** Move / step (very subtle) */
     step() { tone(200, 'sine', 0.03, 0.04, 250); },
+    /** Kid-friendly bubbly pop sound for hover/chips */
+    pop() { tone(480, 'sine', 0.05, 0.06, 720); },
+    /** Satisfying arcade button tap click */
+    click() {
+      tone(620, 'triangle', 0.04, 0.08, 380);
+    },
+    /** Whoosh transition effect */
+    whoosh() {
+      tone(300, 'sine', 0.1, 0.08, 900);
+    },
+    /** Toggle mute state */
+    toggleMute() {
+      const isMuted = this.getVolume() === 0;
+      this.setVolume(isMuted ? 0.5 : 0);
+      return !isMuted;
+    },
+    isMuted() {
+      return currentVol === 0;
+    }
   };
 })();
 

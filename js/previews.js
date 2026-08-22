@@ -7,8 +7,6 @@
   function star(ctx, cx, cy, spikes, outerR, innerR, color) {
     ctx.save();
     ctx.fillStyle = color;
-    ctx.shadowColor = color;
-    ctx.shadowBlur = 8;
     let rot = Math.PI / 2 * 3;
     const step = Math.PI / spikes;
     ctx.beginPath();
@@ -57,8 +55,6 @@
       const sy = seg.y * GRID;
       if (i === 0) {
         ctx.save();
-        ctx.shadowColor = headColor;
-        ctx.shadowBlur = 10;
         ctx.fillStyle = headColor;
         ctx.beginPath();
         ctx.roundRect(sx + 1, sy + 1, GRID - 2, GRID - 2, 4);
@@ -73,8 +69,6 @@
         const ci = Math.min(Math.floor(ratio * bodyColors.length), bodyColors.length - 1);
         ctx.save();
         ctx.globalAlpha = 1 - ratio * 0.5;
-        ctx.shadowColor = bodyColors[ci];
-        ctx.shadowBlur = 5;
         ctx.fillStyle = bodyColors[ci];
         ctx.beginPath();
         ctx.roundRect(sx + 2, sy + 2, GRID - 4, GRID - 4, 3);
@@ -138,8 +132,6 @@
     // Power pellets
     [[1, 1], [18, 1], [1, 7], [18, 7]].forEach(([c, r]) => {
       ctx.save();
-      ctx.shadowColor = '#ffd700';
-      ctx.shadowBlur = 8;
       ctx.fillStyle = '#ffd700';
       ctx.beginPath();
       ctx.arc(offX + c * T + T / 2, offY + r * T + T / 2, 4, 0, Math.PI * 2);
@@ -151,8 +143,6 @@
     const px = offX + 10 * T + T / 2;
     const py = offY + 5 * T + T / 2;
     ctx.save();
-    ctx.shadowColor = '#ffd700';
-    ctx.shadowBlur = 8;
     ctx.fillStyle = '#ffd700';
     ctx.beginPath();
     ctx.arc(px, py, T / 2 + 1, 0.25, Math.PI * 2 - 0.25);
@@ -168,8 +158,6 @@
       const gx = offX + gc * T + T / 2;
       const gy = offY + gr * T + T / 2;
       ctx.save();
-      ctx.shadowColor = ghostColors[gi];
-      ctx.shadowBlur = 6;
       ctx.fillStyle = ghostColors[gi];
       ctx.beginPath();
       ctx.arc(gx, gy - 1, T / 2, Math.PI, 0);
@@ -224,8 +212,6 @@
       ctx.save();
       ctx.translate(e.x, e.y);
       const c = enemyColors[i % enemyColors.length];
-      ctx.shadowColor = c;
-      ctx.shadowBlur = 8;
       ctx.fillStyle = c;
       const s = 12;
       ctx.beginPath();
@@ -246,8 +232,6 @@
     const bulletYs = [85, 60, 35, 105];
     bulletYs.forEach(by => {
       ctx.save();
-      ctx.shadowColor = '#ffd700';
-      ctx.shadowBlur = 8;
       ctx.fillStyle = '#ffd700';
       ctx.fillRect(W / 2 - 2, by, 4, 10);
       ctx.fillStyle = '#fff';
@@ -259,8 +243,6 @@
     const px = W / 2, py = H - 20;
     ctx.save();
     ctx.translate(px, py);
-    ctx.shadowColor = '#00f0ff';
-    ctx.shadowBlur = 12;
     ctx.fillStyle = '#00f0ff';
     ctx.beginPath();
     ctx.moveTo(0, -16);
@@ -307,8 +289,6 @@
       const dist = 6 + Math.random() * 10;
       ctx.globalAlpha = 0.5 + Math.random() * 0.4;
       ctx.fillStyle = expColors[i % expColors.length];
-      ctx.shadowColor = ctx.fillStyle;
-      ctx.shadowBlur = 4;
       ctx.beginPath();
       ctx.arc(expX + Math.cos(angle) * dist, expY + Math.sin(angle) * dist, 1.5 + Math.random(), 0, Math.PI * 2);
       ctx.fill();
@@ -463,8 +443,6 @@
     const padW = 8, padH = 50;
     const lx = 30, ly = H / 2 - padH / 2 - 10;
     ctx.save();
-    ctx.shadowColor = '#00ff88';
-    ctx.shadowBlur = 15;
     ctx.fillStyle = '#00ff88';
     ctx.beginPath();
     ctx.roundRect(lx, ly, padW, padH, 4);
@@ -474,8 +452,6 @@
     // Right paddle (cyan glow)
     const rx = W - 30 - padW, ry = H / 2 - padH / 2 + 15;
     ctx.save();
-    ctx.shadowColor = '#00f0ff';
-    ctx.shadowBlur = 15;
     ctx.fillStyle = '#00f0ff';
     ctx.beginPath();
     ctx.roundRect(rx, ry, padW, padH, 4);
@@ -494,8 +470,6 @@
       ctx.save();
       ctx.globalAlpha = 0.1 + (i / ballPath.length) * 0.3;
       ctx.fillStyle = '#fff';
-      ctx.shadowColor = '#00f0ff';
-      ctx.shadowBlur = 4;
       ctx.beginPath();
       ctx.arc(p.x, p.y, 3 + (i / ballPath.length) * 2, 0, Math.PI * 2);
       ctx.fill();
@@ -505,14 +479,7 @@
     // Ball
     const bx = W / 2 + 80, by = H / 2 - 30;
     ctx.save();
-    ctx.shadowColor = '#fff';
-    ctx.shadowBlur = 20;
     ctx.fillStyle = '#fff';
-    ctx.beginPath();
-    ctx.arc(bx, by, 6, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.shadowBlur = 40;
-    ctx.shadowColor = '#00f0ff';
     ctx.beginPath();
     ctx.arc(bx, by, 6, 0, Math.PI * 2);
     ctx.fill();
@@ -847,12 +814,6 @@
         
         ctx.save();
         ctx.fillStyle = colors[r][c];
-        
-        // Add glow for colored tiles
-        if (ctx.fillStyle === C_GREEN || ctx.fillStyle === C_YELLOW) {
-          ctx.shadowColor = ctx.fillStyle;
-          ctx.shadowBlur = 4;
-        }
         
         ctx.beginPath();
         ctx.roundRect(x, y, T, T, 2);

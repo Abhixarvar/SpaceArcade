@@ -572,10 +572,90 @@
     targetParent.appendChild(footer);
   }
 
+  function initEcoModeToggle() {
+    const ecoBtn = document.getElementById('eco-toggle-btn');
+    const soundBtn = document.getElementById('sound-toggle-btn');
+
+    // Auto-detect low performance
+    const isEcoDefault = localStorage.getItem('spaceArcadeEcoMode') === 'true' ||
+      (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+
+    if (isEcoDefault) {
+      document.body.classList.add('eco-mode');
+    }
+
+    if (ecoBtn) {
+      const updateEcoBtn = () => {
+        const active = document.body.classList.contains('eco-mode');
+        ecoBtn.classList.toggle('active', active);
+        ecoBtn.innerHTML = active ? '🍃 Power Saver' : '⚡ Turbo Mode';
+      };
+      updateEcoBtn();
+
+      ecoBtn.addEventListener('click', () => {
+        const isEco = document.body.classList.toggle('eco-mode');
+        localStorage.setItem('spaceArcadeEcoMode', isEco ? 'true' : 'false');
+        updateEcoBtn();
+        if (window.SFX && typeof window.SFX.click === 'function') {
+          try { window.SFX.click(); } catch(e) {}
+        }
+        window.dispatchEvent(new CustomEvent('ecoModeChange'));
+      });
+    }
+
+    if (soundBtn) {
+      const updateSoundBtn = () => {
+        const muted = window.SFX && typeof window.SFX.isMuted === 'function' ? window.SFX.isMuted() : false;
+        soundBtn.classList.toggle('muted', muted);
+        soundBtn.innerHTML = muted ? '🔇 Sound: OFF' : '🔊 Sound: ON';
+      };
+      updateSoundBtn();
+
+      soundBtn.addEventListener('click', () => {
+        if (window.SFX && typeof window.SFX.toggleMute === 'function') {
+          window.SFX.toggleMute();
+          updateSoundBtn();
+          if (!window.SFX.isMuted()) {
+            try { window.SFX.pop(); } catch(e) {}
+          }
+        }
+      });
+    }
+  }
+
+  function initKidAudioInteractions() {
+    // Add hover audio listeners for game cards and buttons
+    const cards = document.querySelectorAll('.game-card, .mode-badge-btn, .filter-chip, .promo-banner-link');
+    cards.forEach(card => {
+      card.addEventListener('mouseenter', () => {
+        if (window.SFX) {
+          if (typeof window.SFX.pop === 'function') {
+            try { window.SFX.pop(); } catch(e) {}
+          } else if (typeof window.SFX.step === 'function') {
+            try { window.SFX.step(); } catch(e) {}
+          }
+        }
+      });
+    });
+
+    // Play click sound on launch buttons
+    const playBtns = document.querySelectorAll('.card-play-btn, .game-card');
+    playBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        if (e.target.closest('.game-info-btn')) return;
+        if (window.SFX && typeof window.SFX.powerup === 'function') {
+          try { window.SFX.powerup(); } catch(err) {}
+        }
+      });
+    });
+  }
+
   function init() {
     initArcadeNav();
     initTagFilter();
     initGameInfoModals();
+    initEcoModeToggle();
+    initKidAudioInteractions();
     injectArcadeFooter();
   }
 
