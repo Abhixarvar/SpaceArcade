@@ -1,4 +1,4 @@
-/* ===== Star Combat Chess — Sci-Fi Chess Engine & Renderer ===== */
+/* ===== Star Combat Chess — Sci-Fi Engine, Vector Art & Smooth Animations ===== */
 
 (function () {
   'use strict';
@@ -16,6 +16,7 @@
   const lightCapturedEl = document.getElementById('light-captured');
   const moveLogEl = document.getElementById('move-log');
   const moveCountEl = document.getElementById('move-count');
+  const boardWrapEl = document.querySelector('.starchess-canvas-wrap');
 
   // Buttons
   const btnModeAi = document.getElementById('btn-mode-ai');
@@ -49,7 +50,7 @@
   const TILE_SIZE = BOARD_SIZE / GRID_SIZE; // 65px
 
   let gameMode = 'ai'; // 'ai' or 'local'
-  let aiLevel = 2; // 1, 2, or 3
+  let aiLevel = 2; // 1 (Easy), 2 (Medium), 3 (Hard)
   let isFlipped = false; // false: White on bottom, true: Black on bottom
   let isAiThinking = false;
   let gameActive = false;
@@ -69,20 +70,16 @@
   // Pending Promotion callback
   let pendingPromotion = null;
 
+  // Smooth Move Animation State
+  let moveAnimation = null; // { piece, fromR, fromC, toR, toC, startTime, duration: 220, promo }
+
   // Particle Effects
   let particles = [];
 
-  // Star Wars Piece Symbols & Mapping
-  // w = White (Light Side: Rebels), b = Black (Dark Side: Empire)
-  // P=Pawn, N=Knight, B=Bishop, R=Rook, Q=Queen, K=King
+  // Star Wars Piece Names
   const PIECE_NAMES = {
     'wK': 'Yoda/Luke (King)', 'wQ': 'Leia (Queen)', 'wR': 'Falcon (Rook)', 'wB': 'Obi-Wan (Bishop)', 'wN': 'X-Wing (Knight)', 'wP': 'Rebel Droid (Pawn)',
     'bK': 'Vader (King)', 'bQ': 'Sidious (Queen)', 'bR': 'Death Star (Rook)', 'bB': 'Inquisitor (Bishop)', 'bN': 'AT-AT (Knight)', 'bP': 'Stormtrooper (Pawn)'
-  };
-
-  const PIECE_SYMBOLS = {
-    'wK': '👑', 'wQ': '👸', 'wR': '🚀', 'wB': '🧙‍♂️', 'wN': '✈️', 'wP': '🤖',
-    'bK': '👑', 'bQ': '⚡', 'bR': '🌌', 'bB': '🎯', 'bN': '🛸', 'bP': '🪖'
   };
 
   // Positional Values for AI (8x8 matrices)
@@ -174,10 +171,41 @@
     castlingRights = { wK: true, wQ: true, bK: true, bQ: true };
     enPassantSquare = null;
     isAiThinking = false;
+    moveAnimation = null;
     gameActive = true;
 
+    updateUndoButtonState();
     updateUI();
     render();
+  }
+
+  // ---- Difficulty & Undo Button Controls ----
+  function updateUndoButtonState() {
+    if (!btnUndo) return;
+    if (gameMode === 'ai' && aiLevel === 3) {
+      btnUndo.classList.add('disabled');
+      btnUndo.setAttribute('title', 'Undo is disabled on Hard (Sith Lord) difficulty ⚔️');
+      btnUndo.setAttribute('data-tip', '⚔️ Undo disabled on Hard Mode');
+    } else {
+      btnUndo.classList.remove('disabled');
+      btnUndo.setAttribute('title', 'Undo last move');
+      btnUndo.setAttribute('data-tip', '↩️ Undo last move');
+    }
+  }
+
+  function showToast(message) {
+    if (!boardWrapEl) return;
+    const existing = boardWrapEl.querySelector('.starchess-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'starchess-toast';
+    toast.textContent = message;
+    boardWrapEl.appendChild(toast);
+
+    setTimeout(() => {
+      if (toast && toast.parentNode) toast.parentNode.removeChild(toast);
+    }, 2500);
   }
 
   // ---- UI Controls Event Listeners ----
@@ -186,6 +214,7 @@
     btnModeAi.classList.add('active');
     btnModeLocal.classList.remove('active');
     difficultyWrap.style.display = 'flex';
+    updateUndoButtonState();
     initGame();
   });
 
@@ -194,11 +223,13 @@
     btnModeLocal.classList.add('active');
     btnModeAi.classList.remove('active');
     difficultyWrap.style.display = 'none';
+    updateUndoButtonState();
     initGame();
   });
 
   aiDifficultySelect.addEventListener('change', (e) => {
     aiLevel = parseInt(e.target.value, 10);
+    updateUndoButtonState();
   });
 
   btnFlip.addEventListener('click', () => {
@@ -207,7 +238,14 @@
   });
 
   btnUndo.addEventListener('click', () => {
-    if (!gameActive || isAiThinking) return;
+    if (!gameActive || isAiThinking || moveAnimation) return;
+
+    if (gameMode === 'ai' && aiLevel === 3) {
+      showToast('⚔️ No mercy! Undo is disabled on Hard (Sith Lord) mode.');
+      if (window.SFX && window.SFX.hit) window.SFX.hit();
+      return;
+    }
+
     undoMove();
   });
 
@@ -231,7 +269,7 @@
 
   // ---- Canvas Interaction ----
   canvas.addEventListener('click', (e) => {
-    if (!gameActive || isAiThinking) return;
+    if (!gameActive || isAiThinking || moveAnimation) return;
     if (gameMode === 'ai' && currentTurn === 'b') return; // AI's turn
 
     const rect = canvas.getBoundingClientRect();
@@ -259,7 +297,7 @@
     // If square is one of the valid target moves for the currently selected piece:
     const targetMove = validMoves.find(m => m.r === r && m.c === c);
     if (selectedSquare && targetMove) {
-      executeMove(selectedSquare, targetMove);
+      startAnimatedMove(selectedSquare, targetMove);
       return;
     }
 
@@ -276,10 +314,9 @@
     render();
   }
 
-  // ---- Move Execution ----
-  function executeMove(from, to, promotionChoice = null) {
+  // ---- Smooth Animated Move Trigger ----
+  function startAnimatedMove(from, to, promotionChoice = null) {
     const piece = board[from.r][from.c];
-    const targetPiece = board[to.r][to.c];
     const pieceColor = piece[0];
     const pieceType = piece[1];
 
@@ -287,11 +324,52 @@
     if (pieceType === 'P' && ((pieceColor === 'w' && to.r === 0) || (pieceColor === 'b' && to.r === 7))) {
       if (!promotionChoice) {
         showPromotionModal(pieceColor, (choice) => {
-          executeMove(from, to, choice);
+          startAnimatedMove(from, to, choice);
         });
         return;
       }
     }
+
+    // Start 220ms sliding animation
+    const startTime = performance.now();
+    moveAnimation = {
+      piece,
+      fromR: from.r,
+      fromC: from.c,
+      toR: to.r,
+      toC: to.c,
+      startTime,
+      duration: 220,
+      promoChoice: promotionChoice
+    };
+
+    function animStep(now) {
+      if (!moveAnimation) return;
+      const elapsed = now - moveAnimation.startTime;
+      const progress = Math.min(1, elapsed / moveAnimation.duration);
+
+      render();
+
+      if (progress < 1) {
+        requestAnimationFrame(animStep);
+      } else {
+        const animCopy = { ...moveAnimation };
+        moveAnimation = null;
+        completeMoveExecution(animCopy.fromR, animCopy.fromC, animCopy.toR, animCopy.toC, animCopy.promoChoice);
+      }
+    }
+
+    requestAnimationFrame(animStep);
+  }
+
+  // ---- Complete Move Execution (Post-Animation State Update) ----
+  function completeMoveExecution(fromR, fromC, toR, toC, promotionChoice = null) {
+    const from = { r: fromR, c: fromC };
+    const to = { r: toR, c: toC };
+    const piece = board[from.r][from.c];
+    const targetPiece = board[to.r][to.c];
+    const pieceColor = piece[0];
+    const pieceType = piece[1];
 
     // Save snapshot for Undo
     const snapshot = {
@@ -405,7 +483,7 @@
         winnerDisplay.textContent = 'Galactic Truce — Draw! 🪐';
         if (window.SFX && window.SFX.gameOver) window.SFX.gameOver();
       }
-      setTimeout(() => gameoverOverlay.classList.remove('hidden'), 600);
+      setTimeout(() => gameoverOverlay.classList.remove('hidden'), 500);
       return;
     }
 
@@ -417,7 +495,7 @@
     if (gameMode === 'ai' && currentTurn === 'b' && gameActive) {
       isAiThinking = true;
       statusBadgeEl.textContent = 'Imperial AI calculating...';
-      setTimeout(makeAiMove, 400);
+      setTimeout(makeAiMove, 350);
     }
   }
 
@@ -449,7 +527,7 @@
     isAiThinking = false;
 
     if (bestMove) {
-      executeMove(bestMove.from, bestMove.to, bestMove.promo);
+      startAnimatedMove(bestMove.from, bestMove.to, bestMove.promo);
     }
   }
 
@@ -592,6 +670,7 @@
 
     selectedSquare = null;
     validMoves = [];
+    moveAnimation = null;
     gameActive = true;
     updateUI();
     render();
@@ -714,8 +793,7 @@
             if (bd[tr][tc][0] !== color) moves.push({ r: tr, c: tc });
             break;
           }
-          tr += dr;
-          tc += dc;
+          tr += dr; tc += dc;
         }
       }
     } else if (type === 'K') {
@@ -750,7 +828,6 @@
   }
 
   function isKingInCheck(bd, color) {
-    // Find King location
     let kR = -1, kC = -1;
     for (let r = 0; r < 8; r++) {
       for (let c = 0; c < 8; c++) {
@@ -836,12 +913,7 @@
   function showPromotionModal(color, callback) {
     pendingPromotion = callback;
     promotionOverlay.classList.remove('hidden');
-    promoSubtitle.textContent = color === 'w' ? 'Rebel Droid evolving:' : 'Imperial Trooper advancing:';
-    
-    promoIconQ.textContent = color === 'w' ? '👸' : '⚡';
-    promoIconR.textContent = color === 'w' ? '🚀' : '🌌';
-    promoIconB.textContent = color === 'w' ? '🧙‍♂️' : '🎯';
-    promoIconN.textContent = color === 'w' ? '✈️' : '🛸';
+    promoSubtitle.textContent = color === 'w' ? 'Rebel unit promotion:' : 'Imperial unit promotion:';
 
     const buttons = promotionOverlay.querySelectorAll('.promo-btn');
     buttons.forEach(btn => {
@@ -851,6 +923,241 @@
         if (pendingPromotion) pendingPromotion(choice);
       };
     });
+  }
+
+  // ---- High-Quality Vector Chess Piece Art Renderer (Matching Reference Image) ----
+  function drawStylizedVectorPiece(piece, cx, cy, size) {
+    const color = piece[0]; // 'w' or 'b'
+    const type = piece[1]; // P, N, B, R, Q, K
+    const isDark = color === 'b';
+    const s = size * 0.72; // scale
+
+    ctx.save();
+    ctx.translate(cx, cy);
+
+    // Dynamic Color Palette (matching reference image gradient & shading)
+    let fillGrad, outlineColor, shadowColor, highlightColor;
+
+    if (isDark) {
+      // Dark / Purple Set
+      fillGrad = ctx.createLinearGradient(0, -s / 2, 0, s / 2);
+      fillGrad.addColorStop(0, '#583f99');
+      fillGrad.addColorStop(0.5, '#3b296b');
+      fillGrad.addColorStop(1, '#231845');
+
+      outlineColor = '#1a1033';
+      shadowColor = 'rgba(180, 75, 255, 0.4)';
+      highlightColor = '#a685e8';
+    } else {
+      // White / Light Set
+      fillGrad = ctx.createLinearGradient(0, -s / 2, 0, s / 2);
+      fillGrad.addColorStop(0, '#ffffff');
+      fillGrad.addColorStop(0.6, '#ede7fb');
+      fillGrad.addColorStop(1, '#d5cbfa');
+
+      outlineColor = '#705c9e';
+      shadowColor = 'rgba(0, 240, 255, 0.4)';
+      highlightColor = '#ffffff';
+    }
+
+    ctx.shadowColor = shadowColor;
+    ctx.shadowBlur = 10;
+
+    ctx.fillStyle = fillGrad;
+    ctx.strokeStyle = outlineColor;
+    ctx.lineWidth = 2.2;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+
+    ctx.beginPath();
+
+    // Piece Paths normalized around (0, 0)
+    switch (type) {
+      case 'P': // PAWN - Spherical dome head, conical body, base
+        ctx.arc(0, -s * 0.22, s * 0.16, 0, Math.PI * 2); // Head
+        ctx.fill(); ctx.stroke(); ctx.beginPath();
+        // Collar band
+        ctx.roundRect(-s * 0.16, -s * 0.04, s * 0.32, s * 0.08, 3);
+        ctx.fill(); ctx.stroke(); ctx.beginPath();
+        // Body & Base
+        ctx.moveTo(-s * 0.13, -s * 0.04);
+        ctx.quadraticCurveTo(-s * 0.22, s * 0.22, -s * 0.28, s * 0.36);
+        ctx.lineTo(s * 0.28, s * 0.36);
+        ctx.quadraticCurveTo(s * 0.22, s * 0.22, s * 0.13, -s * 0.04);
+        ctx.closePath();
+        break;
+
+      case 'R': // ROOK - Castle battlement header, column, base
+        // Battlements
+        ctx.moveTo(-s * 0.26, -s * 0.38);
+        ctx.lineTo(-s * 0.26, -s * 0.22);
+        ctx.lineTo(-s * 0.16, -s * 0.22);
+        ctx.lineTo(-s * 0.16, -s * 0.30);
+        ctx.lineTo(-s * 0.06, -s * 0.30);
+        ctx.lineTo(-s * 0.06, -s * 0.38);
+        ctx.lineTo(s * 0.06, -s * 0.38);
+        ctx.lineTo(s * 0.06, -s * 0.30);
+        ctx.lineTo(s * 0.16, -s * 0.30);
+        ctx.lineTo(s * 0.16, -s * 0.22);
+        ctx.lineTo(s * 0.26, -s * 0.22);
+        ctx.lineTo(s * 0.26, -s * 0.38);
+        ctx.closePath();
+        ctx.fill(); ctx.stroke(); ctx.beginPath();
+        // Column & Base
+        ctx.moveTo(-s * 0.20, -s * 0.22);
+        ctx.lineTo(-s * 0.24, s * 0.36);
+        ctx.lineTo(s * 0.24, s * 0.36);
+        ctx.lineTo(s * 0.20, -s * 0.22);
+        ctx.closePath();
+        break;
+
+      case 'N': // KNIGHT - Curved horse head facing left
+        ctx.moveTo(s * 0.22, s * 0.36);
+        ctx.lineTo(-s * 0.26, s * 0.36);
+        ctx.lineTo(-s * 0.22, s * 0.24);
+        ctx.quadraticCurveTo(-s * 0.32, s * 0.08, -s * 0.30, -s * 0.08); // Snout
+        ctx.lineTo(-s * 0.12, -s * 0.06); // Jaw
+        ctx.quadraticCurveTo(-s * 0.18, -s * 0.24, -s * 0.14, -s * 0.38); // Ear/top
+        ctx.quadraticCurveTo(s * 0.15, -s * 0.40, s * 0.25, -s * 0.18); // Mane back
+        ctx.quadraticCurveTo(s * 0.28, s * 0.12, s * 0.22, s * 0.36);
+        ctx.closePath();
+        break;
+
+      case 'B': // BISHOP - Teardrop oval head with diagonal slit & top finial
+        ctx.arc(0, -s * 0.42, s * 0.06, 0, Math.PI * 2); // Finial ball
+        ctx.fill(); ctx.stroke(); ctx.beginPath();
+        // Egg head
+        ctx.ellipse(0, -s * 0.18, s * 0.18, s * 0.22, 0, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke(); ctx.beginPath();
+        // Collar & Base
+        ctx.roundRect(-s * 0.18, 0, s * 0.36, s * 0.08, 3);
+        ctx.fill(); ctx.stroke(); ctx.beginPath();
+        ctx.moveTo(-s * 0.14, s * 0.08);
+        ctx.lineTo(-s * 0.26, s * 0.36);
+        ctx.lineTo(s * 0.26, s * 0.36);
+        ctx.lineTo(s * 0.14, s * 0.08);
+        ctx.closePath();
+        break;
+
+      case 'Q': // QUEEN - Coronet crown points, hourglass body, collar
+        // Crown points
+        ctx.moveTo(-s * 0.28, -s * 0.34);
+        ctx.lineTo(-s * 0.20, -s * 0.18);
+        ctx.lineTo(-s * 0.10, -s * 0.38);
+        ctx.lineTo(0, -s * 0.18);
+        ctx.lineTo(s * 0.10, -s * 0.38);
+        ctx.lineTo(s * 0.20, -s * 0.18);
+        ctx.lineTo(s * 0.28, -s * 0.34);
+        ctx.lineTo(s * 0.22, -s * 0.08);
+        ctx.lineTo(-s * 0.22, -s * 0.08);
+        ctx.closePath();
+        ctx.fill(); ctx.stroke(); ctx.beginPath();
+        // Collar & Body
+        ctx.roundRect(-s * 0.20, -s * 0.08, s * 0.40, s * 0.08, 3);
+        ctx.fill(); ctx.stroke(); ctx.beginPath();
+        ctx.moveTo(-s * 0.15, 0);
+        ctx.lineTo(-s * 0.27, s * 0.36);
+        ctx.lineTo(s * 0.27, s * 0.36);
+        ctx.lineTo(s * 0.15, 0);
+        ctx.closePath();
+        break;
+
+      case 'K': // KING - Cross top finial, crowned cap, majestic body
+        // Cross Finial
+        ctx.rect(-s * 0.04, -s * 0.44, s * 0.08, s * 0.14);
+        ctx.rect(-s * 0.09, -s * 0.40, s * 0.18, s * 0.06);
+        ctx.fill(); ctx.stroke(); ctx.beginPath();
+        // Crown dome
+        ctx.arc(0, -s * 0.18, s * 0.20, Math.PI, 0);
+        ctx.lineTo(s * 0.22, -s * 0.08);
+        ctx.lineTo(-s * 0.22, -s * 0.08);
+        ctx.closePath();
+        ctx.fill(); ctx.stroke(); ctx.beginPath();
+        // Collar & Base
+        ctx.roundRect(-s * 0.22, -s * 0.08, s * 0.44, s * 0.08, 3);
+        ctx.fill(); ctx.stroke(); ctx.beginPath();
+        ctx.moveTo(-s * 0.16, 0);
+        ctx.lineTo(-s * 0.28, s * 0.36);
+        ctx.lineTo(s * 0.28, s * 0.36);
+        ctx.lineTo(s * 0.16, 0);
+        ctx.closePath();
+        break;
+    }
+
+    ctx.fill();
+    ctx.stroke();
+
+    // Base Pedestal Foot Ring (for all pieces)
+    ctx.beginPath();
+    ctx.roundRect(-s * 0.32, s * 0.36, s * 0.64, s * 0.10, 4);
+    ctx.fill();
+    ctx.stroke();
+
+    // Interior Highlight Curve (Vector Shading as in reference image)
+    ctx.beginPath();
+    ctx.strokeStyle = highlightColor;
+    ctx.lineWidth = 1.6;
+    ctx.globalAlpha = 0.55;
+    ctx.moveTo(-s * 0.10, -s * 0.25);
+    ctx.quadraticCurveTo(-s * 0.18, 0, -s * 0.20, s * 0.30);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  // Particle Explosions on Capture
+  function createExplosionParticles(r, c, color) {
+    const renderR = isFlipped ? 7 - r : r;
+    const renderC = isFlipped ? 7 - c : c;
+    const cx = renderC * TILE_SIZE + TILE_SIZE / 2;
+    const cy = renderR * TILE_SIZE + TILE_SIZE / 2;
+
+    for (let i = 0; i < 20; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 1.5 + Math.random() * 4;
+      particles.push({
+        x: cx,
+        y: cy,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        radius: 2 + Math.random() * 3,
+        alpha: 1,
+        color
+      });
+    }
+  }
+
+  function updateAndDrawParticles() {
+    if (particles.length === 0) return;
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.alpha -= 0.03;
+
+      if (p.alpha <= 0) {
+        particles.splice(i, 1);
+        continue;
+      }
+
+      ctx.save();
+      ctx.globalAlpha = p.alpha;
+      ctx.fillStyle = p.color;
+      ctx.shadowColor = p.color;
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    if (particles.length > 0) requestAnimationFrame(render);
+  }
+
+  // Easing curve for smooth sliding moves
+  function easeOutCubic(x) {
+    return 1 - Math.pow(1 - x, 3);
   }
 
   // ---- Visual Renderer (HTML5 Canvas) ----
@@ -870,7 +1177,6 @@
         ctx.fillStyle = isLight ? '#16223d' : '#0a1022';
         ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
 
-        // Tile grid border line
         ctx.strokeStyle = 'rgba(0, 240, 255, 0.05)';
         ctx.strokeRect(x, y, TILE_SIZE, TILE_SIZE);
       }
@@ -947,21 +1253,56 @@
       }
     }
 
-    // 6. Draw Pieces & Coordinates
+    // 6. Draw Board Coordinates
     drawCoordinates();
+
+    // 7. Draw Static Board Pieces
+    let animMovingPiece = null;
+
+    if (moveAnimation) {
+      const now = performance.now();
+      const progress = Math.min(1, (now - moveAnimation.startTime) / moveAnimation.duration);
+      const ease = easeOutCubic(progress);
+
+      const fR = isFlipped ? 7 - moveAnimation.fromR : moveAnimation.fromR;
+      const fC = isFlipped ? 7 - moveAnimation.fromC : moveAnimation.fromC;
+      const tR = isFlipped ? 7 - moveAnimation.toR : moveAnimation.toR;
+      const tC = isFlipped ? 7 - moveAnimation.toC : moveAnimation.toC;
+
+      const currentRenderR = fR + (tR - fR) * ease;
+      const currentRenderC = fC + (tC - fC) * ease;
+
+      animMovingPiece = {
+        piece: moveAnimation.piece,
+        x: currentRenderC * TILE_SIZE + TILE_SIZE / 2,
+        y: currentRenderR * TILE_SIZE + TILE_SIZE / 2
+      };
+    }
 
     for (let r = 0; r < 8; r++) {
       for (let c = 0; c < 8; c++) {
+        // Skip drawing piece at 'from' or 'to' position if it's currently sliding in animation
+        if (moveAnimation && ((r === moveAnimation.fromR && c === moveAnimation.fromC) || (r === moveAnimation.toR && c === moveAnimation.toC))) {
+          continue;
+        }
+
         const piece = board[r][c];
         if (piece) {
           const renderR = isFlipped ? 7 - r : r;
           const renderC = isFlipped ? 7 - c : c;
-          drawStarWarsPiece(piece, renderC * TILE_SIZE, renderR * TILE_SIZE, TILE_SIZE);
+          const cx = renderC * TILE_SIZE + TILE_SIZE / 2;
+          const cy = renderR * TILE_SIZE + TILE_SIZE / 2;
+          drawStylizedVectorPiece(piece, cx, cy, TILE_SIZE);
         }
       }
     }
 
-    // 7. Update Particles
+    // 8. Draw Animated Sliding Piece on Top
+    if (animMovingPiece) {
+      drawStylizedVectorPiece(animMovingPiece.piece, animMovingPiece.x, animMovingPiece.y, TILE_SIZE * 1.08);
+    }
+
+    // 9. Update Particles
     updateAndDrawParticles();
   }
 
@@ -981,146 +1322,35 @@
     }
   }
 
-  // Draw Star Wars Themed Vector Graphic Pieces
-  function drawStarWarsPiece(piece, x, y, size) {
-    const cx = x + size / 2;
-    const cy = y + size / 2;
-    const color = piece[0]; // 'w' or 'b'
-    const type = piece[1]; // P, N, B, R, Q, K
-    const isDark = color === 'b';
-
-    ctx.save();
-
-    // Glow aura
-    ctx.shadowColor = isDark ? '#ff0033' : '#00f0ff';
-    ctx.shadowBlur = 12;
-
-    // Draw Piece Icon / Symbol
-    const symbol = PIECE_SYMBOLS[piece] || '♟️';
-    ctx.font = `${Math.floor(size * 0.52)}px "Segoe UI Emoji", "Apple Color Emoji", sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-
-    // Base Circle background badge
-    ctx.beginPath();
-    ctx.arc(cx, cy, size * 0.38, 0, Math.PI * 2);
-    ctx.fillStyle = isDark
-      ? 'radial-gradient(circle, #2a050c, #100205)'
-      : 'radial-gradient(circle, #052035, #020d18)';
-    ctx.fillStyle = isDark ? '#1e050a' : '#051b2c';
-    ctx.fill();
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = isDark ? '#ff3355' : '#00f0ff';
-    ctx.stroke();
-
-    // Custom Lightsaber Accents
-    if (type === 'K') {
-      // King Lightsaber Blade
-      ctx.strokeStyle = isDark ? '#ff0033' : '#00ff66';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(cx - 16, cy + 12);
-      ctx.lineTo(cx + 16, cy - 16);
-      ctx.stroke();
-    } else if (type === 'Q') {
-      // Queen Force Lightning / Lightsaber
-      ctx.strokeStyle = isDark ? '#aa00ff' : '#00f0ff';
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.arc(cx, cy, size * 0.4, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-
-    // Emoji/Icon Text
-    ctx.fillStyle = isDark ? '#ffffff' : '#ffffff';
-    ctx.fillText(symbol, cx, cy + 1);
-
-    ctx.restore();
-  }
-
-  // Particle Explosions on Capture
-  function createExplosionParticles(r, c, color) {
-    const renderR = isFlipped ? 7 - r : r;
-    const renderC = isFlipped ? 7 - c : c;
-    const cx = renderC * TILE_SIZE + TILE_SIZE / 2;
-    const cy = renderR * TILE_SIZE + TILE_SIZE / 2;
-
-    for (let i = 0; i < 20; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = 1.5 + Math.random() * 4;
-      particles.push({
-        x: cx,
-        y: cy,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        radius: 2 + Math.random() * 3,
-        alpha: 1,
-        color
-      });
-    }
-  }
-
-  function updateAndDrawParticles() {
-    if (particles.length === 0) return;
-
-    for (let i = particles.length - 1; i >= 0; i--) {
-      const p = particles[i];
-      p.x += p.vx;
-      p.y += p.vy;
-      p.alpha -= 0.03;
-
-      if (p.alpha <= 0) {
-        particles.splice(i, 1);
-        continue;
-      }
-
-      ctx.save();
-      ctx.globalAlpha = p.alpha;
-      ctx.fillStyle = p.color;
-      ctx.shadowColor = p.color;
-      ctx.shadowBlur = 8;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-    }
-
-    if (particles.length > 0) requestAnimationFrame(render);
-  }
-
   // ---- UI Formatters & Log Updating ----
   function updateUI() {
-    // Turn Indicator
     if (currentTurn === 'w') {
       turnIndicatorEl.className = 'turn-indicator light-turn';
       turnIconEl.textContent = '🟢';
-      turnTextEl.textContent = 'Light Side (Rebels)';
+      turnTextEl.textContent = 'Light Side (White Set)';
     } else {
       turnIndicatorEl.className = 'turn-indicator dark-turn';
       turnIconEl.textContent = '🔴';
-      turnTextEl.textContent = 'Dark Empire (Sith)';
+      turnTextEl.textContent = 'Dark Side (Purple Set)';
     }
 
-    // Status Badge
     const inCheckColor = isKingInCheck(board, currentTurn);
     if (inCheckColor) {
       statusBadgeEl.className = 'status-badge in-check';
-      statusBadgeEl.textContent = currentTurn === 'w' ? '⚠️ Master Yoda in Danger!' : '⚠️ Darth Vader in Danger!';
+      statusBadgeEl.textContent = currentTurn === 'w' ? '⚠️ King in Danger!' : '⚠️ Dark King in Danger!';
     } else {
       statusBadgeEl.className = 'status-badge';
       statusBadgeEl.textContent = 'Tactical Phase';
     }
 
-    // Captured Units
     darkCapturedEl.innerHTML = capturedPieces.w.length > 0
-      ? capturedPieces.w.map(p => `<span class="captured-piece-icon" title="${PIECE_NAMES[p]}">${PIECE_SYMBOLS[p]}</span>`).join('')
+      ? capturedPieces.w.map(p => `<span class="captured-piece-icon" title="${PIECE_NAMES[p]}">${p[1]}</span>`).join('')
       : '<span style="color: #666; font-size: 0.75rem;">None</span>';
 
     lightCapturedEl.innerHTML = capturedPieces.b.length > 0
-      ? capturedPieces.b.map(p => `<span class="captured-piece-icon" title="${PIECE_NAMES[p]}">${PIECE_SYMBOLS[p]}</span>`).join('')
+      ? capturedPieces.b.map(p => `<span class="captured-piece-icon" title="${PIECE_NAMES[p]}">${p[1]}</span>`).join('')
       : '<span style="color: #666; font-size: 0.75rem;">None</span>';
 
-    // Move Log Table
     moveCountEl.textContent = `Turn ${Math.floor(moveHistory.length / 2) + 1}`;
     renderMoveLog();
   }
@@ -1129,8 +1359,8 @@
     let html = `
       <div class="move-row" style="color: #777;">
         <span class="move-num">#</span>
-        <span>Light (Rebel)</span>
-        <span>Dark (Empire)</span>
+        <span>Light Side</span>
+        <span>Dark Side</span>
       </div>
     `;
 

@@ -854,7 +854,7 @@
     const ctx = canvas.getContext('2d');
     const W = canvas.width, H = canvas.height;
     const GRID = 8;
-    const T = Math.floor(H / (GRID + 0.5)); // tile size ~17px
+    const T = Math.floor(H / (GRID + 0.5)); // tile size
     const offX = Math.floor((W - T * GRID) / 2);
     const offY = Math.floor((H - T * GRID) / 2);
 
@@ -883,31 +883,54 @@
     ctx.lineWidth = 1.5;
     ctx.strokeRect(offX + 4 * T + 1, offY + 4 * T + 1, T - 2, T - 2);
 
-    // Mini Pieces Map {r, c, symbol, isDark}
+    // Mini Pieces Map {r, c, type, isDark}
     const pieces = [
-      { r: 0, c: 3, s: '⚡', d: true },  // Sidious
-      { r: 0, c: 4, s: '👑', d: true },  // Vader
-      { r: 0, c: 7, s: '🌌', d: true },  // Death Star
-      { r: 1, c: 3, s: '🪖', d: true },  // Stormtrooper
-      { r: 4, c: 4, s: '🤖', d: false }, // Rebel Droid e4
-      { r: 5, c: 5, s: '✈️', d: false }, // X-Wing f3
-      { r: 7, c: 0, s: '🚀', d: false }, // Falcon
-      { r: 7, c: 3, s: '👸', d: false }, // Leia
-      { r: 7, c: 4, s: '👑', d: false }  // Yoda
+      { r: 0, c: 0, type: 'R', isDark: true },
+      { r: 0, c: 1, type: 'N', isDark: true },
+      { r: 0, c: 2, type: 'B', isDark: true },
+      { r: 0, c: 3, type: 'Q', isDark: true },
+      { r: 0, c: 4, type: 'K', isDark: true },
+      { r: 0, c: 7, type: 'R', isDark: true },
+      { r: 1, c: 3, type: 'P', isDark: true },
+      { r: 1, c: 4, type: 'P', isDark: true },
+      { r: 4, c: 4, type: 'P', isDark: false },
+      { r: 5, c: 5, type: 'N', isDark: false },
+      { r: 7, c: 0, type: 'R', isDark: false },
+      { r: 7, c: 3, type: 'Q', isDark: false },
+      { r: 7, c: 4, type: 'K', isDark: false }
     ];
-
-    ctx.font = `${Math.floor(T * 0.7)}px "Segoe UI Emoji", sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
 
     for (const p of pieces) {
       const px = offX + p.c * T + T / 2;
       const py = offY + p.r * T + T / 2;
+      const s = T * 0.7;
 
       ctx.save();
-      ctx.shadowColor = p.d ? '#ff0033' : '#00f0ff';
-      ctx.shadowBlur = 6;
-      ctx.fillText(p.s, px, py + 1);
+      ctx.translate(px, py);
+
+      ctx.fillStyle = p.isDark ? '#48347a' : '#ffffff';
+      ctx.strokeStyle = p.isDark ? '#1a1033' : '#705c9e';
+      ctx.lineWidth = 1.2;
+      ctx.shadowColor = p.isDark ? '#ff0033' : '#00f0ff';
+      ctx.shadowBlur = 4;
+
+      ctx.beginPath();
+      if (p.type === 'P') {
+        ctx.arc(0, -s * 0.2, s * 0.18, 0, Math.PI * 2);
+        ctx.rect(-s * 0.2, 0, s * 0.4, s * 0.35);
+      } else if (p.type === 'K') {
+        ctx.rect(-s * 0.05, -s * 0.45, s * 0.1, s * 0.15);
+        ctx.arc(0, -s * 0.15, s * 0.22, Math.PI, 0);
+        ctx.rect(-s * 0.22, 0, s * 0.44, s * 0.35);
+      } else if (p.type === 'Q') {
+        ctx.moveTo(-s * 0.25, -s * 0.3); ctx.lineTo(0, -s * 0.15); ctx.lineTo(s * 0.25, -s * 0.3);
+        ctx.lineTo(s * 0.2, 0); ctx.lineTo(-s * 0.2, 0);
+        ctx.rect(-s * 0.22, 0, s * 0.44, s * 0.35);
+      } else {
+        ctx.rect(-s * 0.22, -s * 0.25, s * 0.44, s * 0.6);
+      }
+      ctx.fill();
+      ctx.stroke();
       ctx.restore();
     }
   }
