@@ -1,0 +1,381 @@
+/* ===== Star Combat Chess — Sci-Fi Styles ===== */
+
+.starchess-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+/* Control Toolbar */
+.starchess-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  background: rgba(10, 15, 35, 0.85);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.15);
+  border-radius: 12px;
+  padding: 10px 16px;
+  width: 100%;
+  max-width: 820px;
+  backdrop-filter: blur(8px);
+}
+
+.starchess-mode-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.starchess-btn-pill {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #d0e6ff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+}
+
+.starchess-btn-pill:hover {
+  background: rgba(0, 240, 255, 0.15);
+  border-color: #00f0ff;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+.starchess-btn-pill.active {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.3), rgba(0, 120, 255, 0.5));
+  border-color: #00f0ff;
+  color: #fff;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.6);
+}
+
+.starchess-select {
+  background: rgba(10, 15, 30, 0.9);
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  color: #00f0ff;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  outline: none;
+}
+
+.starchess-select:focus {
+  border-color: #ffe600;
+  box-shadow: 0 0 8px rgba(255, 230, 0, 0.5);
+}
+
+/* Layout Grid: Board + Side Panel */
+.starchess-layout {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 20px;
+  width: 100%;
+  max-width: 900px;
+}
+
+/* Board Outer Wrapper */
+.starchess-board-outer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+/* HUD Banner (Turn / Status) */
+.starchess-status-hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 520px;
+  padding: 8px 16px;
+  background: rgba(5, 10, 25, 0.9);
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  border-radius: 10px;
+  margin-bottom: 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+
+.turn-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.turn-indicator.light-turn {
+  color: #00f0ff;
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.8);
+}
+
+.turn-indicator.dark-turn {
+  color: #ff3355;
+  text-shadow: 0 0 10px rgba(255, 51, 85, 0.8);
+}
+
+.status-badge {
+  font-size: 0.85rem;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #d0d0d0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.status-badge.in-check {
+  background: rgba(255, 0, 50, 0.25);
+  color: #ff4d6d;
+  border-color: #ff0033;
+  animation: checkPulse 1s infinite alternate;
+}
+
+@keyframes checkPulse {
+  0% { box-shadow: 0 0 5px rgba(255, 0, 50, 0.5); }
+  100% { box-shadow: 0 0 18px rgba(255, 0, 50, 0.9); }
+}
+
+/* Canvas Canvas Wrap */
+.starchess-canvas-wrap {
+  position: relative;
+  border-radius: 12px;
+  padding: 8px;
+  background: radial-gradient(circle at center, rgba(15, 25, 50, 0.95), rgba(5, 8, 20, 0.98));
+  border: 2px solid rgba(0, 240, 255, 0.4);
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.2), inset 0 0 15px rgba(0, 0, 0, 0.8);
+}
+
+#starchess-canvas {
+  display: block;
+  border-radius: 6px;
+  cursor: pointer;
+  touch-action: none;
+}
+
+/* Side Panel: Captured Pieces & History Log */
+.starchess-side-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 280px;
+  flex-shrink: 0;
+}
+
+.starchess-box {
+  background: rgba(10, 15, 30, 0.85);
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+}
+
+.box-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #00f0ff;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Captured Pieces Display */
+.captured-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.captured-shelf {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-height: 32px;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  align-items: center;
+}
+
+.captured-piece-icon {
+  font-size: 1.2rem;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
+  transition: transform 0.2s ease;
+}
+
+.captured-piece-icon:hover {
+  transform: scale(1.2);
+}
+
+/* Move Log Table */
+.move-history-list {
+  height: 180px;
+  overflow-y: auto;
+  font-family: monospace, monospace;
+  font-size: 0.85rem;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 6px;
+  padding: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.move-history-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.move-history-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 240, 255, 0.3);
+  border-radius: 3px;
+}
+
+.move-row {
+  display: grid;
+  grid-template-columns: 35px 1fr 1fr;
+  padding: 3px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  color: #c0d8f0;
+}
+
+.move-row:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.move-num {
+  color: #7090b0;
+  font-weight: bold;
+}
+
+.move-white {
+  color: #00f0ff;
+}
+
+.move-black {
+  color: #ff5577;
+}
+
+/* Promotion Modal */
+.promotion-modal-content {
+  background: radial-gradient(circle at center, #0a1228, #030610);
+  border: 2px solid #00f0ff;
+  box-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  max-width: 420px;
+  width: 90%;
+}
+
+.promotion-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #ffe600;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  letter-spacing: 1px;
+}
+
+.promotion-subtitle {
+  font-size: 0.9rem;
+  color: #aaa;
+  margin-bottom: 20px;
+}
+
+.promotion-choices {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.promo-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  border-radius: 12px;
+  padding: 12px 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  font-family: inherit;
+}
+
+.promo-btn:hover {
+  background: rgba(0, 240, 255, 0.2);
+  border-color: #00f0ff;
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.6);
+  transform: translateY(-3px);
+}
+
+.promo-icon {
+  font-size: 2rem;
+}
+
+.promo-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+/* Responsive adjustments */
+@media (max-width: 820px) {
+  .starchess-layout {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .starchess-side-panel {
+    width: 100%;
+    max-width: 520px;
+    flex-direction: row;
+  }
+
+  .starchess-box {
+    flex: 1;
+  }
+}
+
+@media (max-width: 540px) {
+  .starchess-side-panel {
+    flex-direction: column;
+  }
+  
+  .starchess-toolbar {
+    padding: 8px;
+    gap: 6px;
+  }
+  
+  .starchess-btn-pill {
+    padding: 5px 10px;
+    font-size: 0.75rem;
+  }
+}

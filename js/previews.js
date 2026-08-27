@@ -849,6 +849,69 @@
 
 
 
+  // ==== STAR COMBAT CHESS PREVIEW ====
+  function drawStarChess(canvas) {
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const GRID = 8;
+    const T = Math.floor(H / (GRID + 0.5)); // tile size ~17px
+    const offX = Math.floor((W - T * GRID) / 2);
+    const offY = Math.floor((H - T * GRID) / 2);
+
+    ctx.fillStyle = BG;
+    ctx.fillRect(0, 0, W, H);
+
+    // Chessboard grid
+    for (let r = 0; r < GRID; r++) {
+      for (let c = 0; c < GRID; c++) {
+        const x = offX + c * T;
+        const y = offY + r * T;
+        ctx.fillStyle = (r + c) % 2 === 0 ? '#16223d' : '#0a1022';
+        ctx.fillRect(x, y, T, T);
+        ctx.strokeStyle = 'rgba(0, 240, 255, 0.08)';
+        ctx.strokeRect(x, y, T, T);
+      }
+    }
+
+    // Highlight e2-e4 move trail
+    ctx.fillStyle = 'rgba(0, 240, 255, 0.25)';
+    ctx.fillRect(offX + 4 * T, offY + 6 * T, T, T);
+    ctx.fillRect(offX + 4 * T, offY + 4 * T, T, T);
+
+    // Selected e4 glowing ring
+    ctx.strokeStyle = '#00f0ff';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(offX + 4 * T + 1, offY + 4 * T + 1, T - 2, T - 2);
+
+    // Mini Pieces Map {r, c, symbol, isDark}
+    const pieces = [
+      { r: 0, c: 3, s: '⚡', d: true },  // Sidious
+      { r: 0, c: 4, s: '👑', d: true },  // Vader
+      { r: 0, c: 7, s: '🌌', d: true },  // Death Star
+      { r: 1, c: 3, s: '🪖', d: true },  // Stormtrooper
+      { r: 4, c: 4, s: '🤖', d: false }, // Rebel Droid e4
+      { r: 5, c: 5, s: '✈️', d: false }, // X-Wing f3
+      { r: 7, c: 0, s: '🚀', d: false }, // Falcon
+      { r: 7, c: 3, s: '👸', d: false }, // Leia
+      { r: 7, c: 4, s: '👑', d: false }  // Yoda
+    ];
+
+    ctx.font = `${Math.floor(T * 0.7)}px "Segoe UI Emoji", sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    for (const p of pieces) {
+      const px = offX + p.c * T + T / 2;
+      const py = offY + p.r * T + T / 2;
+
+      ctx.save();
+      ctx.shadowColor = p.d ? '#ff0033' : '#00f0ff';
+      ctx.shadowBlur = 6;
+      ctx.fillText(p.s, px, py + 1);
+      ctx.restore();
+    }
+  }
+
   // ---- Render all previews ----
   function renderAll() {
     const pongCanvas = document.getElementById('preview-pong');
@@ -859,6 +922,7 @@
     const blockblastCanvas = document.getElementById('preview-blockblast');
     const blackholeninjaCanvas = document.getElementById('preview-blackholeninja');
     const wordleCanvas = document.getElementById('preview-wordle');
+    const starchessCanvas = document.getElementById('preview-starchess');
 
     if (pongCanvas) drawPong(pongCanvas);
     if (snakeCanvas) drawSnake(snakeCanvas);
@@ -868,6 +932,7 @@
     if (blockblastCanvas) drawBlockBlast(blockblastCanvas);
     if (blackholeninjaCanvas) drawBlackholeNinja(blackholeninjaCanvas);
     if (wordleCanvas) drawWordle(wordleCanvas);
+    if (starchessCanvas) drawStarChess(starchessCanvas);
   }
 
   // Render on load

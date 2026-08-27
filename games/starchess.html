@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="Star Combat Chess — Star Wars themed galactic chess with Darth Vader, Luke Skywalker, X-Wings & Death Stars in Space Arcade!">
+  <title>Star Combat Chess — Space Arcade</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/spaceship.svg">
+  <link rel="stylesheet" href="../css/style.css?v=6">
+  <link rel="stylesheet" href="../css/starchess.css">
+</head>
+<body class="no-scroll">
+
+  <!-- Starfield Background -->
+  <div id="starfield"></div>
+
+  <!-- Main Game Content -->
+  <div class="page-content game-page compact-page">
+    
+    <!-- Header -->
+    <header class="arcade-header game-arcade-header">
+      <a href="../index.html" class="arcade-logo-link">
+        <h1 class="arcade-logo small">SPACE ARCADE</h1>
+      </a>
+      <p class="arcade-subtitle">STAR COMBAT CHESS</p>
+    </header>
+
+    <!-- Sci-Fi Toolbar -->
+    <div class="starchess-toolbar">
+      <div class="starchess-mode-group">
+        <button class="starchess-btn-pill active" id="btn-mode-ai" data-tip="🤖 Play vs Imperial Tactical AI">🤖 vs AI</button>
+        <button class="starchess-btn-pill" id="btn-mode-local" data-tip="👫 Play 2-Player Local Duel">👫 Pass &amp; Play</button>
+      </div>
+
+      <div class="starchess-mode-group" id="difficulty-wrap">
+        <label for="ai-difficulty" style="font-size: 0.8rem; color: #88aacc; font-weight: 600;">AI Level:</label>
+        <select id="ai-difficulty" class="starchess-select">
+          <option value="1">Padawan (Easy)</option>
+          <option value="2" selected>Trooper (Medium)</option>
+          <option value="3">Sith Lord (Hard)</option>
+        </select>
+      </div>
+
+      <div class="starchess-mode-group">
+        <button class="starchess-btn-pill" id="btn-flip" data-tip="🔄 Flip Chessboard orientation">🔄 Flip</button>
+        <button class="starchess-btn-pill" id="btn-undo" data-tip="↩️ Undo last move">↩️ Undo</button>
+        <button class="starchess-btn-pill" id="btn-restart" data-tip="⚡ Restart match">⚡ Restart</button>
+      </div>
+    </div>
+
+    <!-- Main Layout Grid -->
+    <div class="starchess-container">
+      <div class="starchess-layout">
+
+        <!-- Board Outer -->
+        <div class="starchess-board-outer">
+          <!-- Status HUD -->
+          <div class="starchess-status-hud">
+            <div class="turn-indicator light-turn" id="turn-indicator">
+              <span id="turn-icon">🟢</span> <span id="turn-text">Light Side (Rebels)</span>
+            </div>
+            <div class="status-badge" id="status-badge">Ready for Move</div>
+          </div>
+
+          <!-- Board Canvas Wrap -->
+          <div class="starchess-canvas-wrap">
+            <canvas id="starchess-canvas" width="520" height="520"></canvas>
+          </div>
+
+          <p class="game-controls-hint" style="margin-top: 8px;">
+            Click to select piece &amp; destination square • Lightsabers charged ⚔️
+          </p>
+        </div>
+
+        <!-- Side Panel: Captured Pieces & History -->
+        <div class="starchess-side-panel">
+          
+          <!-- Captured Pieces Box -->
+          <div class="starchess-box">
+            <div class="box-title">
+              <span>CAPTURED UNITS</span>
+              <span style="font-size: 0.75rem; color: #888;">⚔️ Trophies</span>
+            </div>
+            <div class="captured-group">
+              <div style="font-size: 0.75rem; color: #ff5577; font-weight: 600;">Dark Empire Losses:</div>
+              <div class="captured-shelf" id="dark-captured">
+                <span style="color: #666; font-size: 0.75rem;">None</span>
+              </div>
+              <div style="font-size: 0.75rem; color: #00f0ff; font-weight: 600; margin-top: 4px;">Rebel Losses:</div>
+              <div class="captured-shelf" id="light-captured">
+                <span style="color: #666; font-size: 0.75rem;">None</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Move Log Box -->
+          <div class="starchess-box">
+            <div class="box-title">
+              <span>TACTICAL LOG</span>
+              <span id="move-count" style="font-size: 0.75rem; color: #00f0ff;">Turn 1</span>
+            </div>
+            <div class="move-history-list" id="move-log">
+              <div class="move-row" style="color: #777;">
+                <span class="move-num">#</span>
+                <span>Light (Rebel)</span>
+                <span>Dark (Empire)</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Start Overlay -->
+  <div class="game-overlay" id="start-overlay">
+    <div class="overlay-title">Star Combat Chess</div>
+    <p class="overlay-score">May the Force be with your strategy! ⚔️</p>
+    <div class="wordle-rules" style="max-width: 360px; text-align: left; background: rgba(0,0,0,0.5); padding: 12px; border-radius: 10px; border: 1px solid rgba(0,240,255,0.3); margin-bottom: 15px;">
+      <div class="rule-row" style="margin-bottom: 6px;"><span class="rule-tile red">👑</span> <strong>Dark Side:</strong> Darth Vader (King), Sidious (Queen), Death Star (Rook)</div>
+      <div class="rule-row" style="margin-bottom: 6px;"><span class="rule-tile green">👑</span> <strong>Light Side:</strong> Master Yoda (King), Leia (Queen), Falcon (Rook)</div>
+      <div class="rule-row"><span class="rule-tile yellow">⚡</span> Play vs Imperial AI or Local 2-Player!</div>
+    </div>
+    <div class="overlay-buttons">
+      <button class="btn btn-primary" id="start-btn" data-tip="🚀 Click to begin your galactic chess mission!">Launch Mission</button>
+    </div>
+  </div>
+
+  <!-- Game Over Overlay -->
+  <div class="game-overlay hidden" id="gameover-overlay">
+    <div class="overlay-title" id="gameover-title">Checkmate!</div>
+    <p class="overlay-score" id="gameover-text"><span class="highlight" id="winner-display">Light Side Victory!</span></p>
+    <div class="overlay-buttons">
+      <button class="btn btn-primary" id="retry-btn" data-tip="💪 Challenge again!">Play Again</button>
+      <button class="btn btn-secondary" id="back-arcade-btn" data-tip="🏠 Return to Arcade menu">Back to Arcade</button>
+    </div>
+  </div>
+
+  <!-- Pawn Promotion Overlay Modal -->
+  <div class="game-overlay hidden" id="promotion-overlay">
+    <div class="promotion-modal-content">
+      <div class="promotion-title">Pawn Promotion</div>
+      <div class="promotion-subtitle" id="promotion-subtitle">Select unit promotion rank:</div>
+      <div class="promotion-choices">
+        <button class="promo-btn" data-promo="q">
+          <span class="promo-icon" id="promo-icon-q">👸</span>
+          <span class="promo-label">Queen</span>
+        </button>
+        <button class="promo-btn" data-promo="r">
+          <span class="promo-icon" id="promo-icon-r">🏰</span>
+          <span class="promo-label">Rook</span>
+        </button>
+        <button class="promo-btn" data-promo="b">
+          <span class="promo-icon" id="promo-icon-b">🧙</span>
+          <span class="promo-label">Bishop</span>
+        </button>
+        <button class="promo-btn" data-promo="n">
+          <span class="promo-icon" id="promo-icon-n">🐴</span>
+          <span class="promo-label">Knight</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SFX safety shim -->
+  <script>if(!window.SFX){const n=()=>{};window.SFX={shoot:n,eat:n,powerup:n,explode:n,hit:n,gameOver:n,levelUp:n,ghostEat:n,step:n,startBGM:n,stopBGM:n,saberHum:n,saberClash:n,checkAlert:n,setVolume:n,getVolume:()=>0.5};}</script>
+  <script type="module" src="../js/stars.js"></script>
+  <script type="module" src="../js/cursor.js"></script>
+  <script type="module" src="../js/audio.js"></script>
+  <script type="module" src="../js/tooltips.js"></script>
+  <script type="module" src="starchess.js"></script>
+
+  <script type="module" src="../js/transitions.js"></script>
+  <script type="module" src="../js/nav.js"></script>
+</body>
+</html>

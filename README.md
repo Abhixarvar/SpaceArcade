@@ -37,6 +37,7 @@
 | 🔥 **Block Blast: Extreme** | Action / Endless | Infinite high-octane block survival mode with no score limits! | `Touch` / `Mouse` |
 | 🔨 **Mole Hammer** | Casual / Arcade | Fast-reaction whack-a-mole cosmic arcade challenge. | `Click` / `Touch` |
 | 🏓 **Space Pong** | Retro / 2-Player | Retro table tennis arcade action against AI or local friends. | `W/S` or `Up/Down` |
+| ⚔️ **Star Combat Chess** | Strategy / Puzzle | Star Wars themed galactic chess featuring Darth Vader, Yoda & X-Wings! | `Click` / `Touch` |
 
 ---
 

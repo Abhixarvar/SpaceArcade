@@ -22,7 +22,8 @@ export default defineConfig({
         spacerangers: resolve(__dirname, 'games/spacerangers.html'),
         tetris: resolve(__dirname, 'games/tetris.html'),
         troopers: resolve(__dirname, 'games/troopers.html'),
-        wordle: resolve(__dirname, 'games/wordle.html')
+        wordle: resolve(__dirname, 'games/wordle.html'),
+        starchess: resolve(__dirname, 'games/starchess.html')
       }
     }
   }

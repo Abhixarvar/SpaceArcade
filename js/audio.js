@@ -4,7 +4,7 @@
 // Safety no-op shim — overwritten by actual engine below
 if (!window.SFX) {
   const noop = () => {};
-  window.SFX = { shoot:noop, eat:noop, powerup:noop, explode:noop, hit:noop, gameOver:noop, levelUp:noop, ghostEat:noop, step:noop, startBGM:noop, stopBGM:noop, createParty:noop, joinParty:noop, setVolume:noop, getVolume:()=>0.5 };
+  window.SFX = { shoot:noop, eat:noop, powerup:noop, explode:noop, hit:noop, gameOver:noop, levelUp:noop, ghostEat:noop, step:noop, startBGM:noop, stopBGM:noop, createParty:noop, joinParty:noop, saberHum:noop, saberClash:noop, checkAlert:noop, setVolume:noop, getVolume:()=>0.5 };
 }
 
 window.SFX = (function () {
@@ -143,6 +143,20 @@ window.SFX = (function () {
     /** Whoosh transition effect */
     whoosh() {
       tone(300, 'sine', 0.1, 0.08, 900);
+    },
+    /** Lightsaber hum when selecting/moving pieces in Star Chess */
+    saberHum() {
+      tone(120, 'sawtooth', 0.12, 0.08, 240);
+    },
+    /** Lightsaber clash sound when capturing a piece */
+    saberClash() {
+      noise(0.1, 0.18);
+      tone(800, 'sawtooth', 0.12, 0.15, 150);
+    },
+    /** Warning tone for Check condition */
+    checkAlert() {
+      tone(440, 'triangle', 0.1, 0.15);
+      setTimeout(() => tone(880, 'sawtooth', 0.15, 0.15), 80);
     },
     /** Toggle mute state */
     toggleMute() {
