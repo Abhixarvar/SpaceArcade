@@ -3418,4 +3418,238 @@ body.eco-mode .card-play-btn {
   }
 }
 
+/* ========================================================= */
+/* 🎮 POKI-STYLE HERO MOSAIC GRID & PORTAL REDESIGN           */
+/* ========================================================= */
+
+/* Search & Header Control Bar */
+.poki-search-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 16px auto 10px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.poki-search-input {
+  width: 100%;
+  padding: 12px 20px 12px 48px;
+  background: rgba(12, 18, 40, 0.85);
+  border: 2px solid rgba(0, 240, 255, 0.35);
+  border-radius: 30px;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  outline: none;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(0, 240, 255, 0.1);
+  transition: all 0.25s ease;
+}
+
+.poki-search-input::placeholder {
+  color: rgba(200, 220, 255, 0.5);
+}
+
+.poki-search-input:focus {
+  border-color: #00f0ff;
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.5), inset 0 0 15px rgba(0, 240, 255, 0.2);
+  background: rgba(16, 25, 55, 0.95);
+}
+
+.poki-search-icon {
+  position: absolute;
+  left: 18px;
+  font-size: 1.1rem;
+  color: #00f0ff;
+  pointer-events: none;
+}
+
+.poki-search-clear {
+  position: absolute;
+  right: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #aaa;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+}
+
+.poki-search-clear:hover {
+  background: #ff3355;
+  color: #fff;
+}
+
+/* Poki Mosaic Grid Container */
+.games-grid-poki {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 210px;
+  gap: 18px;
+  width: 100%;
+  max-width: 1180px;
+  margin: 20px auto 40px;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+/* Tile Variations */
+
+/* 1. Hero Large Tile (2x2) */
+.card-hero-large {
+  grid-column: span 2;
+  grid-row: span 2;
+  height: 100%;
+  min-height: 438px;
+}
+
+.card-hero-large .thumb-wrap {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card-hero-large .card-preview {
+  height: 280px !important;
+  width: 100% !important;
+  object-fit: cover;
+}
+
+.card-hero-large .thumb-title {
+  font-size: 1.6rem !important;
+  margin-top: 10px;
+}
+
+.card-hero-large .card-play-btn {
+  font-size: 1rem !important;
+  padding: 12px 24px !important;
+  background: linear-gradient(135deg, #00f0ff, #7000ff) !important;
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.6) !important;
+}
+
+/* 2. Featured Wide Tile (2x1) */
+.card-featured-wide {
+  grid-column: span 2;
+  grid-row: span 1;
+}
+
+.card-featured-wide .thumb-wrap {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 15px;
+}
+
+.card-featured-wide .card-preview {
+  width: 50% !important;
+  height: 100% !important;
+}
+
+.card-featured-wide .thumb-title {
+  font-size: 1.2rem !important;
+}
+
+/* 3. Standard Tile (1x1) */
+.card-tile-standard {
+  grid-column: span 1;
+  grid-row: span 1;
+}
+
+/* Poki Ribbon Badges */
+.badge-ribbon {
+  position: absolute;
+  top: 10px;
+  right: -5px;
+  z-index: 10;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  padding: 4px 12px;
+  border-radius: 4px 0 0 4px;
+  text-transform: uppercase;
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
+.badge-ribbon::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: -4px;
+  border-left: 5px solid transparent;
+  border-top: 4px solid rgba(0, 0, 0, 0.6);
+}
+
+.ribbon-featured {
+  background: linear-gradient(135deg, #ff007f, #b44aff);
+  border: 1px solid #ff007f;
+}
+
+.ribbon-hot {
+  background: linear-gradient(135deg, #ff5500, #ffaa00);
+  border: 1px solid #ffaa00;
+}
+
+.ribbon-new {
+  background: linear-gradient(135deg, #00f0ff, #0088ff);
+  border: 1px solid #00f0ff;
+  color: #000;
+  font-weight: 900;
+}
+
+.ribbon-2p {
+  background: linear-gradient(135deg, #00ffaa, #00b377);
+  border: 1px solid #00ffaa;
+  color: #000;
+}
+
+/* Responsive Grid Breakpoints */
+@media (max-width: 1024px) {
+  .games-grid-poki {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .games-grid-poki {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 200px;
+    gap: 14px;
+  }
+  
+  .card-hero-large {
+    grid-column: span 2;
+    grid-row: span 1;
+    min-height: 240px;
+  }
+  
+  .card-featured-wide {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 480px) {
+  .games-grid-poki {
+    grid-template-columns: 1fr;
+    grid-auto-rows: auto;
+  }
+  
+  .card-hero-large,
+  .card-featured-wide,
+  .card-tile-standard {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+}
+
 

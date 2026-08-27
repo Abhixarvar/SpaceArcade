@@ -422,34 +422,67 @@
   function initTagFilter() {
     const filterChips = document.querySelectorAll('.filter-chip');
     const gameCards = document.querySelectorAll('.game-card');
+    const searchInput = document.getElementById('game-search-input');
+    const searchClearBtn = document.getElementById('search-clear-btn');
 
-    if (!filterChips.length || !gameCards.length) return;
+    if (!gameCards.length) return;
 
-    filterChips.forEach(chip => {
-      chip.addEventListener('click', () => {
-        const filter = chip.getAttribute('data-filter') || 'all';
+    let activeFilter = 'all';
+    let searchQuery = '';
 
-        // Update active chip
-        filterChips.forEach(c => c.classList.remove('active'));
-        chip.classList.add('active');
+    function applyFilters() {
+      gameCards.forEach(card => {
+        const title = (card.querySelector('.thumb-title')?.textContent || '').toLowerCase();
+        const desc = (card.getAttribute('data-desc') || '').toLowerCase();
+        const tagsStr = (card.getAttribute('data-tags') || '').toLowerCase();
+        const cardTags = tagsStr.split(',').map(t => t.trim());
 
-        if (window.SFX && typeof window.SFX.step === 'function') {
-          try { window.SFX.step(); } catch(e) {}
+        const matchesTag = activeFilter === 'all' || cardTags.includes(activeFilter.toLowerCase());
+        const matchesQuery = !searchQuery || title.includes(searchQuery) || desc.includes(searchQuery) || tagsStr.includes(searchQuery);
+
+        if (matchesTag && matchesQuery) {
+          card.classList.remove('filtered-out');
+        } else {
+          card.classList.add('filtered-out');
         }
+      });
+    }
 
-        // Filter cards
-        gameCards.forEach(card => {
-          const tagsStr = card.getAttribute('data-tags') || '';
-          const cardTags = tagsStr.split(',').map(t => t.trim().toLowerCase());
+    if (filterChips.length) {
+      filterChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+          activeFilter = chip.getAttribute('data-filter') || 'all';
+          filterChips.forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
 
-          if (filter === 'all' || cardTags.includes(filter.toLowerCase())) {
-            card.classList.remove('filtered-out');
-          } else {
-            card.classList.add('filtered-out');
+          if (window.SFX && typeof window.SFX.step === 'function') {
+            try { window.SFX.step(); } catch(e) {}
           }
+
+          applyFilters();
         });
       });
-    });
+    }
+
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        searchQuery = (e.target.value || '').trim().toLowerCase();
+        if (searchClearBtn) {
+          searchClearBtn.style.display = searchQuery ? 'flex' : 'none';
+        }
+        applyFilters();
+      });
+
+      if (searchClearBtn) {
+        searchClearBtn.addEventListener('click', () => {
+          searchInput.value = '';
+          searchQuery = '';
+          searchClearBtn.style.display = 'none';
+          applyFilters();
+          searchInput.focus();
+        });
+      }
+    }
   }
 
   function initGameInfoModals() {

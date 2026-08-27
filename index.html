@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Space Arcade — Play retro games like Snake, Pac-Man, Space Troopers and Block Blast in a cosmic space adventure!">
-  <title>Space Arcade — Retro & Arcade Games</title>
+  <meta name="description" content="Space Arcade — Play retro games like Star Combat Chess, Snake, Pac-Man, Space Troopers and Block Blast in a cosmic space adventure!">
+  <title>Space Arcade — Retro & Arcade Games Portal</title>
   <link rel="icon" type="image/svg+xml" href="assets/spaceship.svg">
-  <link rel="stylesheet" href="css/style.css?v=6">
+  <link rel="stylesheet" href="css/style.css?v=7">
 </head>
 <body>
 
@@ -32,7 +32,7 @@
   <!-- Page Content -->
   <div class="page-content home-page">
 
-    <!-- Floating Decorations -->
+    <!-- Floating Background Decorations -->
     <div class="landing-floaters" aria-hidden="true">
       <span class="floater" style="--x:8%;--y:15%;--dur:6s;--delay:0s;--size:2.2rem;">🚀</span>
       <span class="floater" style="--x:88%;--y:12%;--dur:7s;--delay:1s;--size:1.8rem;">⭐</span>
@@ -41,7 +41,6 @@
       <span class="floater" style="--x:50%;--y:5%;--dur:9s;--delay:0.2s;--size:1.3rem;">✨</span>
       <span class="floater" style="--x:20%;--y:85%;--dur:6.5s;--delay:1.5s;--size:1.4rem;">👾</span>
       <span class="floater" style="--x:75%;--y:88%;--dur:7.5s;--delay:0.8s;--size:1.4rem;">🎮</span>
-      <span class="floater" style="--x:35%;--y:92%;--dur:5s;--delay:3s;--size:1.2rem;">💫</span>
     </div>
 
     <!-- Header Banner -->
@@ -56,75 +55,65 @@
         <span class="hover-letter">A</span><span class="hover-letter">R</span><span class="hover-letter">C</span><span class="hover-letter">A</span><span class="hover-letter">D</span><span class="hover-letter">E</span>
       </h1>
       <p class="landing-tagline">
-        <span class="tagline-word">🕹️ Play Instant Free Games</span>
+        <span class="tagline-word">🕹️ 11 Instant Games</span>
         <span class="tagline-dot">·</span>
-        <span class="tagline-word">No Downloads Required</span>
+        <span class="tagline-word">No Downloads</span>
         <span class="tagline-dot">·</span>
         <span class="tagline-word">100% Free 🎉</span>
       </p>
+
+      <!-- Poki Style Real-Time Search Bar -->
+      <div class="poki-search-container">
+        <span class="poki-search-icon">🔍</span>
+        <input type="text" id="game-search-input" class="poki-search-input" placeholder="Search 11+ space games (e.g. chess, snake, pacman, 2-player)..." autocomplete="off">
+        <button type="button" id="search-clear-btn" class="poki-search-clear" style="display: none;" title="Clear Search">✕</button>
+      </div>
       
-      <!-- Quick Eco & Audio Performance Bar -->
+      <!-- Quick Performance & Sound Bar -->
       <div class="quick-toggles-bar">
-        <button class="toggle-pill-btn" id="eco-toggle-btn" type="button" title="Toggle Low-Power Eco Mode for Budget Devices">⚡ Turbo Mode</button>
-        <button class="toggle-pill-btn" id="sound-toggle-btn" type="button" title="Toggle Retro Arcade Sound Effects">🔊 Sound: ON</button>
+        <button class="toggle-pill-btn" id="eco-toggle-btn" type="button" title="Toggle Low-Power Eco Mode">⚡ Turbo Mode</button>
+        <button class="toggle-pill-btn" id="sound-toggle-btn" type="button" title="Toggle Sound FX">🔊 Sound: ON</button>
       </div>
     </header>
 
     <!-- Category Filter Bar -->
     <div class="category-filter-container">
-      <div class="filter-heading">
-        <span>🎮 EXPLORE GAMES</span>
-      </div>
       <div class="filter-chips">
         <button class="filter-chip active" data-filter="all">🚀 All Games</button>
-        <button class="filter-chip" data-filter="retro">👾 Retro Games</button>
-        <button class="filter-chip" data-filter="casual">🎯 Casual Games</button>
-        <button class="filter-chip" data-filter="endless">♾️ Endless Games</button>
-        <button class="filter-chip" data-filter="puzzle">🧩 Puzzle Games</button>
-        <button class="filter-chip" data-filter="action">⚔️ Action Games</button>
+        <button class="filter-chip" data-filter="featured">🔥 Featured</button>
+        <button class="filter-chip" data-filter="retro">👾 Retro</button>
+        <button class="filter-chip" data-filter="action">⚔️ Action</button>
+        <button class="filter-chip" data-filter="puzzle">🧩 Puzzle</button>
+        <button class="filter-chip" data-filter="casual">🎯 Casual</button>
+        <button class="filter-chip" data-filter="endless">♾️ Endless</button>
       </div>
     </div>
 
-    <!-- Game Cards Grid -->
-    <section class="games-grid compact-grid" id="games-grid">
+    <!-- Poki-Style Dynamic Hero Mosaic Grid -->
+    <section class="games-grid-poki" id="games-grid">
 
-      <!-- Snake -->
-      <a href="games/snake.html" class="game-card thumb-card" data-game="snake" id="card-snake" data-tags="retro,casual,endless" data-desc="🐍 Guide your space worm and collect stars! Use arrow keys to move.">
+      <!-- 👑 HERO FEATURED TILE (2x2 Grid) - Star Combat Chess -->
+      <a href="games/starchess.html" class="game-card thumb-card card-hero-large" data-game="starchess" id="card-starchess" data-tags="featured,puzzle,retro,action,casual" data-desc="⚔️ Star Wars themed galactic chess! Outsmart Darth Vader or Master Yoda in single player vs AI or local 2-player!">
+        <div class="badge-ribbon ribbon-featured">✨ GAME OF THE DAY</div>
         <div class="thumb-wrap">
-          <span class="kid-control-badge">🕹️ Arrow Keys</span>
+          <span class="kid-control-badge">⚔️ Mouse / Touch</span>
           <button class="game-info-btn" aria-label="Game Info" type="button" title="Game Info">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
           </button>
-          <canvas class="card-preview" id="preview-snake" width="280" height="150"></canvas>
-          <h2 class="thumb-title">Space Worm</h2>
+          <canvas class="card-preview" id="preview-starchess" width="480" height="280"></canvas>
+          <h2 class="thumb-title">Star Combat Chess</h2>
         </div>
         <div class="card-tags">
-          <span class="game-tag tag-retro">Retro</span>
-          <span class="game-tag tag-endless">Endless</span>
-          <span class="game-tag tag-casual">Casual</span>
+          <span class="game-tag tag-puzzle">Strategy</span>
+          <span class="game-tag tag-retro">Star Wars</span>
+          <span class="game-tag tag-action">vs AI</span>
         </div>
         <span class="card-play-btn">🚀 PLAY NOW!</span>
       </a>
 
-      <!-- Pac-Man -->
-      <a href="games/pacman.html" class="game-card thumb-card" data-game="pacman" id="card-pacman" data-tags="retro,classic,action" data-desc="👻 Eat all the dots and run from ghosts! Use arrow keys to move.">
-        <div class="thumb-wrap">
-          <span class="kid-control-badge">🕹️ Arrow Keys</span>
-          <button class="game-info-btn" aria-label="Game Info" type="button" title="Game Info">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-          </button>
-          <canvas class="card-preview" id="preview-pacman" width="280" height="150"></canvas>
-          <h2 class="thumb-title">Pac-Man</h2>
-        </div>
-        <div class="card-tags">
-          <span class="game-tag tag-retro">Retro</span>
-          <span class="game-tag tag-classic">Classic</span>
-        </div>
-        <span class="card-play-btn">🚀 PLAY NOW!</span>
-      </a>
-
-      <!-- Space Troopers -->
-      <a href="games/troopers.html" class="game-card thumb-card" data-game="troopers" id="card-troopers" data-tags="action,retro,endless" data-desc="👾 Shoot the aliens before they reach you! Use arrows to move, Space to fire.">
+      <!-- 🔥 WIDE SPOTLIGHT TILE (2x1 Grid) - Space Troopers -->
+      <a href="games/troopers.html" class="game-card thumb-card card-featured-wide" data-game="troopers" id="card-troopers" data-tags="featured,action,retro,endless" data-desc="👾 Shoot the aliens before they reach you! Use arrows to move, Space to fire.">
+        <div class="badge-ribbon ribbon-hot">🔥 HOT ACTION</div>
         <div class="thumb-wrap">
           <span class="kid-control-badge">🕹️ Arrows + Space</span>
           <button class="game-info-btn" aria-label="Game Info" type="button" title="Game Info">
@@ -136,48 +125,46 @@
         <div class="card-tags">
           <span class="game-tag tag-action">Action</span>
           <span class="game-tag tag-retro">Retro</span>
-          <span class="game-tag tag-endless">Endless</span>
         </div>
         <span class="card-play-btn">🚀 PLAY NOW!</span>
       </a>
 
-      <!-- Tetris -->
-      <a href="games/tetris.html" class="game-card thumb-card" data-game="tetris" id="card-tetris" data-tags="puzzle,retro,endless" data-desc="🧱 Stack the blocks and clear lines! Use arrows to move, Up to rotate.">
+      <!-- 🎮 STANDARD TILE (1x1) - Pac-Man -->
+      <a href="games/pacman.html" class="game-card thumb-card card-tile-standard" data-game="pacman" id="card-pacman" data-tags="retro,classic,action" data-desc="👻 Eat all the dots and run from ghosts! Use arrow keys to move.">
+        <div class="badge-ribbon ribbon-new">👾 RETRO</div>
         <div class="thumb-wrap">
-          <span class="kid-control-badge">🧱 Arrow Keys</span>
+          <span class="kid-control-badge">🕹️ Arrow Keys</span>
           <button class="game-info-btn" aria-label="Game Info" type="button" title="Game Info">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
           </button>
-          <canvas class="card-preview" id="preview-tetris" width="280" height="150"></canvas>
-          <h2 class="thumb-title">Cosmic Blocks</h2>
+          <canvas class="card-preview" id="preview-pacman" width="280" height="150"></canvas>
+          <h2 class="thumb-title">Pac-Man</h2>
         </div>
         <div class="card-tags">
-          <span class="game-tag tag-puzzle">Puzzle</span>
           <span class="game-tag tag-retro">Retro</span>
+        </div>
+        <span class="card-play-btn">🚀 PLAY NOW!</span>
+      </a>
+
+      <!-- 🎮 STANDARD TILE (1x1) - Space Worm (Snake) -->
+      <a href="games/snake.html" class="game-card thumb-card card-tile-standard" data-game="snake" id="card-snake" data-tags="retro,casual,endless" data-desc="🐍 Guide your space worm and collect stars! Use arrow keys to move.">
+        <div class="thumb-wrap">
+          <span class="kid-control-badge">🕹️ Arrow Keys</span>
+          <button class="game-info-btn" aria-label="Game Info" type="button" title="Game Info">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          </button>
+          <canvas class="card-preview" id="preview-snake" width="280" height="150"></canvas>
+          <h2 class="thumb-title">Space Worm</h2>
+        </div>
+        <div class="card-tags">
           <span class="game-tag tag-endless">Endless</span>
         </div>
         <span class="card-play-btn">🚀 PLAY NOW!</span>
       </a>
 
-      <!-- Block Blast -->
-      <a href="games/blockblast.html" class="game-card thumb-card" data-game="blockblast" id="card-blockblast" data-tags="puzzle,casual" data-desc="💥 Place blocks, clear lines, earn stars! Drag & drop or use keyboard.">
-        <div class="thumb-wrap">
-          <span class="kid-control-badge">👆 Touch / Drag</span>
-          <button class="game-info-btn" aria-label="Game Info" type="button" title="Game Info">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-          </button>
-          <canvas class="card-preview" id="preview-blockblast" width="280" height="150"></canvas>
-          <h2 class="thumb-title">Block Blast</h2>
-        </div>
-        <div class="card-tags">
-          <span class="game-tag tag-puzzle">Puzzle</span>
-          <span class="game-tag tag-casual">Casual</span>
-        </div>
-        <span class="card-play-btn">🚀 PLAY NOW!</span>
-      </a>
-
-      <!-- Blackhole Ninja -->
-      <a href="games/blackholeninja.html" class="game-card thumb-card" data-game="blackholeninja" id="card-blackholeninja" data-tags="action,casual" data-desc="🥷 Escape the black hole! Jump through a science lab and reach the spaceship!">
+      <!-- 🔥 WIDE SPOTLIGHT TILE (2x1 Grid) - Blackhole Ninja -->
+      <a href="games/blackholeninja.html" class="game-card thumb-card card-featured-wide" data-game="blackholeninja" id="card-blackholeninja" data-tags="featured,action,casual" data-desc="🥷 Escape the black hole! Jump through a science lab and reach the spaceship!">
+        <div class="badge-ribbon ribbon-new">⚡ NEW HIT</div>
         <div class="thumb-wrap">
           <span class="kid-control-badge">🥷 Space Jump</span>
           <button class="game-info-btn" aria-label="Game Info" type="button" title="Game Info">
@@ -188,13 +175,44 @@
         </div>
         <div class="card-tags">
           <span class="game-tag tag-action">Action</span>
-          <span class="game-tag tag-casual">Casual</span>
         </div>
         <span class="card-play-btn">🚀 PLAY NOW!</span>
       </a>
 
-      <!-- Galactic Wordle -->
-      <a href="games/wordle.html" class="game-card thumb-card" data-game="wordle" id="card-wordle" data-tags="puzzle,casual" data-desc="🪐 Guess the 5-letter cosmic word in 6 tries!">
+      <!-- 🎮 STANDARD TILE (1x1) - Block Blast -->
+      <a href="games/blockblast.html" class="game-card thumb-card card-tile-standard" data-game="blockblast" id="card-blockblast" data-tags="puzzle,casual" data-desc="💥 Place blocks, clear lines, earn stars! Drag & drop or use keyboard.">
+        <div class="thumb-wrap">
+          <span class="kid-control-badge">👆 Touch / Drag</span>
+          <button class="game-info-btn" aria-label="Game Info" type="button" title="Game Info">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          </button>
+          <canvas class="card-preview" id="preview-blockblast" width="280" height="150"></canvas>
+          <h2 class="thumb-title">Block Blast</h2>
+        </div>
+        <div class="card-tags">
+          <span class="game-tag tag-puzzle">Puzzle</span>
+        </div>
+        <span class="card-play-btn">🚀 PLAY NOW!</span>
+      </a>
+
+      <!-- 🎮 STANDARD TILE (1x1) - Cosmic Blocks (Tetris) -->
+      <a href="games/tetris.html" class="game-card thumb-card card-tile-standard" data-game="tetris" id="card-tetris" data-tags="puzzle,retro,endless" data-desc="🧱 Stack the blocks and clear lines! Use arrows to move, Up to rotate.">
+        <div class="thumb-wrap">
+          <span class="kid-control-badge">🧱 Arrow Keys</span>
+          <button class="game-info-btn" aria-label="Game Info" type="button" title="Game Info">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          </button>
+          <canvas class="card-preview" id="preview-tetris" width="280" height="150"></canvas>
+          <h2 class="thumb-title">Cosmic Blocks</h2>
+        </div>
+        <div class="card-tags">
+          <span class="game-tag tag-retro">Tetris</span>
+        </div>
+        <span class="card-play-btn">🚀 PLAY NOW!</span>
+      </a>
+
+      <!-- 🎮 STANDARD TILE (1x1) - Galactic Wordle -->
+      <a href="games/wordle.html" class="game-card thumb-card card-tile-standard" data-game="wordle" id="card-wordle" data-tags="puzzle,casual" data-desc="🪐 Guess the 5-letter cosmic word in 6 tries!">
         <div class="thumb-wrap">
           <span class="kid-control-badge">⌨️ Keyboard</span>
           <button class="game-info-btn" aria-label="Game Info" type="button" title="Game Info">
@@ -204,16 +222,15 @@
           <h2 class="thumb-title">Galactic Wordle</h2>
         </div>
         <div class="card-tags">
-          <span class="game-tag tag-puzzle">Puzzle</span>
-          <span class="game-tag tag-casual">Casual</span>
+          <span class="game-tag tag-puzzle">Wordle</span>
         </div>
         <span class="card-play-btn">🚀 PLAY NOW!</span>
       </a>
 
-      <!-- Block Blast: Extreme Saga -->
-      <a href="games/blockblast-extreme.html" class="game-card thumb-card" data-game="extreme" id="card-extreme" data-tags="endless,action,puzzle" data-desc="🔥 No levels — just go for the ultimate score!">
+      <!-- 🎮 STANDARD TILE (1x1) - Extreme Saga -->
+      <a href="games/blockblast-extreme.html" class="game-card thumb-card card-tile-standard" data-game="extreme" id="card-extreme" data-tags="endless,action,puzzle" data-desc="🔥 No levels — just go for the ultimate score!">
         <div class="thumb-wrap">
-          <span class="kid-control-badge">🔥 Endless Action</span>
+          <span class="kid-control-badge">🔥 Endless</span>
           <button class="game-info-btn" aria-label="Game Info" type="button" title="Game Info">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
           </button>
@@ -222,22 +239,39 @@
         </div>
         <div class="card-tags">
           <span class="game-tag tag-endless">Endless</span>
-          <span class="game-tag tag-action">Action</span>
         </div>
-      <!-- Star Combat Chess -->
-      <a href="games/starchess.html" class="game-card thumb-card" data-game="starchess" id="card-starchess" data-tags="puzzle,retro,action,casual" data-desc="⚔️ Star Wars themed galactic chess! Outsmart Darth Vader or Master Yoda in single player vs AI or local 2-player!">
+        <span class="card-play-btn">🚀 PLAY NOW!</span>
+      </a>
+
+      <!-- 🎮 STANDARD TILE (1x1) - Mole Hammer -->
+      <a href="games/molehammer.html" class="game-card thumb-card card-tile-standard" data-game="molehammer" id="card-molehammer" data-tags="casual,action" data-desc="🔨 Whack cosmic aliens in fast-paced arcade action!">
         <div class="thumb-wrap">
-          <span class="kid-control-badge">⚔️ Mouse / Touch</span>
+          <span class="kid-control-badge">🔨 Tap / Click</span>
           <button class="game-info-btn" aria-label="Game Info" type="button" title="Game Info">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
           </button>
-          <canvas class="card-preview" id="preview-starchess" width="280" height="150"></canvas>
-          <h2 class="thumb-title">Star Combat Chess</h2>
+          <canvas class="card-preview" id="preview-molehammer" width="280" height="150"></canvas>
+          <h2 class="thumb-title">Mole Hammer</h2>
         </div>
         <div class="card-tags">
-          <span class="game-tag tag-puzzle">Puzzle</span>
-          <span class="game-tag tag-retro">Retro</span>
-          <span class="game-tag tag-action">Action</span>
+          <span class="game-tag tag-casual">Arcade</span>
+        </div>
+        <span class="card-play-btn">🚀 PLAY NOW!</span>
+      </a>
+
+      <!-- 🎮 STANDARD TILE (1x1) - Space Pong -->
+      <a href="games/pong.html" class="game-card thumb-card card-tile-standard" data-game="pong" id="card-pong" data-tags="retro,casual,action" data-desc="🏓 Classic retro table tennis vs AI or local friend!">
+        <div class="badge-ribbon ribbon-2p">👥 2-PLAYER</div>
+        <div class="thumb-wrap">
+          <span class="kid-control-badge">🏓 W/S or Arrows</span>
+          <button class="game-info-btn" aria-label="Game Info" type="button" title="Game Info">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          </button>
+          <canvas class="card-preview" id="preview-pong" width="280" height="150"></canvas>
+          <h2 class="thumb-title">Space Pong</h2>
+        </div>
+        <div class="card-tags">
+          <span class="game-tag tag-retro">2-Player</span>
         </div>
         <span class="card-play-btn">🚀 PLAY NOW!</span>
       </a>
