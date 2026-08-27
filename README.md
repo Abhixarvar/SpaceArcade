@@ -32,12 +32,22 @@
 | 👾 **Space Troopers** | Action / Shooter | Blast incoming alien invaders before they breach your defense zone. | `Arrows` + `Space` |
 | 🧱 **Cosmic Blocks** | Puzzle / Retro | Classic line-clearing block puzzle. Rotate, drop, and score big! | `Arrow Keys` |
 | 💥 **Block Blast** | Puzzle / Casual | Drag & drop colorful blocks into grids to clear lines and rows. | `Touch` / `Mouse Drag` |
-| 🥷 **Blackhole Ninja** | Action / Platformer | Jump across platforms to escape the gravitational pull of a black hole! | `Space Jump` |
+| 🥷 **Blackhole Ninja** | Action / Platformer | Guide a ninja jumping platforms to escape gravitational black holes. | `Space` / `Click` |
 | 🪐 **Galactic Wordle** | Puzzle / Word | Guess the secret 5-letter cosmic word in 6 attempts. | `Keyboard` |
 | 🔥 **Block Blast: Extreme** | Action / Endless | Infinite high-octane block survival mode with no score limits! | `Touch` / `Mouse` |
 | 🔨 **Mole Hammer** | Casual / Arcade | Fast-reaction whack-a-mole cosmic arcade challenge. | `Click` / `Touch` |
 | 🏓 **Space Pong** | Retro / 2-Player | Retro table tennis arcade action against AI or local friends. | `W/S` or `Up/Down` |
-| ⚔️ **Star Combat Chess** | Strategy / Puzzle | Star Wars themed galactic chess featuring Darth Vader, Yoda & X-Wings! | `Click` / `Touch` |
+| ⚔️ **Star Combat Chess** | Strategy / P2P | Star Wars themed chess with 3 difficulty modes, smooth sliding animations, P2P online multiplayer, custom vector pieces (Yoda, Vader, Leia, Falcon, Death Star), tournament clocks, and lock-in buzzers! | `Click` / `Touch` / `Space` |
+
+---
+
+### ⚔️ Spotlight: Star Combat Chess
+A custom-built HTML5 galactic chess game featuring:
+* **Themed Army Sets**: Play as the **Light Side** (featuring Yoda as King, Leia as Queen, and the Millennium Falcon as Rook) or the **Dark Side** (featuring Darth Vader as King, Emperor Palpatine as Queen, and the Death Star as Rook).
+* **High-Quality 2D Vector Pieces**: Stylized vector graphics inspired by geometric Star Wars aesthetics with custom color shading.
+* **Imperial Tactical AI**: Play singleplayer against three AI levels (Padawan, Trooper, Sith Lord) powered by a minimax engine with alpha-beta pruning.
+* **Cubic Easing Animations**: Smooth slide-in movements when pieces traverse the battlefield.
+* **Online P2P Tournament**: Connect with peers via PeerJS WebRTC to play dual-player chess from each player's respective color viewpoint. Includes a live **Lock-In Buzzer** (no instant locking!) and tournament clocks (5 min blitz per side) with time out forfeits.
 
 ---
 
