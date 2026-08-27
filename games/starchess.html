@@ -30,6 +30,7 @@
       <div class="starchess-mode-group">
         <button class="starchess-btn-pill active" id="btn-mode-ai" data-tip="🤖 Play vs Imperial Tactical AI">🤖 vs AI</button>
         <button class="starchess-btn-pill" id="btn-mode-local" data-tip="👫 Play 2-Player Local Duel">👫 Pass &amp; Play</button>
+        <button class="starchess-btn-pill" id="btn-mode-online" data-tip="🌐 Play Online P2P Match">🌐 Online P2P</button>
       </div>
 
       <div class="starchess-mode-group" id="difficulty-wrap">
@@ -54,6 +55,21 @@
 
         <!-- Board Outer -->
         <div class="starchess-board-outer">
+          <!-- Tournament Chess Clocks Bar -->
+          <div class="starchess-clocks-bar hidden" id="clocks-bar">
+            <div class="clock-box clock-light" id="clock-light-box">
+              <span class="clock-icon">🟢</span>
+              <span class="clock-label">Light Side</span>
+              <span class="clock-time" id="clock-light">05:00</span>
+            </div>
+            <div class="clock-separator">⚔️</div>
+            <div class="clock-box clock-dark" id="clock-dark-box">
+              <span class="clock-icon">🔴</span>
+              <span class="clock-label">Dark Side</span>
+              <span class="clock-time" id="clock-dark">05:00</span>
+            </div>
+          </div>
+
           <!-- Status HUD -->
           <div class="starchess-status-hud">
             <div class="turn-indicator light-turn" id="turn-indicator">
@@ -65,6 +81,14 @@
           <!-- Board Canvas Wrap -->
           <div class="starchess-canvas-wrap">
             <canvas id="starchess-canvas" width="520" height="520"></canvas>
+          </div>
+
+          <!-- Lock-In Move Buzzer (Online mode only) -->
+          <div class="starchess-buzzer-wrap hidden" id="buzzer-wrap">
+            <button class="starchess-buzzer-btn" id="btn-buzzer" data-tip="🚨 Lock in your move! (Spacebar)">
+              🚨 PRESS BUZZER • LOCK IN MOVE
+            </button>
+            <div class="buzzer-hint">Press <kbd>Space</kbd> or click to lock in your move</div>
           </div>
 
           <p class="game-controls-hint" style="margin-top: 8px;">
@@ -165,8 +189,84 @@
     </div>
   </div>
 
+  <!-- P2P Online Lobby Overlay -->
+  <div class="game-overlay hidden" id="p2p-lobby-overlay">
+    <div class="pong-lobby">
+      <div class="lobby-title">🌐 Online Star Combat Chess</div>
+      <div class="lobby-subtitle">Challenge a friend to a real-time tournament match! ⚔️</div>
+      <div class="lobby-stars">✦ ✧ ✦ ✧ ✦ ✧ ✦</div>
+      <div class="lobby-divider">✧ CHOOSE YOUR PATH ✧</div>
+      <div class="lobby-options">
+        <div class="lobby-option" id="p2p-create-option">
+          <span class="option-icon">🚀</span>
+          <h3>Create Match</h3>
+          <p class="option-desc">Host a tournament room. You play as <strong>Light Side (White)</strong>.</p>
+          <div class="lobby-input-wrap">
+            <span class="input-icon">👾</span>
+            <input type="text" class="lobby-input" id="p2p-create-name" placeholder="Your cosmic name" maxlength="12" autocomplete="off">
+          </div>
+          <button class="btn btn-create btn-lobby" id="p2p-create-btn">Create Match ✦</button>
+          <div class="lobby-error" id="p2p-create-error"></div>
+        </div>
+        <div class="lobby-option" id="p2p-join-option">
+          <span class="option-icon">🔑</span>
+          <h3>Join Match</h3>
+          <p class="option-desc">Enter room code to join. You play as <strong>Dark Side (Black)</strong>.</p>
+          <div class="lobby-input-wrap">
+            <span class="input-icon">👾</span>
+            <input type="text" class="lobby-input" id="p2p-join-name" placeholder="Your cosmic name" maxlength="12" autocomplete="off">
+          </div>
+          <div class="lobby-input-wrap">
+            <span class="input-icon">🔑</span>
+            <input type="text" class="lobby-input code-input" id="p2p-join-code" placeholder="ROOM CODE" maxlength="6" autocomplete="off">
+          </div>
+          <button class="btn btn-join btn-lobby" id="p2p-join-btn">Join Match ✦</button>
+          <div class="lobby-error" id="p2p-join-error"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- P2P Waiting Overlay -->
+  <div class="game-overlay hidden" id="p2p-waiting-overlay">
+    <div class="waiting-room">
+      <div class="overlay-title">Waiting for Opponent</div>
+      <div class="room-code-display" id="p2p-room-code-box">
+        <span class="code" id="p2p-display-code">-----</span>
+        <span class="copy-hint">Click to copy room code</span>
+      </div>
+      <p class="overlay-score">Share this code with your opponent!</p>
+      <div class="waiting-spinner"></div>
+      <div class="overlay-buttons">
+        <button class="btn btn-secondary" id="p2p-cancel-wait-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- P2P Connecting Overlay -->
+  <div class="game-overlay hidden" id="p2p-connecting-overlay">
+    <div class="waiting-room">
+      <div class="overlay-title">Connecting</div>
+      <div class="waiting-spinner"></div>
+      <p class="overlay-score" id="p2p-connecting-text">Entering galactic arena...</p>
+      <div class="overlay-buttons">
+        <button class="btn btn-secondary" id="p2p-cancel-connect-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- P2P Disconnect Overlay -->
+  <div class="game-overlay hidden" id="p2p-disconnect-overlay">
+    <div class="overlay-title">Disconnected</div>
+    <p class="overlay-score">Your opponent has left the match.</p>
+    <div class="overlay-buttons">
+      <button class="btn btn-primary" id="p2p-back-lobby-btn">Back to Lobby</button>
+    </div>
+  </div>
+
   <!-- SFX safety shim -->
-  <script>if(!window.SFX){const n=()=>{};window.SFX={shoot:n,eat:n,powerup:n,explode:n,hit:n,gameOver:n,levelUp:n,ghostEat:n,step:n,startBGM:n,stopBGM:n,saberHum:n,saberClash:n,checkAlert:n,setVolume:n,getVolume:()=>0.5};}</script>
+  <script>if(!window.SFX){const n=()=>{};window.SFX={shoot:n,eat:n,powerup:n,explode:n,hit:n,gameOver:n,levelUp:n,ghostEat:n,step:n,startBGM:n,stopBGM:n,saberHum:n,saberClash:n,checkAlert:n,buzzerSound:n,clockTick:n,setVolume:n,getVolume:()=>0.5};}</script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <script type="module" src="../js/stars.js"></script>
   <script type="module" src="../js/cursor.js"></script>
   <script type="module" src="../js/audio.js"></script>

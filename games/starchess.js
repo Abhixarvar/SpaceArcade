@@ -1,4 +1,4 @@
-/* ===== Star Combat Chess — Sci-Fi Engine, Vector Art & Smooth Animations ===== */
+/* ===== Star Combat Chess — Sci-Fi Engine, Vector Art, Smooth Animations & Online P2P ===== */
 
 (function () {
   'use strict';
@@ -21,11 +21,23 @@
   // Buttons
   const btnModeAi = document.getElementById('btn-mode-ai');
   const btnModeLocal = document.getElementById('btn-mode-local');
+  const btnModeOnline = document.getElementById('btn-mode-online');
   const aiDifficultySelect = document.getElementById('ai-difficulty');
   const btnFlip = document.getElementById('btn-flip');
   const btnUndo = document.getElementById('btn-undo');
   const btnRestart = document.getElementById('btn-restart');
   const difficultyWrap = document.getElementById('difficulty-wrap');
+
+  // Tournament Chess Clock Elements
+  const clocksBar = document.getElementById('clocks-bar');
+  const clockLightEl = document.getElementById('clock-light');
+  const clockDarkEl = document.getElementById('clock-dark');
+  const clockLightBox = document.getElementById('clock-light-box');
+  const clockDarkBox = document.getElementById('clock-dark-box');
+
+  // Buzzer
+  const buzzerWrap = document.getElementById('buzzer-wrap');
+  const btnBuzzer = document.getElementById('btn-buzzer');
 
   // Overlays
   const startOverlay = document.getElementById('start-overlay');
@@ -38,6 +50,25 @@
   const promotionOverlay = document.getElementById('promotion-overlay');
   const promoSubtitle = document.getElementById('promotion-subtitle');
 
+  // P2P Online Overlay Elements
+  const p2pLobbyOverlay = document.getElementById('p2p-lobby-overlay');
+  const p2pCreateNameInput = document.getElementById('p2p-create-name');
+  const p2pCreateBtn = document.getElementById('p2p-create-btn');
+  const p2pCreateError = document.getElementById('p2p-create-error');
+  const p2pJoinNameInput = document.getElementById('p2p-join-name');
+  const p2pJoinCodeInput = document.getElementById('p2p-join-code');
+  const p2pJoinBtn = document.getElementById('p2p-join-btn');
+  const p2pJoinError = document.getElementById('p2p-join-error');
+  const p2pWaitingOverlay = document.getElementById('p2p-waiting-overlay');
+  const p2pDisplayCode = document.getElementById('p2p-display-code');
+  const p2pRoomCodeBox = document.getElementById('p2p-room-code-box');
+  const p2pCancelWaitBtn = document.getElementById('p2p-cancel-wait-btn');
+  const p2pConnectingOverlay = document.getElementById('p2p-connecting-overlay');
+  const p2pConnectingText = document.getElementById('p2p-connecting-text');
+  const p2pCancelConnectBtn = document.getElementById('p2p-cancel-connect-btn');
+  const p2pDisconnectOverlay = document.getElementById('p2p-disconnect-overlay');
+  const p2pBackLobbyBtn = document.getElementById('p2p-back-lobby-btn');
+
   // Promo icons
   const promoIconQ = document.getElementById('promo-icon-q');
   const promoIconR = document.getElementById('promo-icon-r');
@@ -49,7 +80,7 @@
   const GRID_SIZE = 8;
   const TILE_SIZE = BOARD_SIZE / GRID_SIZE; // 65px
 
-  let gameMode = 'ai'; // 'ai' or 'local'
+  let gameMode = 'ai'; // 'ai', 'local', or 'online'
   let aiLevel = 2; // 1 (Easy), 2 (Medium), 3 (Hard)
   let isFlipped = false; // false: White on bottom, true: Black on bottom
   let isAiThinking = false;
@@ -72,6 +103,25 @@
 
   // Smooth Move Animation State
   let moveAnimation = null; // { piece, fromR, fromC, toR, toC, startTime, duration: 220, promo }
+
+  // ---- Online P2P State ----
+  let peer = null;
+  let conn = null;
+  let isHost = false;
+  let myColor = 'w'; // 'w' or 'b'
+  let myName = '';
+  let opponentName = '';
+  let roomCode = '';
+  let draftMove = null; // { from: {r,c}, to: {r,c}, promo } — the move the player is about to lock in
+  let opponentDraft = null; // The draft move preview from opponent
+  let moveLockedIn = false; // true after buzzer is pressed
+
+  // Tournament Chess Clocks (in seconds)
+  const CLOCK_TIME = 5 * 60; // 5 minutes per player
+  let clockWhite = CLOCK_TIME;
+  let clockBlack = CLOCK_TIME;
+  let clockInterval = null;
+  let clockRunning = false;
 
   // Particle Effects
   let particles = [];
@@ -173,6 +223,27 @@
     isAiThinking = false;
     moveAnimation = null;
     gameActive = true;
+    draftMove = null;
+    opponentDraft = null;
+    moveLockedIn = false;
+
+    // Reset clocks
+    clockWhite = CLOCK_TIME;
+    clockBlack = CLOCK_TIME;
+    stopClock();
+
+    if (gameMode === 'online') {
+      isFlipped = (myColor === 'b');
+      if (clocksBar) clocksBar.classList.remove('hidden');
+      if (buzzerWrap) buzzerWrap.classList.remove('hidden');
+      updateClockDisplay();
+      updateBuzzerState();
+      // Start clock for white
+      startClock();
+    } else {
+      if (clocksBar) clocksBar.classList.add('hidden');
+      if (buzzerWrap) buzzerWrap.classList.add('hidden');
+    }
 
     updateUndoButtonState();
     updateUI();
@@ -182,10 +253,11 @@
   // ---- Difficulty & Undo Button Controls ----
   function updateUndoButtonState() {
     if (!btnUndo) return;
-    if (gameMode === 'ai' && aiLevel === 3) {
+    if (gameMode === 'online' || (gameMode === 'ai' && aiLevel === 3)) {
       btnUndo.classList.add('disabled');
-      btnUndo.setAttribute('title', 'Undo is disabled on Hard (Sith Lord) difficulty ⚔️');
-      btnUndo.setAttribute('data-tip', '⚔️ Undo disabled on Hard Mode');
+      const tip = gameMode === 'online' ? '🌐 Undo disabled in Online mode' : '⚔️ Undo disabled on Hard Mode';
+      btnUndo.setAttribute('title', tip);
+      btnUndo.setAttribute('data-tip', tip);
     } else {
       btnUndo.classList.remove('disabled');
       btnUndo.setAttribute('title', 'Undo last move');
@@ -209,22 +281,39 @@
   }
 
   // ---- UI Controls Event Listeners ----
-  btnModeAi.addEventListener('click', () => {
+  function clearModeButtons() {
+    if (btnModeAi) btnModeAi.classList.remove('active');
+    if (btnModeLocal) btnModeLocal.classList.remove('active');
+    if (btnModeOnline) btnModeOnline.classList.remove('active');
+  }
+
+  if (btnModeAi) btnModeAi.addEventListener('click', () => {
+    cleanupP2P();
     gameMode = 'ai';
+    clearModeButtons();
     btnModeAi.classList.add('active');
-    btnModeLocal.classList.remove('active');
     difficultyWrap.style.display = 'flex';
     updateUndoButtonState();
     initGame();
   });
 
-  btnModeLocal.addEventListener('click', () => {
+  if (btnModeLocal) btnModeLocal.addEventListener('click', () => {
+    cleanupP2P();
     gameMode = 'local';
+    clearModeButtons();
     btnModeLocal.classList.add('active');
-    btnModeAi.classList.remove('active');
     difficultyWrap.style.display = 'none';
     updateUndoButtonState();
     initGame();
+  });
+
+  if (btnModeOnline) btnModeOnline.addEventListener('click', () => {
+    cleanupP2P();
+    clearModeButtons();
+    btnModeOnline.classList.add('active');
+    difficultyWrap.style.display = 'none';
+    startOverlay.classList.add('hidden');
+    showP2POverlay(p2pLobbyOverlay);
   });
 
   aiDifficultySelect.addEventListener('change', (e) => {
@@ -233,12 +322,22 @@
   });
 
   btnFlip.addEventListener('click', () => {
+    if (gameMode === 'online') {
+      showToast('🌐 Flip is locked in Online mode.');
+      return;
+    }
     isFlipped = !isFlipped;
     render();
   });
 
   btnUndo.addEventListener('click', () => {
     if (!gameActive || isAiThinking || moveAnimation) return;
+
+    if (gameMode === 'online') {
+      showToast('🌐 No undo in Online mode!');
+      if (window.SFX && window.SFX.hit) window.SFX.hit();
+      return;
+    }
 
     if (gameMode === 'ai' && aiLevel === 3) {
       showToast('⚔️ No mercy! Undo is disabled on Hard (Sith Lord) mode.');
@@ -271,6 +370,7 @@
   canvas.addEventListener('click', (e) => {
     if (!gameActive || isAiThinking || moveAnimation) return;
     if (gameMode === 'ai' && currentTurn === 'b') return; // AI's turn
+    if (gameMode === 'online' && currentTurn !== myColor) return; // Not my turn
 
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
@@ -297,12 +397,23 @@
     // If square is one of the valid target moves for the currently selected piece:
     const targetMove = validMoves.find(m => m.r === r && m.c === c);
     if (selectedSquare && targetMove) {
-      startAnimatedMove(selectedSquare, targetMove);
+      if (gameMode === 'online') {
+        // In online mode, set draft move but DON'T lock in yet (wait for buzzer)
+        handleOnlineDraftMove(selectedSquare, targetMove);
+      } else {
+        startAnimatedMove(selectedSquare, targetMove);
+      }
       return;
     }
 
     // If clicking on player's own piece:
     if (piece && piece[0] === currentTurn) {
+      // In online mode, if a draft move is already set, deselect it
+      if (gameMode === 'online' && draftMove) {
+        draftMove = null;
+        moveLockedIn = false;
+        sendP2P({ type: 'DRAFT_CLEAR' });
+      }
       selectedSquare = { r, c };
       validMoves = getLegalMovesForSquare(r, c, board, currentTurn, castlingRights, enPassantSquare);
       if (window.SFX && window.SFX.saberHum) window.SFX.saberHum();
@@ -471,6 +582,7 @@
     // Check Game Over Conditions
     if (!hasNextLegalMoves) {
       gameActive = false;
+      stopClock();
       if (isNextInCheck) {
         // Checkmate!
         const victor = snapshot.turn === 'w' ? 'Light Side (Rebel Alliance)' : 'Dark Empire';
@@ -496,6 +608,14 @@
       isAiThinking = true;
       statusBadgeEl.textContent = 'Imperial AI calculating...';
       setTimeout(makeAiMove, 350);
+    }
+
+    // Online mode: update clocks and buzzer state
+    if (gameMode === 'online') {
+      updateClockDisplay();
+      updateBuzzerState();
+      draftMove = null;
+      opponentDraft = null;
     }
   }
 
@@ -1256,6 +1376,45 @@
     // 6. Draw Board Coordinates
     drawCoordinates();
 
+    // 6.5 Draft Move Indicators (Online Mode)
+    if (gameMode === 'online') {
+      // My draft move (green highlight from → to)
+      if (draftMove) {
+        const dfR = isFlipped ? 7 - draftMove.from.r : draftMove.from.r;
+        const dfC = isFlipped ? 7 - draftMove.from.c : draftMove.from.c;
+        const dtR = isFlipped ? 7 - draftMove.to.r : draftMove.to.r;
+        const dtC = isFlipped ? 7 - draftMove.to.c : draftMove.to.c;
+
+        ctx.fillStyle = 'rgba(0, 255, 120, 0.2)';
+        ctx.fillRect(dfC * TILE_SIZE, dfR * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        ctx.fillRect(dtC * TILE_SIZE, dtR * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+
+        ctx.strokeStyle = '#00ff78';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([5, 3]);
+        ctx.strokeRect(dtC * TILE_SIZE + 2, dtR * TILE_SIZE + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+        ctx.setLineDash([]);
+      }
+
+      // Opponent's draft move (orange highlight — so the player can see what they're considering)
+      if (opponentDraft) {
+        const ofR = isFlipped ? 7 - opponentDraft.from.r : opponentDraft.from.r;
+        const ofC = isFlipped ? 7 - opponentDraft.from.c : opponentDraft.from.c;
+        const otR = isFlipped ? 7 - opponentDraft.to.r : opponentDraft.to.r;
+        const otC = isFlipped ? 7 - opponentDraft.to.c : opponentDraft.to.c;
+
+        ctx.fillStyle = 'rgba(255, 165, 0, 0.15)';
+        ctx.fillRect(ofC * TILE_SIZE, ofR * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        ctx.fillRect(otC * TILE_SIZE, otR * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+
+        ctx.strokeStyle = 'rgba(255, 165, 0, 0.5)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
+        ctx.strokeRect(otC * TILE_SIZE + 3, otR * TILE_SIZE + 3, TILE_SIZE - 6, TILE_SIZE - 6);
+        ctx.setLineDash([]);
+      }
+    }
+
     // 7. Draw Static Board Pieces
     let animMovingPiece = null;
 
@@ -1396,7 +1555,477 @@
     return `${pChar}${fromFile}${capChar}${toSq}${promoStr}${checkStr}`;
   }
 
+  // ===== ONLINE P2P FUNCTIONS =====
+
+  // ---- P2P Overlay Helpers ----
+  function hideAllP2POverlays() {
+    [p2pLobbyOverlay, p2pWaitingOverlay, p2pConnectingOverlay, p2pDisconnectOverlay].forEach(el => {
+      if (el) el.classList.add('hidden');
+    });
+  }
+
+  function showP2POverlay(overlay) {
+    hideAllP2POverlays();
+    if (overlay) overlay.classList.remove('hidden');
+  }
+
+  function generateRoomCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for (let i = 0; i < 5; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    return code;
+  }
+
+  function sendP2P(msg) {
+    if (conn && conn.open) {
+      try { conn.send(msg); } catch (e) { /* ignore */ }
+    }
+  }
+
+  function cleanupP2P() {
+    stopClock();
+    if (conn) { try { conn.close(); } catch (e) {} conn = null; }
+    if (peer) { try { peer.destroy(); } catch (e) {} peer = null; }
+    hideAllP2POverlays();
+    draftMove = null;
+    opponentDraft = null;
+    moveLockedIn = false;
+  }
+
+  // ---- Online Draft Move Handling ----
+  function handleOnlineDraftMove(from, to) {
+    // Apply draft move visually (preview) but don't commit to game state yet
+    const piece = board[from.r][from.c];
+    const pieceColor = piece[0];
+    const pieceType = piece[1];
+
+    // Check for pawn promotion
+    let promoChoice = null;
+    if (pieceType === 'P' && ((pieceColor === 'w' && to.r === 0) || (pieceColor === 'b' && to.r === 7))) {
+      showPromotionModal(pieceColor, (choice) => {
+        finalizeDraft(from, to, choice);
+      });
+      return;
+    }
+
+    finalizeDraft(from, to, null);
+  }
+
+  function finalizeDraft(from, to, promo) {
+    draftMove = { from: { r: from.r, c: from.c }, to: { r: to.r, c: to.c }, promo };
+    moveLockedIn = false;
+
+    // Send draft preview to opponent
+    sendP2P({ type: 'DRAFT_MOVE', from: draftMove.from, to: draftMove.to, promo: draftMove.promo });
+
+    // Show draft move indicator on board
+    selectedSquare = null;
+    validMoves = [];
+    updateBuzzerState();
+    render();
+  }
+
+  function updateBuzzerState() {
+    if (!btnBuzzer) return;
+    if (gameMode !== 'online') return;
+
+    if (draftMove && currentTurn === myColor && !moveLockedIn) {
+      btnBuzzer.classList.remove('disabled');
+    } else {
+      btnBuzzer.classList.add('disabled');
+    }
+  }
+
+  function lockInMove() {
+    if (!draftMove || moveLockedIn || !gameActive) return;
+    if (gameMode !== 'online' || currentTurn !== myColor) return;
+
+    moveLockedIn = true;
+
+    // Play buzzer SFX
+    if (window.SFX && window.SFX.buzzerSound) window.SFX.buzzerSound();
+
+    // Send lock-in to opponent
+    sendP2P({ type: 'LOCK_MOVE', from: draftMove.from, to: draftMove.to, promo: draftMove.promo });
+
+    // Execute the move with animation
+    const from = { r: draftMove.from.r, c: draftMove.from.c };
+    const to = { r: draftMove.to.r, c: draftMove.to.c };
+    const promo = draftMove.promo;
+    draftMove = null;
+    opponentDraft = null;
+
+    startAnimatedMove(from, to, promo);
+    updateBuzzerState();
+  }
+
+  // ---- Buzzer Button & Spacebar ----
+  if (btnBuzzer) {
+    btnBuzzer.addEventListener('click', () => {
+      lockInMove();
+    });
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && gameMode === 'online' && draftMove && !moveLockedIn) {
+      e.preventDefault();
+      lockInMove();
+    }
+  });
+
+  // ---- Tournament Chess Clocks ----
+  function startClock() {
+    stopClock();
+    clockRunning = true;
+    clockInterval = setInterval(() => {
+      if (!gameActive || !clockRunning) { stopClock(); return; }
+
+      if (currentTurn === 'w') {
+        clockWhite = Math.max(0, clockWhite - 1);
+      } else {
+        clockBlack = Math.max(0, clockBlack - 1);
+      }
+
+      updateClockDisplay();
+
+      // Low time warning tick
+      const activeTime = currentTurn === 'w' ? clockWhite : clockBlack;
+      if (activeTime <= 30 && activeTime > 0) {
+        if (window.SFX && window.SFX.clockTick) window.SFX.clockTick();
+      }
+
+      // Time out forfeit
+      if (activeTime <= 0) {
+        stopClock();
+        gameActive = false;
+        const winner = currentTurn === 'w' ? 'Dark Side (Empire)' : 'Light Side (Rebel Alliance)';
+        gameoverTitle.textContent = 'Time Out! ⏰';
+        winnerDisplay.textContent = `${winner} wins on time!`;
+        if (window.SFX && window.SFX.gameOver) window.SFX.gameOver();
+        setTimeout(() => gameoverOverlay.classList.remove('hidden'), 500);
+        sendP2P({ type: 'TIMEOUT', loser: currentTurn });
+      }
+    }, 1000);
+  }
+
+  function stopClock() {
+    clockRunning = false;
+    if (clockInterval) { clearInterval(clockInterval); clockInterval = null; }
+  }
+
+  function updateClockDisplay() {
+    if (!clockLightEl || !clockDarkEl) return;
+
+    clockLightEl.textContent = formatClockTime(clockWhite);
+    clockDarkEl.textContent = formatClockTime(clockBlack);
+
+    // Active player highlight
+    if (clockLightBox) {
+      clockLightBox.classList.toggle('active-clock', currentTurn === 'w' && gameActive);
+      clockLightBox.classList.toggle('time-low', clockWhite <= 30);
+    }
+    if (clockDarkBox) {
+      clockDarkBox.classList.toggle('active-clock', currentTurn === 'b' && gameActive);
+      clockDarkBox.classList.toggle('time-low', clockBlack <= 30);
+    }
+  }
+
+  function formatClockTime(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  }
+
+  // ---- P2P Connection Logic (PeerJS) ----
+  function createP2PRoom(name) {
+    if (typeof Peer === 'undefined') {
+      if (p2pCreateError) p2pCreateError.textContent = 'PeerJS not loaded. Check internet.';
+      return;
+    }
+
+    myName = name;
+    isHost = true;
+    myColor = 'w';
+    roomCode = generateRoomCode();
+
+    showP2POverlay(p2pWaitingOverlay);
+    if (p2pDisplayCode) p2pDisplayCode.textContent = roomCode;
+
+    peer = new Peer('schess-' + roomCode, { debug: 0 });
+
+    peer.on('open', () => {
+      if (p2pDisplayCode) p2pDisplayCode.textContent = roomCode;
+    });
+
+    peer.on('connection', (dataConn) => {
+      conn = dataConn;
+      setupP2PConnection();
+    });
+
+    peer.on('error', (err) => {
+      if (err.type === 'unavailable-id') {
+        peer.destroy();
+        roomCode = generateRoomCode();
+        peer = new Peer('schess-' + roomCode, { debug: 0 });
+        if (p2pDisplayCode) p2pDisplayCode.textContent = roomCode;
+        peer.on('open', () => { if (p2pDisplayCode) p2pDisplayCode.textContent = roomCode; });
+        peer.on('connection', (dataConn) => { conn = dataConn; setupP2PConnection(); });
+        peer.on('error', () => {
+          hideAllP2POverlays();
+          showP2POverlay(p2pLobbyOverlay);
+          if (p2pCreateError) p2pCreateError.textContent = 'Connection error. Try again.';
+        });
+      } else {
+        console.error('PeerJS error:', err);
+      }
+    });
+  }
+
+  function joinP2PRoom(name, code) {
+    if (typeof Peer === 'undefined') {
+      if (p2pJoinError) p2pJoinError.textContent = 'PeerJS not loaded. Check internet.';
+      return;
+    }
+
+    myName = name;
+    isHost = false;
+    myColor = 'b';
+    roomCode = code.toUpperCase();
+
+    showP2POverlay(p2pConnectingOverlay);
+    if (p2pConnectingText) p2pConnectingText.textContent = 'Connecting to match...';
+
+    peer = new Peer(undefined, { debug: 0 });
+
+    peer.on('open', () => {
+      conn = peer.connect('schess-' + roomCode, { reliable: true });
+
+      conn.on('open', () => {
+        setupP2PConnection();
+      });
+
+      conn.on('error', () => {
+        hideAllP2POverlays();
+        showP2POverlay(p2pLobbyOverlay);
+        if (p2pJoinError) p2pJoinError.textContent = 'Could not connect. Check code.';
+        cleanupP2P();
+      });
+    });
+
+    peer.on('error', () => {
+      hideAllP2POverlays();
+      showP2POverlay(p2pLobbyOverlay);
+      if (p2pJoinError) p2pJoinError.textContent = 'Room not found. Check code.';
+      cleanupP2P();
+    });
+
+    // Timeout
+    setTimeout(() => {
+      if (!conn || !conn.open) {
+        hideAllP2POverlays();
+        showP2POverlay(p2pLobbyOverlay);
+        if (p2pJoinError) p2pJoinError.textContent = 'Connection timed out.';
+        cleanupP2P();
+      }
+    }, 10000);
+  }
+
+  function setupP2PConnection() {
+    conn.on('open', () => {
+      conn.send({ type: 'HELLO', name: myName });
+    });
+
+    if (conn.open) {
+      conn.send({ type: 'HELLO', name: myName });
+    }
+
+    conn.on('data', (data) => {
+      handleP2PMessage(data);
+    });
+
+    conn.on('close', () => {
+      if (gameActive || gameMode === 'online') {
+        gameActive = false;
+        stopClock();
+        hideAllP2POverlays();
+        if (p2pDisconnectOverlay) p2pDisconnectOverlay.classList.remove('hidden');
+      }
+    });
+
+    conn.on('error', () => {
+      gameActive = false;
+      stopClock();
+      hideAllP2POverlays();
+      if (p2pDisconnectOverlay) p2pDisconnectOverlay.classList.remove('hidden');
+    });
+  }
+
+  function handleP2PMessage(data) {
+    if (!data || !data.type) return;
+
+    switch (data.type) {
+      case 'HELLO':
+        opponentName = data.name || 'Opponent';
+        // Start the game
+        gameMode = 'online';
+        clearModeButtons();
+        if (btnModeOnline) btnModeOnline.classList.add('active');
+        difficultyWrap.style.display = 'none';
+        hideAllP2POverlays();
+        startOverlay.classList.add('hidden');
+        gameoverOverlay.classList.add('hidden');
+        updateUndoButtonState();
+        initGame();
+        showToast(`⚔️ ${opponentName} has joined! Game on!`);
+        if (window.SFX && window.SFX.levelUp) window.SFX.levelUp();
+        break;
+
+      case 'DRAFT_MOVE':
+        // Show opponent's draft move on board (preview indicator)
+        opponentDraft = { from: data.from, to: data.to, promo: data.promo };
+        render();
+        break;
+
+      case 'DRAFT_CLEAR':
+        opponentDraft = null;
+        render();
+        break;
+
+      case 'LOCK_MOVE':
+        // Opponent locked in their move — execute it
+        opponentDraft = null;
+        const from = { r: data.from.r, c: data.from.c };
+        const to = { r: data.to.r, c: data.to.c };
+        startAnimatedMove(from, to, data.promo);
+        if (window.SFX && window.SFX.buzzerSound) window.SFX.buzzerSound();
+        break;
+
+      case 'TIMEOUT':
+        // Opponent timed out
+        stopClock();
+        gameActive = false;
+        const winner = data.loser === 'w' ? 'Dark Side (Empire)' : 'Light Side (Rebel Alliance)';
+        gameoverTitle.textContent = 'Time Out! ⏰';
+        winnerDisplay.textContent = `${winner} wins on time!`;
+        if (window.SFX && window.SFX.levelUp) window.SFX.levelUp();
+        setTimeout(() => gameoverOverlay.classList.remove('hidden'), 500);
+        break;
+
+      case 'CLOCK_SYNC':
+        // Sync clock from host
+        if (!isHost) {
+          clockWhite = data.clockWhite;
+          clockBlack = data.clockBlack;
+          updateClockDisplay();
+        }
+        break;
+    }
+  }
+
+  // ---- P2P Lobby Event Listeners ----
+  if (p2pCreateBtn) {
+    p2pCreateBtn.addEventListener('click', () => {
+      const name = p2pCreateNameInput ? p2pCreateNameInput.value.trim() : '';
+      if (!name) { if (p2pCreateError) p2pCreateError.textContent = 'Enter your name!'; return; }
+      if (p2pCreateError) p2pCreateError.textContent = '';
+      createP2PRoom(name);
+    });
+  }
+
+  if (p2pJoinBtn) {
+    p2pJoinBtn.addEventListener('click', () => {
+      const name = p2pJoinNameInput ? p2pJoinNameInput.value.trim() : '';
+      const code = p2pJoinCodeInput ? p2pJoinCodeInput.value.trim().toUpperCase() : '';
+      if (!name) { if (p2pJoinError) p2pJoinError.textContent = 'Enter your name!'; return; }
+      if (!code || code.length < 4) { if (p2pJoinError) p2pJoinError.textContent = 'Enter a valid room code!'; return; }
+      if (p2pJoinError) p2pJoinError.textContent = '';
+      joinP2PRoom(name, code);
+    });
+  }
+
+  if (p2pCancelWaitBtn) {
+    p2pCancelWaitBtn.addEventListener('click', () => {
+      cleanupP2P();
+      showP2POverlay(p2pLobbyOverlay);
+    });
+  }
+
+  if (p2pCancelConnectBtn) {
+    p2pCancelConnectBtn.addEventListener('click', () => {
+      cleanupP2P();
+      showP2POverlay(p2pLobbyOverlay);
+    });
+  }
+
+  if (p2pBackLobbyBtn) {
+    p2pBackLobbyBtn.addEventListener('click', () => {
+      cleanupP2P();
+      showP2POverlay(p2pLobbyOverlay);
+    });
+  }
+
+  if (p2pRoomCodeBox) {
+    p2pRoomCodeBox.addEventListener('click', () => {
+      if (navigator.clipboard && roomCode) {
+        navigator.clipboard.writeText(roomCode).then(() => {
+          showToast('📋 Room code copied!');
+        });
+      }
+    });
+  }
+
+  // ---- Clock Sync (Host sends clock every 5 seconds) ----
+  setInterval(() => {
+    if (gameMode === 'online' && isHost && gameActive && conn && conn.open) {
+      sendP2P({ type: 'CLOCK_SYNC', clockWhite, clockBlack });
+    }
+  }, 5000);
+
+  // ---- Auto-join from Party Lounge URL params ----
+  function checkURLParams() {
+    const params = new URLSearchParams(window.location.search);
+    const role = params.get('role');
+    const room = params.get('room');
+    const name = params.get('name') || 'Player';
+
+    if (role && room) {
+      startOverlay.classList.add('hidden');
+      if (role === 'host') {
+        myName = name;
+        isHost = true;
+        myColor = 'w';
+        roomCode = room;
+        gameMode = 'online';
+        clearModeButtons();
+        if (btnModeOnline) btnModeOnline.classList.add('active');
+        difficultyWrap.style.display = 'none';
+
+        showP2POverlay(p2pWaitingOverlay);
+        if (p2pDisplayCode) p2pDisplayCode.textContent = roomCode;
+
+        if (typeof Peer !== 'undefined') {
+          peer = new Peer('schess-' + roomCode, { debug: 0 });
+          peer.on('open', () => {
+            if (p2pDisplayCode) p2pDisplayCode.textContent = roomCode;
+          });
+          peer.on('connection', (dataConn) => {
+            conn = dataConn;
+            setupP2PConnection();
+          });
+          peer.on('error', (err) => {
+            console.error('PeerJS error:', err);
+          });
+        }
+      } else {
+        joinP2PRoom(name, room);
+      }
+    }
+  }
+
   // Start on load
-  initGame();
+  checkURLParams();
+  if (!new URLSearchParams(window.location.search).get('role')) {
+    initGame();
+  }
 
 })();

@@ -96,6 +96,141 @@
   100% { opacity: 0; transform: translate(-50%, -10px) scale(0.9); }
 }
 
+/* ===== Tournament Chess Clocks Bar ===== */
+.starchess-clocks-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(0, 240, 255, 0.15);
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+
+.clock-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
+}
+
+.clock-box.active-clock {
+  border-color: #00f0ff;
+  background: rgba(0, 240, 255, 0.08);
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+}
+
+.clock-dark.active-clock {
+  border-color: #ff3355;
+  background: rgba(255, 51, 85, 0.08);
+  box-shadow: 0 0 12px rgba(255, 51, 85, 0.3);
+}
+
+.clock-box.time-low {
+  border-color: #ff0033 !important;
+  background: rgba(255, 0, 50, 0.15) !important;
+  animation: clockPulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes clockPulse {
+  0% { box-shadow: 0 0 8px rgba(255, 0, 50, 0.3); }
+  100% { box-shadow: 0 0 20px rgba(255, 0, 50, 0.7); }
+}
+
+.clock-icon {
+  font-size: 0.9rem;
+}
+
+.clock-label {
+  font-size: 0.7rem;
+  color: #888;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.clock-time {
+  font-family: 'Courier New', monospace;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 2px;
+  min-width: 55px;
+  text-align: right;
+}
+
+.clock-separator {
+  font-size: 1rem;
+  color: #555;
+}
+
+/* ===== Lock-In Move Buzzer ===== */
+.starchess-buzzer-wrap {
+  text-align: center;
+  margin-top: 8px;
+}
+
+.starchess-buzzer-btn {
+  background: linear-gradient(135deg, #ff0055, #ff3388);
+  border: 2px solid #ff0055;
+  color: #fff;
+  padding: 12px 28px;
+  border-radius: 30px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 0 20px rgba(255, 0, 85, 0.4);
+  animation: buzzerGlow 1.5s ease-in-out infinite alternate;
+}
+
+.starchess-buzzer-btn:hover {
+  transform: scale(1.06) translateY(-2px);
+  box-shadow: 0 0 30px rgba(255, 0, 85, 0.7);
+  background: linear-gradient(135deg, #ff1a6e, #ff55aa);
+}
+
+.starchess-buzzer-btn:active {
+  transform: scale(0.97);
+  box-shadow: 0 0 40px rgba(255, 0, 85, 0.9);
+}
+
+.starchess-buzzer-btn.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  animation: none;
+  box-shadow: none;
+}
+
+@keyframes buzzerGlow {
+  0% { box-shadow: 0 0 15px rgba(255, 0, 85, 0.3); }
+  100% { box-shadow: 0 0 30px rgba(255, 0, 85, 0.6), 0 0 60px rgba(255, 0, 85, 0.2); }
+}
+
+.buzzer-hint {
+  font-size: 0.7rem;
+  color: #666;
+  margin-top: 6px;
+}
+
+.buzzer-hint kbd {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.65rem;
+  color: #aaa;
+}
+
 .starchess-btn-pill.active {
   background: linear-gradient(135deg, rgba(0, 240, 255, 0.3), rgba(0, 120, 255, 0.5));
   border-color: #00f0ff;

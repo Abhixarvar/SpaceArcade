@@ -158,6 +158,17 @@ window.SFX = (function () {
       tone(440, 'triangle', 0.1, 0.15);
       setTimeout(() => tone(880, 'sawtooth', 0.15, 0.15), 80);
     },
+    /** Tournament chess lock-in buzzer sound */
+    buzzerSound() {
+      noise(0.08, 0.2);
+      tone(220, 'sawtooth', 0.15, 0.2, 110);
+      setTimeout(() => tone(440, 'square', 0.1, 0.18, 220), 100);
+      setTimeout(() => noise(0.06, 0.15), 150);
+    },
+    /** Chess clock tick */
+    clockTick() {
+      tone(1200, 'sine', 0.02, 0.04);
+    },
     /** Toggle mute state */
     toggleMute() {
       const isMuted = this.getVolume() === 0;
