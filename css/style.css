@@ -3652,4 +3652,71 @@ body.eco-mode .card-play-btn {
   }
 }
 
+/* ===== Sticky Banner ===== */
+.sticky-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(11, 6, 32, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 2px solid rgba(0, 240, 255, 0.3);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 10px 20px;
+  z-index: 99998;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 240, 255, 0.1);
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.sticky-banner.hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.banner-left {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+  min-height: 80px; /* Space for UFO */
+}
+
+.banner-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.banner-center .arcade-logo {
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
+  margin: 0;
+  padding-top: 10px;
+  cursor: pointer;
+}
+
+.banner-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.banner-modes {
+  display: flex;
+  gap: 10px;
+}
+
+.banner-search {
+  width: 100%;
+  max-width: 400px;
+  margin: 0;
+}
 

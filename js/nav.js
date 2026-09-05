@@ -12,15 +12,21 @@
     style.id = 'arcade-nav-style';
     style.textContent = `
       #arcade-nav-container {
-        position: fixed !important;
-        top: 16px !important;
-        left: 16px !important;
+        position: fixed;
+        top: 16px;
+        left: 16px;
         z-index: 999999 !important;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
         pointer-events: auto !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: flex-start !important;
+      }
+      #ufo-container #arcade-nav-container {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        z-index: 999999 !important;
       }
 
       /* UFO Saucer Trigger Button */
@@ -321,7 +327,7 @@
     container.id = 'arcade-nav-container';
     container.className = 'arcade-nav-container';
 
-    // Apply bulletproof inline styles to container
+    // Apply inline styles to container
     Object.assign(container.style, {
       position: 'fixed',
       top: '16px',
@@ -332,6 +338,14 @@
       alignItems: 'flex-start',
       pointerEvents: 'auto'
     });
+    const ufoContainer = document.getElementById('ufo-container');
+    if (ufoContainer) {
+      Object.assign(container.style, {
+        position: 'relative',
+        top: 'auto',
+        left: 'auto'
+      });
+    }
 
     // Create UFO Saucer Trigger
     const ufoTrigger = document.createElement('div');
@@ -382,7 +396,12 @@
 
     container.appendChild(ufoTrigger);
     container.appendChild(dropdown);
-    document.body.appendChild(container);
+    
+    if (ufoContainer) {
+      ufoContainer.appendChild(container);
+    } else {
+      document.body.appendChild(container);
+    }
 
     // Toggle menu state
     function toggleMenu(e) {
@@ -683,8 +702,34 @@
     });
   }
 
+  function initStickyBanner() {
+    const banner = document.getElementById('sticky-banner');
+    if (!banner) return;
+    
+    let inactivityTimer;
+    
+    function resetTimer() {
+      banner.classList.remove('hidden');
+      clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(() => {
+        if (window.scrollY > 50) {
+          banner.classList.add('hidden');
+        }
+      }, 3000);
+    }
+    
+    window.addEventListener('scroll', resetTimer, { passive: true });
+    window.addEventListener('mousemove', resetTimer, { passive: true });
+    window.addEventListener('keydown', resetTimer, { passive: true });
+    banner.addEventListener('mouseenter', () => { clearTimeout(inactivityTimer); banner.classList.remove('hidden'); });
+    banner.addEventListener('mouseleave', resetTimer);
+    
+    resetTimer();
+  }
+
   function init() {
     initArcadeNav();
+    initStickyBanner();
     initTagFilter();
     initGameInfoModals();
     initEcoModeToggle();

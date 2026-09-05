@@ -13,21 +13,41 @@
   <!-- Starfield Background -->
   <div id="starfield"></div>
 
-  <!-- Top Right Corner Navigation Modes -->
-  <nav class="top-right-modes" aria-label="Game Modes">
-    <a href="console.html" class="mode-badge-btn mode-badge-btn--console" data-tip="📱 Smartphone Gamepad Controller Mode for PC!">
-      <span class="mode-icon">📱</span>
-      <span class="mode-label">Console Mode</span>
-    </a>
-    <a href="party.html" class="mode-badge-btn mode-badge-btn--party" data-tip="🎉 Play real-time multiplayer with friends online!">
-      <span class="mode-icon">🎉</span>
-      <span class="mode-label">Party Mode</span>
-    </a>
-    <a href="offline.html" class="mode-badge-btn mode-badge-btn--local" data-tip="👫 2-Player local keyboard games!">
-      <span class="mode-icon">👫</span>
-      <span class="mode-label">Local Play</span>
-    </a>
-  </nav>
+  <!-- Sticky Banner -->
+  <div id="sticky-banner" class="sticky-banner">
+    <div id="ufo-container" class="banner-left"></div>
+    
+    <div class="banner-center">
+      <h1 class="arcade-logo small logo-link" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <span class="hover-letter">S</span><span class="hover-letter">P</span><span class="hover-letter">A</span><span class="hover-letter">C</span><span class="hover-letter">E</span>
+        &nbsp;
+        <span class="hover-letter">A</span><span class="hover-letter">R</span><span class="hover-letter">C</span><span class="hover-letter">A</span><span class="hover-letter">D</span><span class="hover-letter">E</span>
+      </h1>
+    </div>
+    
+    <div class="banner-right">
+      <nav class="banner-modes" aria-label="Game Modes">
+        <a href="console.html" class="mode-badge-btn mode-badge-btn--console" data-tip="📱 Smartphone Gamepad Controller Mode for PC!">
+          <span class="mode-icon">📱</span>
+          <span class="mode-label">Console</span>
+        </a>
+        <a href="party.html" class="mode-badge-btn mode-badge-btn--party" data-tip="🎉 Play real-time multiplayer with friends online!">
+          <span class="mode-icon">🎉</span>
+          <span class="mode-label">Party</span>
+        </a>
+        <a href="offline.html" class="mode-badge-btn mode-badge-btn--local" data-tip="👫 2-Player local keyboard games!">
+          <span class="mode-icon">👫</span>
+          <span class="mode-label">Local</span>
+        </a>
+      </nav>
+      <!-- Poki Style Real-Time Search Bar -->
+      <div class="poki-search-container banner-search">
+        <span class="poki-search-icon">🔍</span>
+        <input type="text" id="game-search-input" class="poki-search-input" placeholder="Search 11+ space games..." autocomplete="off">
+        <button type="button" id="search-clear-btn" class="poki-search-clear" style="display: none;" title="Clear Search">✕</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Page Content -->
   <div class="page-content home-page">
@@ -62,12 +82,7 @@
         <span class="tagline-word">100% Free 🎉</span>
       </p>
 
-      <!-- Poki Style Real-Time Search Bar -->
-      <div class="poki-search-container">
-        <span class="poki-search-icon">🔍</span>
-        <input type="text" id="game-search-input" class="poki-search-input" placeholder="Search 11+ space games (e.g. chess, snake, pacman, 2-player)..." autocomplete="off">
-        <button type="button" id="search-clear-btn" class="poki-search-clear" style="display: none;" title="Clear Search">✕</button>
-      </div>
+
       
       <!-- Quick Performance & Sound Bar -->
       <div class="quick-toggles-bar">
