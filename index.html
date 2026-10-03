@@ -15,36 +15,55 @@
 
   <!-- Sticky Banner -->
   <div id="sticky-banner" class="sticky-banner">
-    <div id="ufo-container" class="banner-left"></div>
-    
-    <div class="banner-center">
-      <h1 class="arcade-logo small logo-link" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
-        <span class="hover-letter">S</span><span class="hover-letter">P</span><span class="hover-letter">A</span><span class="hover-letter">C</span><span class="hover-letter">E</span>
-        &nbsp;
-        <span class="hover-letter">A</span><span class="hover-letter">R</span><span class="hover-letter">C</span><span class="hover-letter">A</span><span class="hover-letter">D</span><span class="hover-letter">E</span>
-      </h1>
+    <div class="banner-top-row">
+      <div id="ufo-container" class="banner-left"></div>
+      
+      <div class="banner-center">
+        <h1 class="arcade-logo small logo-link" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+          <span class="hover-letter">S</span><span class="hover-letter">P</span><span class="hover-letter">A</span><span class="hover-letter">C</span><span class="hover-letter">E</span>
+          &nbsp;
+          <span class="hover-letter">A</span><span class="hover-letter">R</span><span class="hover-letter">C</span><span class="hover-letter">A</span><span class="hover-letter">D</span><span class="hover-letter">E</span>
+        </h1>
+      </div>
+      
+      <div class="banner-right">
+        <nav class="banner-modes" aria-label="Game Modes">
+          <a href="console.html" class="mode-badge-btn mode-badge-btn--console" data-tip="📱 Smartphone Gamepad Controller Mode for PC!">
+            <span class="mode-icon">📱</span>
+            <span class="mode-label">Console</span>
+          </a>
+          <a href="party.html" class="mode-badge-btn mode-badge-btn--party" data-tip="🎉 Play real-time multiplayer with friends online!">
+            <span class="mode-icon">🎉</span>
+            <span class="mode-label">Party</span>
+          </a>
+          <a href="offline.html" class="mode-badge-btn mode-badge-btn--local" data-tip="👫 2-Player local keyboard games!">
+            <span class="mode-icon">👫</span>
+            <span class="mode-label">Local</span>
+          </a>
+        </nav>
+        <!-- Poki Style Real-Time Search Bar -->
+        <div class="poki-search-container banner-search">
+          <span class="poki-search-icon">🔍</span>
+          <input type="text" id="game-search-input" class="poki-search-input" placeholder="Search 11+ space games..." autocomplete="off">
+          <button type="button" id="search-clear-btn" class="poki-search-clear" style="display: none;" title="Clear Search">✕</button>
+        </div>
+      </div>
     </div>
-    
-    <div class="banner-right">
-      <nav class="banner-modes" aria-label="Game Modes">
-        <a href="console.html" class="mode-badge-btn mode-badge-btn--console" data-tip="📱 Smartphone Gamepad Controller Mode for PC!">
-          <span class="mode-icon">📱</span>
-          <span class="mode-label">Console</span>
-        </a>
-        <a href="party.html" class="mode-badge-btn mode-badge-btn--party" data-tip="🎉 Play real-time multiplayer with friends online!">
-          <span class="mode-icon">🎉</span>
-          <span class="mode-label">Party</span>
-        </a>
-        <a href="offline.html" class="mode-badge-btn mode-badge-btn--local" data-tip="👫 2-Player local keyboard games!">
-          <span class="mode-icon">👫</span>
-          <span class="mode-label">Local</span>
-        </a>
-      </nav>
-      <!-- Poki Style Real-Time Search Bar -->
-      <div class="poki-search-container banner-search">
-        <span class="poki-search-icon">🔍</span>
-        <input type="text" id="game-search-input" class="poki-search-input" placeholder="Search 11+ space games..." autocomplete="off">
-        <button type="button" id="search-clear-btn" class="poki-search-clear" style="display: none;" title="Clear Search">✕</button>
+    <div class="banner-bottom-row">
+      <div class="quick-toggles-bar">
+        <button class="toggle-pill-btn" id="eco-toggle-btn" type="button" title="Toggle Low-Power Eco Mode">⚡ Turbo Mode</button>
+        <button class="toggle-pill-btn" id="sound-toggle-btn" type="button" title="Toggle Sound FX">🔊 Sound: ON</button>
+      </div>
+      <div class="category-filter-container">
+        <div class="filter-chips">
+          <button class="filter-chip active" data-filter="all">🚀 All Games</button>
+          <button class="filter-chip" data-filter="featured">🔥 Featured</button>
+          <button class="filter-chip" data-filter="retro">👾 Retro</button>
+          <button class="filter-chip" data-filter="action">⚔️ Action</button>
+          <button class="filter-chip" data-filter="puzzle">🧩 Puzzle</button>
+          <button class="filter-chip" data-filter="casual">🎯 Casual</button>
+          <button class="filter-chip" data-filter="endless">♾️ Endless</button>
+        </div>
       </div>
     </div>
   </div>
@@ -83,26 +102,7 @@
       </p>
 
 
-      
-      <!-- Quick Performance & Sound Bar -->
-      <div class="quick-toggles-bar">
-        <button class="toggle-pill-btn" id="eco-toggle-btn" type="button" title="Toggle Low-Power Eco Mode">⚡ Turbo Mode</button>
-        <button class="toggle-pill-btn" id="sound-toggle-btn" type="button" title="Toggle Sound FX">🔊 Sound: ON</button>
-      </div>
     </header>
-
-    <!-- Category Filter Bar -->
-    <div class="category-filter-container">
-      <div class="filter-chips">
-        <button class="filter-chip active" data-filter="all">🚀 All Games</button>
-        <button class="filter-chip" data-filter="featured">🔥 Featured</button>
-        <button class="filter-chip" data-filter="retro">👾 Retro</button>
-        <button class="filter-chip" data-filter="action">⚔️ Action</button>
-        <button class="filter-chip" data-filter="puzzle">🧩 Puzzle</button>
-        <button class="filter-chip" data-filter="casual">🎯 Casual</button>
-        <button class="filter-chip" data-filter="endless">♾️ Endless</button>
-      </div>
-    </div>
 
     <!-- Poki-Style Dynamic Hero Mosaic Grid -->
     <section class="games-grid-poki" id="games-grid">
