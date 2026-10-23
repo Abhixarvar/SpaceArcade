@@ -734,13 +734,17 @@
     <div class="viewport-bar">
       <div class="viewport-game-title" id="viewport-title">Space Mission</div>
       <div style="font-size: 0.8rem; color: #a0aec0;">📱 Phone Gamepad Connected</div>
-      <button class="close-viewport-btn" id="exit-game-btn">❌ Exit Game (B / Menu)</button>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <button class="close-viewport-btn" id="console-fs-btn" style="border-color: rgba(0, 240, 255, 0.4); color: var(--cyan);" title="Toggle Fullscreen (F)">⛶ Fullscreen</button>
+        <button class="close-viewport-btn" id="exit-game-btn">❌ Exit Game (B / Menu)</button>
+      </div>
     </div>
-    <iframe class="console-iframe" id="game-iframe"></iframe>
+    <iframe class="console-iframe" id="game-iframe" allow="fullscreen; gamepad; autoplay" allowfullscreen></iframe>
   </div>
 
   <!-- Scripts -->
   <script type="module" src="js/stars.js"></script>
+  <script type="module" src="js/fullscreen.js"></script>
   <script type="module" src="js/transitions.js"></script>
   <script type="module" src="js/console-engine.js"></script>
 </body>

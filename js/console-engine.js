@@ -348,6 +348,21 @@
     exitGameBtn.addEventListener('click', closeGameViewport);
   }
 
+  const consoleFsBtn = document.getElementById('console-fs-btn');
+  if (consoleFsBtn) {
+    consoleFsBtn.addEventListener('click', () => {
+      if (window.ArcadeFullscreen) {
+        window.ArcadeFullscreen.toggle(viewportOverlay);
+      } else {
+        if (!document.fullscreenElement) {
+          viewportOverlay.requestFullscreen().catch(() => document.documentElement.requestFullscreen());
+        } else {
+          document.exitFullscreen();
+        }
+      }
+    });
+  }
+
   // Allow keyboard arrows testing on desktop
   document.addEventListener('keydown', (e) => {
     if (!isConsoleUnlocked && (e.key === 'c' || e.key === 'C')) {

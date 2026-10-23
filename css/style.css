@@ -3986,3 +3986,261 @@ body.eco-mode .card-play-btn {
   max-width: 400px;
   margin: 0;
 }
+
+/* ========================================================= */
+/* --- ARCADE FLOATING FULLSCREEN BUTTON ---                 */
+/* ========================================================= */
+#arcade-fullscreen-btn {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 999999 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(11, 6, 32, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1.5px solid rgba(0, 240, 255, 0.5);
+  border-radius: 20px;
+  padding: 6px 14px;
+  color: #00f0ff;
+  font-family: var(--font-funky, 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6), 0 0 12px rgba(0, 240, 255, 0.25);
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  user-select: none;
+  outline: none;
+  pointer-events: auto;
+}
+
+#arcade-fullscreen-btn:hover {
+  border-color: #00f0ff;
+  background: rgba(0, 240, 255, 0.18);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.8), 0 0 22px rgba(0, 240, 255, 0.6);
+  transform: translateY(-2px) scale(1.05);
+  color: #ffffff;
+}
+
+#arcade-fullscreen-btn:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+#arcade-fullscreen-btn.active-fs {
+  border-color: rgba(255, 0, 127, 0.75);
+  color: #ff007f;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6), 0 0 16px rgba(255, 0, 127, 0.45);
+}
+
+#arcade-fullscreen-btn.active-fs:hover {
+  border-color: #ff007f;
+  background: rgba(255, 0, 127, 0.18);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.8), 0 0 25px rgba(255, 0, 127, 0.7);
+  color: #ffffff;
+}
+
+.fs-icon-enter,
+.fs-icon-exit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+#arcade-fullscreen-btn:hover .fs-icon-enter,
+#arcade-fullscreen-btn:hover .fs-icon-exit {
+  transform: scale(1.15);
+}
+
+.fs-btn-badge {
+  background: rgba(0, 240, 255, 0.15);
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  border-radius: 5px;
+  padding: 1px 6px;
+  font-size: 0.62rem;
+  font-family: monospace, sans-serif;
+  color: #00f0ff;
+  transition: all 0.2s ease;
+}
+
+#arcade-fullscreen-btn.active-fs .fs-btn-badge {
+  background: rgba(255, 0, 127, 0.15);
+  border-color: rgba(255, 0, 127, 0.5);
+  color: #ff007f;
+}
+
+#arcade-fullscreen-btn:hover .fs-btn-badge {
+  border-color: #ffffff;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Compact mode on smaller mobile screens */
+@media (max-width: 640px) {
+  #arcade-fullscreen-btn {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 50%;
+  }
+  #arcade-fullscreen-btn .fs-btn-label,
+  #arcade-fullscreen-btn .fs-btn-badge {
+    display: none !important;
+  }
+}
+
+/* ========================================================= */
+/* --- FULLSCREEN GAME VIEWPORT SCALING & OPTIMIZATION ---   */
+/* ========================================================= */
+:fullscreen,
+:-webkit-full-screen,
+body.arcade-fullscreen,
+html.arcade-fullscreen {
+  overflow: hidden !important;
+  background: #03010b !important;
+}
+
+:fullscreen .game-page,
+:-webkit-full-screen .game-page,
+body.arcade-fullscreen .game-page {
+  height: 100vh !important;
+  max-height: 100vh !important;
+  width: 100vw !important;
+  padding: 6px 16px !important;
+  gap: 4px !important;
+  justify-content: center !important;
+  align-items: center !important;
+  overflow: hidden !important;
+}
+
+/* Compact header in fullscreen to give maximum screen real-estate to game */
+:fullscreen .game-arcade-header,
+:-webkit-full-screen .game-arcade-header,
+body.arcade-fullscreen .game-arcade-header {
+  margin-bottom: 2px !important;
+}
+
+:fullscreen .game-arcade-header .arcade-logo.small,
+:-webkit-full-screen .game-arcade-header .arcade-logo.small,
+body.arcade-fullscreen .game-arcade-header .arcade-logo.small {
+  font-size: clamp(1.2rem, 2.5vw, 1.8rem) !important;
+  letter-spacing: 2px !important;
+}
+
+:fullscreen .game-arcade-header .arcade-subtitle,
+:-webkit-full-screen .game-arcade-header .arcade-subtitle,
+body.arcade-fullscreen .game-arcade-header .arcade-subtitle {
+  font-size: 0.72rem !important;
+}
+
+/* Canvas Expansion across all retro games */
+:fullscreen .game-canvas-wrap,
+:-webkit-full-screen .game-canvas-wrap,
+body.arcade-fullscreen .game-canvas-wrap {
+  max-height: calc(100vh - 110px) !important;
+  max-width: calc(100vw - 32px) !important;
+  border-color: rgba(0, 240, 255, 0.45) !important;
+  box-shadow: 0 0 35px rgba(0, 240, 255, 0.35), inset 0 0 15px rgba(0, 240, 255, 0.1) !important;
+}
+
+:fullscreen .game-canvas-wrap canvas,
+:-webkit-full-screen .game-canvas-wrap canvas,
+body.arcade-fullscreen .game-canvas-wrap canvas {
+  max-height: calc(100vh - 110px) !important;
+  max-width: calc(100vw - 32px) !important;
+  width: auto !important;
+  height: auto !important;
+  object-fit: contain !important;
+}
+
+/* Mole Hammer arena scaling in fullscreen */
+:fullscreen .mole-arena-wrap,
+:-webkit-full-screen .mole-arena-wrap,
+body.arcade-fullscreen .mole-arena-wrap {
+  max-height: calc(100vh - 120px) !important;
+  max-width: calc(100vw - 32px) !important;
+}
+
+:fullscreen .mole-arena-wrap canvas,
+:-webkit-full-screen .mole-arena-wrap canvas,
+body.arcade-fullscreen .mole-arena-wrap canvas {
+  max-height: calc(100vh - 120px) !important;
+  max-width: calc(100vw - 32px) !important;
+  width: auto !important;
+  height: auto !important;
+  object-fit: contain !important;
+}
+
+/* Block Blast games with piece tray */
+:fullscreen .page-content:has(#piece-tray) .game-canvas-wrap,
+body.arcade-fullscreen .page-content:has(#piece-tray) .game-canvas-wrap {
+  max-height: calc(100vh - 195px) !important;
+}
+
+:fullscreen .page-content:has(#piece-tray) .game-canvas-wrap canvas,
+body.arcade-fullscreen .page-content:has(#piece-tray) .game-canvas-wrap canvas {
+  max-height: calc(100vh - 195px) !important;
+}
+
+/* Tetris side panels & layout in fullscreen */
+:fullscreen .tetris-layout,
+:-webkit-full-screen .tetris-layout,
+body.arcade-fullscreen .tetris-layout {
+  max-height: calc(100vh - 110px) !important;
+  align-items: center !important;
+}
+
+/* Star Combat Chess layout in fullscreen */
+:fullscreen .starchess-container,
+:-webkit-full-screen .starchess-container,
+body.arcade-fullscreen .starchess-container {
+  max-height: calc(100vh - 100px) !important;
+  padding: 4px !important;
+}
+
+:fullscreen .starchess-canvas-wrap,
+:-webkit-full-screen .starchess-canvas-wrap,
+body.arcade-fullscreen .starchess-canvas-wrap {
+  padding: 6px !important;
+}
+
+:fullscreen #starchess-canvas,
+:-webkit-full-screen #starchess-canvas,
+body.arcade-fullscreen #starchess-canvas {
+  max-height: calc(100vh - 150px) !important;
+  max-width: calc(100vw - 320px) !important;
+  width: auto !important;
+  height: auto !important;
+}
+
+:fullscreen .starchess-side-panel,
+:-webkit-full-screen .starchess-side-panel,
+body.arcade-fullscreen .starchess-side-panel {
+  max-height: calc(100vh - 150px) !important;
+  overflow-y: auto !important;
+}
+
+/* Galactic Wordle in fullscreen */
+:fullscreen .wordle-grid,
+:-webkit-full-screen .wordle-grid,
+body.arcade-fullscreen .wordle-grid {
+  max-width: 340px !important;
+}
+
+:fullscreen .wordle-tile,
+:-webkit-full-screen .wordle-tile,
+body.arcade-fullscreen .wordle-tile {
+  font-size: 1.5rem !important;
+}
+
+/* Overlays stay properly centered above fullscreen game */
+:fullscreen .game-overlay,
+:-webkit-full-screen .game-overlay,
+body.arcade-fullscreen .game-overlay {
+  z-index: 99999 !important;
+}

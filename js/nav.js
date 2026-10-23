@@ -3,6 +3,8 @@
  * Injects a floating retro UFO spaceship button & glassmorphism dropdown menu.
  */
 
+import './fullscreen.js';
+
 (function () {
   'use strict';
 
@@ -307,6 +309,12 @@
         desc: 'Pass & play games'
       },
       {
+        action: 'fullscreen',
+        icon: '⛶',
+        title: 'Fullscreen',
+        desc: 'Toggle full screen [F]'
+      },
+      {
         href: 'https://github.com/Abhixarvar/SpaceArcade/issues/new',
         external: true,
         icon: '🐛',
@@ -370,6 +378,30 @@
     dropdown.className = 'arcade-nav-dropdown';
 
     links.forEach(link => {
+      if (link.action === 'fullscreen') {
+        const item = document.createElement('div');
+        item.className = 'arcade-nav-item arcade-nav-fs-item';
+        item.style.cursor = 'pointer';
+        item.setAttribute('role', 'button');
+        item.setAttribute('tabindex', '0');
+        item.innerHTML = `
+          <span class="arcade-nav-item-icon">${link.icon}</span>
+          <div class="arcade-nav-item-content">
+            <span class="arcade-nav-item-title" id="ufo-fs-title">${link.title}</span>
+            <span class="arcade-nav-item-desc" id="ufo-fs-desc">${link.desc}</span>
+          </div>
+        `;
+        item.addEventListener('click', (e) => {
+          e.stopPropagation();
+          closeMenu();
+          if (window.ArcadeFullscreen) {
+            window.ArcadeFullscreen.toggle();
+          }
+        });
+        dropdown.appendChild(item);
+        return;
+      }
+
       const item = document.createElement('a');
       item.href = link.href;
       item.className = 'arcade-nav-item';
