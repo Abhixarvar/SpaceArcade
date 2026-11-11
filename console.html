@@ -41,8 +41,7 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: radial-gradient(circle at 60% 30%, rgba(0, 240, 255, 0.15) 0%, rgba(5, 1, 13, 0.95) 70%),
-                  radial-gradient(circle at 20% 80%, rgba(255, 0, 127, 0.12) 0%, rgba(5, 1, 13, 0.98) 70%);
+      background: #090d13;
       z-index: 1;
       transition: background 0.6s ease-in-out;
     }
@@ -54,16 +53,7 @@
 
     /* CRT Scanline Effect */
     .crt-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%);
-      background-size: 100% 4px;
-      z-index: 9999;
-      pointer-events: none;
-      opacity: 0.35;
+      display: none;
     }
 
     /* ========================================================= */
@@ -288,13 +278,13 @@
       width: 44px;
       height: 44px;
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--ps-pink), var(--ps-cyan));
+      background: #1e293b;
+      color: #38bdf8;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1.4rem;
-      border: 2px solid #fff;
-      box-shadow: 0 0 15px rgba(255, 0, 127, 0.5);
+      border: 1px solid #334155;
     }
 
     .user-info {
@@ -390,10 +380,8 @@
       margin: 0;
       line-height: 1.1;
       letter-spacing: 1px;
-      background: linear-gradient(180deg, #ffffff 0%, #a5b4fc 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-shadow: 0 5px 25px rgba(0, 0, 0, 0.8);
+      color: #f0f6fc;
+      text-shadow: none;
     }
 
     .ps-hero-desc {
@@ -665,7 +653,7 @@
       <div class="ps-carousel" id="ps-carousel">
         
         <!-- Space Worm -->
-        <div class="ps-tile focused" data-game="snake" data-url="games/snake.html" data-title="Space Worm" data-cat="SINGLEPLAYER MISSION" data-desc="Guide your cosmic snake, dodge asteroids & collect glowing stars!" data-bg="radial-gradient(circle at 60% 30%, rgba(0, 255, 136, 0.25) 0%, rgba(5, 1, 13, 0.95) 70%)">
+        <div class="ps-tile focused" data-game="snake" data-url="games/snake.html" data-title="Space Worm" data-cat="SINGLEPLAYER MISSION" data-desc="Guide your cosmic snake, dodge asteroids & collect glowing stars!" data-bg="#071b12">
           <div class="ps-tile-icon">🐍</div>
           <div class="ps-tile-info">
             <div class="ps-tile-name">Space Worm</div>
@@ -674,7 +662,7 @@
         </div>
 
         <!-- Pac-Man -->
-        <div class="ps-tile" data-game="pacman" data-url="games/pacman.html" data-title="Pac-Man" data-cat="ARCADE ESCAPE" data-desc="Eat energy dots & dodge ghost invaders in a glowing cosmic maze!" data-bg="radial-gradient(circle at 60% 30%, rgba(255, 234, 0, 0.25) 0%, rgba(5, 1, 13, 0.95) 70%)">
+        <div class="ps-tile" data-game="pacman" data-url="games/pacman.html" data-title="Pac-Man" data-cat="ARCADE ESCAPE" data-desc="Eat energy dots & dodge ghost invaders in a glowing cosmic maze!" data-bg="#1a1805">
           <div class="ps-tile-icon">👻</div>
           <div class="ps-tile-info">
             <div class="ps-tile-name">Pac-Man</div>
@@ -683,7 +671,7 @@
         </div>
 
         <!-- Space Troopers -->
-        <div class="ps-tile" data-game="troopers" data-url="games/troopers.html" data-title="Space Troopers" data-cat="ACTION SHOOTER" data-desc="Blast space alien invaders from your starship defense laser!" data-bg="radial-gradient(circle at 60% 30%, rgba(255, 0, 127, 0.25) 0%, rgba(5, 1, 13, 0.95) 70%)">
+        <div class="ps-tile" data-game="troopers" data-url="games/troopers.html" data-title="Space Troopers" data-cat="ACTION SHOOTER" data-desc="Blast space alien invaders from your starship defense laser!" data-bg="#1a0a10">
           <div class="ps-tile-icon">👾</div>
           <div class="ps-tile-info">
             <div class="ps-tile-name">Space Troopers</div>
@@ -692,7 +680,7 @@
         </div>
 
         <!-- Cosmic Blocks (Tetris) -->
-        <div class="ps-tile" data-game="tetris" data-url="games/tetris.html" data-title="Cosmic Blocks" data-cat="PUZZLE ARCHITECTURE" data-desc="Rotate & stack geometric block lines in high-speed deep space!" data-bg="radial-gradient(circle at 60% 30%, rgba(180, 74, 255, 0.25) 0%, rgba(5, 1, 13, 0.95) 70%)">
+        <div class="ps-tile" data-game="tetris" data-url="games/tetris.html" data-title="Cosmic Blocks" data-cat="PUZZLE ARCHITECTURE" data-desc="Rotate & stack geometric block lines in high-speed deep space!" data-bg="#120c24">
           <div class="ps-tile-icon">🧱</div>
           <div class="ps-tile-info">
             <div class="ps-tile-name">Cosmic Blocks</div>
@@ -701,7 +689,7 @@
         </div>
 
         <!-- Blackhole Ninja -->
-        <div class="ps-tile" data-game="blackholeninja" data-url="games/blackholeninja.html" data-title="Blackhole Ninja" data-cat="PARKOUR PLATFORMER" data-desc="Parkour through a collapsing space station to escape a black hole!" data-bg="radial-gradient(circle at 60% 30%, rgba(139, 92, 246, 0.3) 0%, rgba(5, 1, 13, 0.95) 70%)">
+        <div class="ps-tile" data-game="blackholeninja" data-url="games/blackholeninja.html" data-title="Blackhole Ninja" data-cat="PARKOUR PLATFORMER" data-desc="Parkour through a collapsing space station to escape a black hole!" data-bg="#120d22">
           <div class="ps-tile-icon">🥷</div>
           <div class="ps-tile-info">
             <div class="ps-tile-name">Blackhole Ninja</div>

@@ -18,7 +18,7 @@ import './fullscreen.js';
         top: 16px;
         left: 16px;
         z-index: 999999 !important;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        font-family: 'JetBrains Mono', 'Outfit', monospace, sans-serif !important;
         pointer-events: auto !important;
         display: flex !important;
         flex-direction: column !important;
@@ -31,153 +31,63 @@ import './fullscreen.js';
         z-index: 999999 !important;
       }
 
-      /* UFO Saucer Trigger Button */
+      /* Technical System Menu Button */
       .ufo-trigger {
         position: relative !important;
-        width: 84px !important;
-        height: 68px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        padding: 6px 12px !important;
+        background: #141a23 !important;
+        border: 1px solid #263242 !important;
+        border-radius: 4px !important;
+        color: #94a3b8 !important;
+        font-family: inherit !important;
+        font-size: 0.75rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.8px !important;
+        text-transform: uppercase !important;
         cursor: pointer !important;
         user-select: none !important;
         outline: none !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        justify-content: flex-start !important;
-        animation: ufoHoverFloat 3.5s ease-in-out infinite !important;
-        transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+        transition: all 0.15s ease !important;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4) !important;
       }
 
-      @keyframes ufoHoverFloat {
-        0%, 100% { transform: translateY(0) rotate(-1.5deg); }
-        50% { transform: translateY(-7px) rotate(1.5deg); }
-      }
-
-      .ufo-trigger:hover {
-        transform: scale(1.08) translateY(-2px) !important;
-      }
-
-      /* Translucent Glass Dome */
-      .ufo-dome {
-        width: 38px !important;
-        height: 22px !important;
-        background: rgba(0, 240, 255, 0.45) !important;
-        border-radius: 38px 38px 0 0 !important;
-        border: 1.5px solid rgba(0, 240, 255, 0.9) !important;
-        border-bottom: none !important;
-        box-shadow: inset 0 4px 8px rgba(255, 255, 255, 0.6), 0 0 14px rgba(0, 240, 255, 0.7) !important;
-        position: relative !important;
-        z-index: 2 !important;
-      }
-
-      /* Metallic Saucer Body */
-      .ufo-body {
-        width: 80px !important;
-        height: 20px !important;
-        background: linear-gradient(180deg, #e2e8f0 0%, #64748b 100%) !important;
-        border-radius: 40px !important;
-        border: 1px solid rgba(255, 255, 255, 0.7) !important;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.8), 0 0 12px rgba(0, 240, 255, 0.3) !important;
-        display: flex !important;
-        justify-content: space-evenly !important;
-        align-items: center !important;
-        position: relative !important;
-        z-index: 3 !important;
-        margin-top: -2px !important;
-      }
-
-      /* LED Lights */
-      .ufo-light {
-        width: 7px !important;
-        height: 7px !important;
-        border-radius: 50% !important;
-        background: #ff0055 !important;
-        box-shadow: 0 0 8px #ff0055 !important;
-        animation: ufoLightPulse 1.2s infinite alternate !important;
-      }
-      .ufo-light:nth-child(2) { background: #00f0ff !important; box-shadow: 0 0 8px #00f0ff !important; animation-delay: 0.3s !important; }
-      .ufo-light:nth-child(3) { background: #ffea00 !important; box-shadow: 0 0 8px #ffea00 !important; animation-delay: 0.6s !important; }
-      .ufo-light:nth-child(4) { background: #00ff88 !important; box-shadow: 0 0 8px #00ff88 !important; animation-delay: 0.9s !important; }
-
-      @keyframes ufoLightPulse {
-        from { opacity: 0.4; transform: scale(0.8); }
-        to { opacity: 1; transform: scale(1.1); }
-      }
-
-      /* Light Beam Rays emanating under UFO */
-      .ufo-beam {
-        position: absolute !important;
-        top: 36px !important;
-        width: 56px !important;
-        height: 22px !important;
-        background: linear-gradient(180deg, rgba(0, 240, 255, 0.5) 0%, rgba(0, 240, 255, 0) 100%) !important;
-        clip-path: polygon(25% 0%, 75% 0%, 100% 100%, 0% 100%) !important;
-        opacity: 0.35 !important;
-        transition: all 0.3s ease !important;
-        z-index: 1 !important;
-        pointer-events: none !important;
-      }
-
-      .ufo-trigger:hover .ufo-beam,
-      #arcade-nav-container.open .ufo-beam {
-        opacity: 0.9 !important;
-        height: 32px !important;
-        background: linear-gradient(180deg, rgba(0, 240, 255, 0.85) 0%, rgba(255, 0, 127, 0.3) 100%) !important;
-      }
-
-      /* Menu Badge Pill */
-      .ufo-pill-badge {
-        font-size: 0.62rem !important;
-        font-weight: 800 !important;
-        letter-spacing: 1.2px !important;
-        color: #00f0ff !important;
-        background: rgba(10, 5, 28, 0.9) !important;
-        border: 1px solid rgba(0, 240, 255, 0.5) !important;
-        border-radius: 10px !important;
-        padding: 2px 8px !important;
-        text-transform: uppercase !important;
-        margin-top: 14px !important;
-        z-index: 4 !important;
-        box-shadow: 0 0 10px rgba(0, 240, 255, 0.3) !important;
-        transition: all 0.2s ease !important;
-      }
-
-      .ufo-trigger:hover .ufo-pill-badge,
-      #arcade-nav-container.open .ufo-pill-badge {
-        color: #ffffff !important;
-        border-color: #ff007f !important;
-        background: rgba(255, 0, 127, 0.85) !important;
-        box-shadow: 0 0 14px rgba(255, 0, 127, 0.6) !important;
+      .ufo-trigger:hover,
+      #arcade-nav-container.open .ufo-trigger {
+        background: #1c2430 !important;
+        border-color: #38bdf8 !important;
+        color: #38bdf8 !important;
       }
 
       /* Dropdown Menu */
       .arcade-nav-dropdown {
         position: absolute !important;
-        top: calc(100% + 4px) !important;
+        top: calc(100% + 6px) !important;
         left: 0 !important;
-        width: 240px !important;
-        background: rgba(11, 6, 32, 0.95) !important;
-        backdrop-filter: blur(16px) !important;
-        -webkit-backdrop-filter: blur(16px) !important;
-        border: 1px solid rgba(0, 240, 255, 0.35) !important;
-        border-radius: 16px !important;
-        padding: 8px !important;
+        width: 230px !important;
+        background: #0e131a !important;
+        border: 1px solid #263242 !important;
+        border-radius: 6px !important;
+        padding: 6px !important;
         display: flex !important;
         flex-direction: column !important;
-        gap: 4px !important;
-        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.7), 0 0 25px rgba(0, 240, 255, 0.2) !important;
+        gap: 2px !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7) !important;
         
         opacity: 0 !important;
         visibility: hidden !important;
-        transform: translateY(-12px) scale(0.95) !important;
+        transform: translateY(-6px) !important;
         transform-origin: top left !important;
-        transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), visibility 0.25s !important;
+        transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s !important;
         pointer-events: none !important;
       }
 
       #arcade-nav-container.open .arcade-nav-dropdown {
         opacity: 1 !important;
         visibility: visible !important;
-        transform: translateY(0) scale(1) !important;
+        transform: translateY(0) !important;
         pointer-events: auto !important;
       }
 
@@ -185,56 +95,57 @@ import './fullscreen.js';
       .arcade-nav-item {
         display: flex !important;
         align-items: center !important;
-        gap: 12px !important;
-        padding: 10px 12px !important;
-        border-radius: 12px !important;
-        color: rgba(255, 255, 255, 0.88) !important;
+        gap: 10px !important;
+        padding: 7px 10px !important;
+        border-radius: 4px !important;
+        color: #94a3b8 !important;
         text-decoration: none !important;
         background: transparent !important;
         border: 1px solid transparent !important;
-        transition: all 0.2s ease !important;
+        transition: all 0.15s ease !important;
       }
 
       .arcade-nav-item:hover {
-        background: rgba(0, 240, 255, 0.1) !important;
-        border-color: rgba(0, 240, 255, 0.35) !important;
-        color: #ffffff !important;
-        transform: translateX(4px) !important;
+        background: #16202c !important;
+        border-color: #26384c !important;
+        color: #f0f6fc !important;
+        transform: none !important;
       }
 
       .arcade-nav-item.active {
-        background: rgba(255, 0, 127, 0.15) !important;
-        border-color: rgba(255, 0, 127, 0.45) !important;
-        color: #ffffff !important;
+        background: #162436 !important;
+        border-color: #38bdf8 !important;
+        color: #38bdf8 !important;
       }
 
       .arcade-nav-item-icon {
-        font-size: 1.3rem !important;
-        width: 32px !important;
-        height: 32px !important;
+        width: 26px !important;
+        height: 26px !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        background: rgba(255, 255, 255, 0.06) !important;
-        border-radius: 8px !important;
+        background: #141a23 !important;
+        border: 1px solid #202b3a !important;
+        border-radius: 4px !important;
         flex-shrink: 0 !important;
-        transition: transform 0.2s ease !important;
+        color: inherit !important;
       }
 
       .arcade-nav-item:hover .arcade-nav-item-icon {
-        transform: scale(1.1) !important;
-        background: rgba(0, 240, 255, 0.18) !important;
+        border-color: #38bdf8 !important;
+        color: #38bdf8 !important;
+        background: #1c2635 !important;
       }
 
       .arcade-nav-item-content {
         display: flex !important;
         flex-direction: column !important;
-        gap: 2px !important;
+        gap: 1px !important;
         overflow: hidden !important;
       }
 
       .arcade-nav-item-title {
-        font-size: 0.82rem !important;
+        font-size: 0.78rem !important;
         font-weight: 700 !important;
         letter-spacing: 0.5px !important;
         text-transform: uppercase !important;
@@ -242,8 +153,8 @@ import './fullscreen.js';
       }
 
       .arcade-nav-item-desc {
-        font-size: 0.68rem !important;
-        color: rgba(255, 255, 255, 0.55) !important;
+        font-size: 0.65rem !important;
+        color: #64748b !important;
         line-height: 1.2 !important;
         white-space: nowrap !important;
         overflow: hidden !important;
@@ -251,7 +162,7 @@ import './fullscreen.js';
       }
 
       .arcade-nav-item:hover .arcade-nav-item-desc {
-        color: rgba(0, 240, 255, 0.9) !important;
+        color: #94a3b8 !important;
       }
     `;
     document.head.appendChild(style);
@@ -276,55 +187,55 @@ import './fullscreen.js';
       {
         href: `${prefix}index.html`,
         key: 'index.html',
-        icon: '🏠',
+        icon: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
         title: 'Home Hub',
         desc: 'Main arcade portal'
       },
       {
         href: `${prefix}singleplayer.html`,
         key: 'singleplayer.html',
-        icon: '🕹️',
+        icon: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"></circle><path d="M20 21a8 8 0 1 0-16 0"></path></svg>',
         title: 'Singleplayer',
-        desc: 'Solo retro games'
+        desc: 'Solo retro cores'
       },
       {
         href: `${prefix}party.html`,
         key: 'party.html',
-        icon: '🍻',
+        icon: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>',
         title: 'Party Lounge',
         desc: 'Real-time multiplayer'
       },
       {
         href: `${prefix}console.html`,
         key: 'console.html',
-        icon: '📱',
+        icon: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="6"></rect><line x1="6" y1="12" x2="10" y2="12"></line><line x1="8" y1="10" x2="8" y2="14"></line><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>',
         title: 'Console Mode',
         desc: 'Phone as Controller'
       },
       {
         href: `${prefix}offline.html`,
         key: 'offline.html',
-        icon: '👫',
+        icon: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="12" y1="3" x2="12" y2="17"></line><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>',
         title: 'Local Play',
-        desc: 'Pass & play games'
+        desc: 'Pass & play 2-player'
       },
       {
         action: 'fullscreen',
-        icon: '⛶',
+        icon: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>',
         title: 'Fullscreen',
         desc: 'Toggle full screen [F]'
       },
       {
         href: 'https://github.com/Abhixarvar/SpaceArcade/issues/new',
         external: true,
-        icon: '🐛',
+        icon: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>',
         title: 'Report Problem',
         desc: 'Submit GitHub issue'
       },
       {
         href: 'https://github.com/Abhixarvar/SpaceArcade',
         external: true,
-        icon: '⭐',
+        icon: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>',
         title: 'GitHub Repo',
         desc: 'Open source repository'
       }
@@ -355,22 +266,15 @@ import './fullscreen.js';
       });
     }
 
-    // Create UFO Saucer Trigger
+    // Create System Menu Trigger
     const ufoTrigger = document.createElement('div');
     ufoTrigger.className = 'ufo-trigger';
     ufoTrigger.setAttribute('title', 'Navigation Menu');
     ufoTrigger.setAttribute('role', 'button');
     ufoTrigger.setAttribute('tabindex', '0');
     ufoTrigger.innerHTML = `
-      <div class="ufo-dome"></div>
-      <div class="ufo-body">
-        <div class="ufo-light"></div>
-        <div class="ufo-light"></div>
-        <div class="ufo-light"></div>
-        <div class="ufo-light"></div>
-      </div>
-      <div class="ufo-beam"></div>
-      <div class="ufo-pill-badge">MENU ▾</div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      <span>MENU</span>
     `;
 
     // Create dropdown menu
@@ -672,7 +576,9 @@ import './fullscreen.js';
       const updateEcoBtn = () => {
         const active = document.body.classList.contains('eco-mode');
         ecoBtn.classList.toggle('active', active);
-        ecoBtn.innerHTML = active ? '🍃 Power Saver' : '⚡ Turbo Mode';
+        ecoBtn.innerHTML = active 
+          ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> <span>Eco Mode</span>' 
+          : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> <span>Turbo Mode</span>';
       };
       updateEcoBtn();
 
@@ -691,7 +597,9 @@ import './fullscreen.js';
       const updateSoundBtn = () => {
         const muted = window.SFX && typeof window.SFX.isMuted === 'function' ? window.SFX.isMuted() : false;
         soundBtn.classList.toggle('muted', muted);
-        soundBtn.innerHTML = muted ? '🔇 Sound: OFF' : '🔊 Sound: ON';
+        soundBtn.innerHTML = muted 
+          ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg> <span>Sound: OFF</span>' 
+          : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg> <span>Sound: ON</span>';
       };
       updateSoundBtn();
 

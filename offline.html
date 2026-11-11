@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Space Arcade — Local multiplayer games coming soon!">
+  <meta name="description" content="Space Arcade — Local 2-player multiplayer games engine.">
   <title>Space Arcade — Local Multiplayer</title>
   <link rel="icon" type="image/svg+xml" href="assets/spaceship.svg">
-  <link rel="stylesheet" href="css/style.css?v=4">
+  <link rel="stylesheet" href="css/style.css?v=8">
 </head>
 <body>
 
@@ -15,16 +15,22 @@
 
   <!-- Top Right Corner Navigation Modes -->
   <nav class="top-right-modes" aria-label="Game Modes">
-    <a href="console.html" class="mode-badge-btn mode-badge-btn--console" data-tip="📱 Smartphone Gamepad Controller Mode for PC!">
-      <span class="mode-icon">📱</span>
-      <span class="mode-label">Console Mode</span>
+    <a href="console.html" class="mode-badge-btn mode-badge-btn--console" data-tip="Smartphone Gamepad Controller Mode for PC">
+      <span class="mode-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="6"></rect><line x1="6" y1="12" x2="10" y2="12"></line><line x1="8" y1="10" x2="8" y2="14"></line><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
+      </span>
+      <span class="mode-label">Console</span>
     </a>
-    <a href="party.html" class="mode-badge-btn mode-badge-btn--party" data-tip="🎉 Play real-time multiplayer with friends online!">
-      <span class="mode-icon">🎉</span>
-      <span class="mode-label">Party Mode</span>
+    <a href="party.html" class="mode-badge-btn mode-badge-btn--party" data-tip="Real-time multiplayer lounge">
+      <span class="mode-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+      </span>
+      <span class="mode-label">Party</span>
     </a>
-    <a href="index.html" class="mode-badge-btn mode-badge-btn--local" data-tip="🎮 Play Single Player Arcade Games!">
-      <span class="mode-icon">🎮</span>
+    <a href="index.html" class="mode-badge-btn mode-badge-btn--local" data-tip="Play Single Player Arcade Games">
+      <span class="mode-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"></circle><path d="M20 21a8 8 0 1 0-16 0"></path></svg>
+      </span>
       <span class="mode-label">Singleplayer</span>
     </a>
   </nav>
@@ -41,21 +47,19 @@
           <span class="hover-letter">A</span><span class="hover-letter">R</span><span class="hover-letter">C</span><span class="hover-letter">A</span><span class="hover-letter">D</span><span class="hover-letter">E</span>
         </h1>
       </a>
-      <p class="arcade-subtitle">LOCAL MULTIPLAYER</p>
+      <p class="arcade-subtitle">LOCAL 2-PLAYER ENGINE</p>
     </header>
 
     <!-- Game Cards Grid -->
     <section class="games-grid compact-grid" id="games-grid">
       <div class="coming-soon-msg">
-        <p>🚀 No offline multiplayer missions available yet!</p>
-        <p>Check back soon, Commander!</p>
-        <a href="index.html" class="synth-btn" data-tip="🏠 Go back to the main menu!"><span class="btn-scanline"></span>BACK TO ARCADE</a>
+        <p>No offline split-keyboard modules active currently.</p>
+        <p>Use Space Pong or Star Combat Chess in 2-Player mode on the main hub.</p>
+        <a href="index.html" class="synth-btn" data-tip="Return to the main arcade portal">BACK TO HUB →</a>
       </div>
     </section>
 
   </div>
-
-  
 
   <!-- Scripts -->
   <script type="module" src="js/stars.js"></script>
